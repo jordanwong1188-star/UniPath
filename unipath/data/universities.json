@@ -1,0 +1,46 @@
+[
+  {
+    "id": "ubc",
+    "name": "University of British Columbia",
+    "shortName": "UBC",
+    "province": "British Columbia",
+    "city": "Vancouver",
+    "type": "Public",
+    "website": "https://www.ubc.ca",
+    "admissionsWebsite": "https://you.ubc.ca",
+    "faculties": [
+      {
+        "name": "Sauder School of Business",
+        "programs": [
+          {
+            "name": "Bachelor of Commerce",
+            "degree": "BCom",
+            "deadline": "January 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sfu",
+    "name": "Simon Fraser University",
+    "shortName": "SFU",
+    "province": "British Columbia",
+    "city": "Burnaby",
+    "type": "Public",
+    "website": "https://www.sfu.ca",
+    "admissionsWebsite": "https://www.sfu.ca/admission",
+    "faculties": []
+  },
+  {
+    "id": "uoft",
+    "name": "University of Toronto",
+    "shortName": "UofT",
+    "province": "Ontario",
+    "city": "Toronto",
+    "type": "Public",
+    "website": "https://www.utoronto.ca",
+    "admissionsWebsite": "https://future.utoronto.ca",
+    "faculties": []
+  }
+]
