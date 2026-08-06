@@ -1,48 +1,151 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Search, GraduationCap, CalendarDays, Sparkles } from "lucide-react";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      <nav className="flex justify-between items-center px-10 py-6 border-b">
-        <h1 className="text-2xl font-bold text-blue-700">
+    <main className="min-h-screen bg-white text-gray-900">
+
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-8 md:px-16 py-6 border-b">
+        <h1 className="text-3xl font-bold text-blue-700">
           UniPath
         </h1>
 
-        <div className="space-x-6">
-          <button>Universities</button>
-          <button>Programs</button>
-          <button>Deadlines</button>
-          <button>AI Assistant</button>
+        <div className="hidden md:flex gap-8 text-gray-600">
+          <button className="hover:text-blue-700 transition">
+            Universities
+          </button>
+
+          <button className="hover:text-blue-700 transition">
+            Programs
+          </button>
+
+          <button className="hover:text-blue-700 transition">
+            Deadlines
+          </button>
+
+          <button className="hover:text-blue-700 transition">
+            AI Assistant
+          </button>
         </div>
       </nav>
 
-      <section className="text-center py-20 px-5">
-        <h2 className="text-5xl font-bold">
-          Your path to university starts here.
-        </h2>
 
-        <p className="mt-6 text-lg text-gray-600">
+      {/* Hero */}
+      <section className="px-8 md:px-20 py-24 text-center">
+
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-5xl md:text-6xl font-bold tracking-tight"
+        >
+          Your path to university
+          <span className="text-blue-700">
+            {" "}starts here.
+          </span>
+        </motion.h2>
+
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8 text-xl text-gray-600 max-w-3xl mx-auto"
+        >
           Explore Canadian universities, compare programs,
-          track deadlines, and organize your application journey.
-        </p>
+          track deadlines, and simplify your entire application journey.
+        </motion.p>
 
-        <input
-          className="mt-10 w-full max-w-xl rounded-lg border p-4"
-          placeholder="Search universities, programs, or faculties..."
+
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 max-w-2xl mx-auto flex items-center border rounded-2xl shadow-sm p-2"
+        >
+
+          <Search className="ml-4 text-gray-400"/>
+
+          <input
+            className="flex-1 p-4 outline-none"
+            placeholder="Search universities, programs, or faculties..."
+          />
+
+          <button className="bg-blue-700 text-white px-6 py-3 rounded-xl hover:bg-blue-800 transition">
+            Search
+          </button>
+
+        </motion.div>
+
+      </section>
+
+
+
+      {/* Features */}
+      <section className="grid md:grid-cols-3 gap-8 px-8 md:px-20 pb-24">
+
+        <FeatureCard
+          icon={<GraduationCap />}
+          title="Explore Universities"
+          description="Find universities, faculties, and programs across Canada."
         />
+
+
+        <FeatureCard
+          icon={<CalendarDays />}
+          title="Track Deadlines"
+          description="Never miss important application dates and requirements."
+        />
+
+
+        <FeatureCard
+          icon={<Sparkles />}
+          title="AI Application Assistant"
+          description="Get personalized guidance throughout your application."
+        />
+
       </section>
 
-      <section className="grid md:grid-cols-3 gap-6 px-10">
-        <div className="border rounded-xl p-6">
-          🎓 Explore Universities
-        </div>
 
-        <div className="border rounded-xl p-6">
-          📅 Track Deadlines
-        </div>
-
-        <div className="border rounded-xl p-6">
-          🤖 AI Application Assistant
-        </div>
-      </section>
     </main>
+  );
+}
+
+
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+
+  return (
+    <motion.div
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.2 }}
+      className="border rounded-2xl p-8 shadow-sm hover:shadow-lg transition"
+    >
+
+      <div className="text-blue-700 mb-5">
+        {icon}
+      </div>
+
+      <h3 className="text-xl font-semibold">
+        {title}
+      </h3>
+
+      <p className="mt-3 text-gray-600">
+        {description}
+      </p>
+
+    </motion.div>
   );
 }
