@@ -8,10 +8,10 @@ export default function UniversitiesPage() {
         Canadian Universities
       </h1>
 
-      <p className="text-center text-gray-600 mt-4">
-        Explore universities, programs, and application requirements.
+      <p className="text-center text-gray-600 mt-4 max-w-2xl mx-auto">
+        Explore Canadian universities, compare programs, and discover
+        important application information.
       </p>
-
 
       <div className="grid md:grid-cols-3 gap-8 mt-12">
 
@@ -29,11 +29,11 @@ export default function UniversitiesPage() {
               {university.city}, {university.province}
             </p>
 
-            <p className="mt-4">
+            <p className="mt-4 text-gray-700">
               {university.type} University
             </p>
 
-            <button className="mt-6 bg-blue-700 text-white px-5 py-2 rounded-lg">
+            <button className="mt-6 bg-blue-700 text-white px-5 py-2 rounded-lg hover:bg-blue-800 transition">
               View Details
             </button>
 

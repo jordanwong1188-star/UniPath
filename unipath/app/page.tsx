@@ -7,40 +7,42 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white text-gray-900">
 
-      {/* Navigation */}
       <nav className="flex items-center justify-between px-8 md:px-16 py-6 border-b">
+
         <h1 className="text-3xl font-bold text-blue-700">
           UniPath
         </h1>
 
         <div className="hidden md:flex gap-8 text-gray-600">
-          <button className="hover:text-blue-700 transition">
+
+          <a href="/universities" className="hover:text-blue-700 transition">
             Universities
-          </button>
+          </a>
 
-          <button className="hover:text-blue-700 transition">
+          <a href="#" className="hover:text-blue-700 transition">
             Programs
-          </button>
+          </a>
 
-          <button className="hover:text-blue-700 transition">
+          <a href="#" className="hover:text-blue-700 transition">
             Deadlines
-          </button>
+          </a>
 
-          <button className="hover:text-blue-700 transition">
+          <a href="#" className="hover:text-blue-700 transition">
             AI Assistant
-          </button>
+          </a>
+
         </div>
+
       </nav>
 
 
-      {/* Hero */}
       <section className="px-8 md:px-20 py-24 text-center">
 
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-5xl md:text-6xl font-bold tracking-tight"
+          className="text-5xl md:text-6xl font-bold"
         >
           Your path to university
           <span className="text-blue-700">
@@ -49,24 +51,13 @@ export default function Home() {
         </motion.h2>
 
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-8 text-xl text-gray-600 max-w-3xl mx-auto"
-        >
+        <p className="mt-8 text-xl text-gray-600 max-w-3xl mx-auto">
           Explore Canadian universities, compare programs,
-          track deadlines, and simplify your entire application journey.
-        </motion.p>
+          track deadlines, and organize your application journey.
+        </p>
 
 
-        {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-12 max-w-2xl mx-auto flex items-center border rounded-2xl shadow-sm p-2"
-        >
+        <div className="mt-12 max-w-2xl mx-auto flex items-center border rounded-2xl shadow-sm p-2">
 
           <Search className="ml-4 text-gray-400"/>
 
@@ -79,42 +70,36 @@ export default function Home() {
             Search
           </button>
 
-        </motion.div>
+        </div>
 
       </section>
 
 
-
-      {/* Features */}
       <section className="grid md:grid-cols-3 gap-8 px-8 md:px-20 pb-24">
 
         <FeatureCard
           icon={<GraduationCap />}
           title="Explore Universities"
-          description="Find universities, faculties, and programs across Canada."
+          description="Discover Canadian universities and programs."
         />
-
 
         <FeatureCard
           icon={<CalendarDays />}
           title="Track Deadlines"
-          description="Never miss important application dates and requirements."
+          description="Stay organized with important application dates."
         />
-
 
         <FeatureCard
           icon={<Sparkles />}
-          title="AI Application Assistant"
-          description="Get personalized guidance throughout your application."
+          title="AI Assistant"
+          description="Get personalized guidance for your applications."
         />
 
       </section>
 
-
     </main>
   );
 }
-
 
 
 function FeatureCard({
@@ -130,11 +115,10 @@ function FeatureCard({
   return (
     <motion.div
       whileHover={{ y: -6 }}
-      transition={{ duration: 0.2 }}
       className="border rounded-2xl p-8 shadow-sm hover:shadow-lg transition"
     >
 
-      <div className="text-blue-700 mb-5">
+      <div className="text-blue-700 mb-4">
         {icon}
       </div>
 
