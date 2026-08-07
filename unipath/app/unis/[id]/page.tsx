@@ -1,4 +1,4 @@
-import universities from "@/data/universities.json";
+import { universities } from "@/data/universities";
 
 export default async function UniversityPage({
   params,
@@ -29,6 +29,7 @@ export default async function UniversityPage({
 
       <div className="bg-white rounded-3xl p-10 shadow">
 
+
         <div className="flex items-center gap-6">
 
           <img
@@ -37,13 +38,15 @@ export default async function UniversityPage({
             className="w-32 h-32 object-contain"
           />
 
+
           <div>
 
             <h1 className="text-4xl font-bold">
               {university.name}
             </h1>
 
-            <p className="text-gray-600">
+
+            <p className="text-gray-600 mt-2">
               {university.city}, {university.province}
             </p>
 
@@ -52,7 +55,47 @@ export default async function UniversityPage({
         </div>
 
 
-        <h2 className="text-2xl font-bold mt-10">
+        <div className="grid md:grid-cols-3 gap-6 mt-10">
+
+
+          <div>
+            <h3 className="font-semibold">
+              Type
+            </h3>
+
+            <p>
+              {university.type}
+            </p>
+          </div>
+
+
+          <div>
+            <h3 className="font-semibold">
+              Admission Average
+            </h3>
+
+            <p>
+              {university.admissionAverage || "Coming soon"}
+            </p>
+          </div>
+
+
+          <div>
+            <h3 className="font-semibold">
+              Tuition
+            </h3>
+
+            <p>
+              {university.tuitionDomestic || "Coming soon"}
+            </p>
+          </div>
+
+
+        </div>
+
+
+
+        <h2 className="text-2xl font-bold mt-12">
           Programs
         </h2>
 
@@ -61,16 +104,23 @@ export default async function UniversityPage({
 
           university.faculties.map((faculty) => (
 
-            <div key={faculty.name} className="mt-5">
+            <div
+              key={faculty.name}
+              className="mt-5"
+            >
 
-              <h3 className="font-semibold">
+              <h3 className="font-semibold text-lg">
                 {faculty.name}
               </h3>
 
+
               {faculty.programs.map((program) => (
 
-                <p key={program.name}>
-                  {program.name}
+                <p
+                  key={program.name}
+                  className="text-gray-600"
+                >
+                  {program.name} ({program.degree})
                 </p>
 
               ))}
@@ -88,10 +138,11 @@ export default async function UniversityPage({
         )}
 
 
+
         <a
           href={university.admissionsWebsite}
           target="_blank"
-          className="inline-block mt-8 bg-blue-700 text-white px-6 py-3 rounded-xl"
+          className="inline-block mt-10 bg-blue-700 text-white px-6 py-3 rounded-xl hover:bg-blue-800"
         >
           Admissions
         </a>
