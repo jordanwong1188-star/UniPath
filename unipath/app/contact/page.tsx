@@ -1,20 +1,17 @@
 cat > app/ai-assistant/page.tsx <<'EOF'
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   Bot,
-  CalendarDays,
-  ChevronRight,
-  GraduationCap,
-  MapPin,
-  RotateCcw,
-  Search,
   Send,
-  Sparkles,
   User,
+  Sparkles,
+  BookOpen,
+  GraduationCap,
+  CalendarDays,
 } from "lucide-react";
 
 import schools from "@/data/canadianSchools.json";
@@ -30,603 +27,625 @@ type School = {
 };
 
 type Message = {
-  id: number;
   role: "user" | "assistant";
   text: string;
-  schools?: School[];
+  links?: {
+    label: string;
+    href: string;
+  }[];
 };
 
-const typedSchools = schools as School[];
-
-const quickQuestions = [
-  {
-    icon: GraduationCap,
-    label: "Find universities",
-    question: "Which Canadian universities should I consider?",
-  },
-  {
-    icon: Sparkles,
-    label: "Business",
-    question: "What are some good Canadian universities for business?",
-  },
-  {
-    icon: Search,
-    label: "Compare schools",
-    question: "Compare UBC and SFU.",
-  },
-  {
-    icon: CalendarDays,
-    label: "Applications",
-    question: "When should I start applying to university?",
-  },
-];
-
-function normalize(value: string) {
-  return value
+function normalize(text: string) {
+  return text
     .toLowerCase()
-    .replace(/[^\w\s]/g, " ")
+    .replace(/[?!.,]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function findSchools(question: string) {
+function findSchool(question: string): School | null {
   const q = normalize(question);
 
-  return typedSchools.filter((school) => {
-    const name = normalize(school.name);
-    const shortName = normalize(school.shortName);
-    const city = normalize(school.city);
-    const province = normalize(school.province);
+  const aliases: Record<string, string[]> = {
+    ubc: [
+      "ubc",
+      "university of british columbia",
+      "british columbia university",
+      "sauder",
+      "sauder school of business",
+      "ubc sauder",
+    ],
+    sfu: [
+      "sfu",
+      "simon fraser",
+      "simon fraser university",
+      "beedie",
+      "beedie school of business",
+    ],
+    uoft: [
+      "uoft",
+      "u of t",
+      "university of toronto",
+      "toronto university",
+      "rotman",
+      "rotman commerce",
+    ],
+    waterloo: [
+      "waterloo",
+      "university of waterloo",
+    ],
+    mcmaster: [
+      "mcmaster",
+      "mac",
+      "mcmaster university",
+    ],
+    queens: [
+      "queens",
+      "queen's",
+      "queens university",
+      "smith",
+      "smith school of business",
+    ],
+    alberta: [
+      "uofa",
+      "u of a",
+      "university of alberta",
+      "alberta",
+    ],
+    calgary: [
+      "ucalgary",
+      "u of c",
+      "university of calgary",
+      "calgary",
+    ],
+  };
 
-    return (
-      q.includes(name) ||
-      q.includes(shortName) ||
-      q.includes(city) ||
-      q.includes(province)
-    );
-  });
-}
+  for (const school of schools as School[]) {
+    const terms = [
+      school.id,
+      school.shortName,
+      school.name,
+      school.city,
+    ].map(normalize);
 
-function findSchoolByName(term: string) {
-  const q = normalize(term);
+    for (const term of terms) {
+      if (term && q.includes(term)) {
+        return school;
+      }
+    }
+  }
 
-  return typedSchools.find((school) => {
-    const name = normalize(school.name);
-    const shortName = normalize(school.shortName);
-
-    return (
-      q.includes(name) ||
-      q.includes(shortName) ||
-      name.includes(q) ||
-      shortName.includes(q)
-    );
-  });
-}
-
-function schoolLink(school: School) {
-  return `/unis/${school.id}`;
-}
-
-function generateResponse(question: string) {
-  const q = normalize(question);
-  const mentionedSchools = findSchools(question);
-
-  const compareMatch =
-    q.includes("compare") ||
-    q.includes("versus") ||
-    q.includes(" vs ") ||
-    q.includes("better than");
-
-  /*
-   * UNIVERSITY COMPARISON
-   */
-  if (compareMatch) {
-    const possibleSchools = typedSchools.filter((school) => {
-      const name = normalize(school.name);
-      const shortName = normalize(school.shortName);
-
-      return (
-        q.includes(name) ||
-        q.includes(shortName)
+  for (const [schoolId, terms] of Object.entries(aliases)) {
+    if (terms.some((term) => q.includes(term))) {
+      const school = (schools as School[]).find(
+        (s) => normalize(s.id) === normalize(schoolId)
       );
-    });
 
-    if (possibleSchools.length >= 2) {
-      const first = possibleSchools[0];
-      const second = possibleSchools[1];
-
-      return {
-        text:
-          `Here’s a useful starting comparison between ${first.name} and ${second.name}.\n\n` +
-          `${first.shortName} is located in ${first.city}, ${first.province}, while ${second.shortName} is located in ${second.city}, ${second.province}.\n\n` +
-          `The better choice depends heavily on your program, admission profile, location preference, budget, campus environment, and whether factors such as co-op or internships matter to you.\n\n` +
-          `I’d recommend comparing the specific program rather than choosing based only on the university's overall reputation.`,
-        schools: [first, second],
-      };
+      if (school) return school;
     }
-
-    return {
-      text:
-        "I can compare Canadian universities, but I need to know which schools you want to compare. For example, try “Compare UBC and SFU” or “Compare Waterloo and UofT.”",
-      schools: [],
-    };
   }
 
-  /*
-   * SPECIFIC UNIVERSITY QUESTIONS
-   */
-  if (mentionedSchools.length > 0) {
-    const school = mentionedSchools[0];
+  return null;
+}
 
-    if (
-      q.includes("where") ||
-      q.includes("location") ||
-      q.includes("located") ||
-      q.includes("city")
-    ) {
-      return {
-        text:
-          `${school.name} is located in ${school.city}, ${school.province}.\n\n` +
-          `You can open its UniPath profile below to explore the information currently available for this school.`,
-        schools: [school],
-      };
-    }
+function detectIntent(question: string) {
+  const q = normalize(question);
 
-    if (
-      q.includes("program") ||
-      q.includes("major") ||
-      q.includes("study") ||
-      q.includes("degree")
-    ) {
-      return {
-        text:
-          `${school.name} offers a range of programs across different areas of study. The best next step is to open the school's UniPath profile and review the programs available there.\n\n` +
-          `If you tell me what you want to study — such as business, engineering, computer science, psychology, or health sciences — I can also help you narrow down Canadian universities to research.`,
-        schools: [school],
-      };
-    }
-
-    if (
-      q.includes("admission") ||
-      q.includes("requirement") ||
-      q.includes("accept") ||
-      q.includes("grade")
-    ) {
-      return {
-        text:
-          `Admission requirements for ${school.name} depend on the specific program and applicant category. There isn't one universal admission requirement for the entire university.\n\n` +
-          `When researching your application, check the exact program requirements, prerequisite courses, grade expectations, and application deadlines. UniPath can help you organize that research, but official university admissions pages should be used to verify current requirements.`,
-        schools: [school],
-      };
-    }
-
-    if (
-      q.includes("deadline") ||
-      q.includes("apply") ||
-      q.includes("application")
-    ) {
-      return {
-        text:
-          `Application dates for ${school.name} can vary by program and applicant type. I recommend checking the specific program rather than relying on one university-wide date.\n\n` +
-          `UniPath's deadline tools are designed to help organize this information, while the university's official admissions website should be treated as the final source for current dates.`,
-        schools: [school],
-      };
-    }
-
-    return {
-      text:
-        `${school.name} is a ${school.type.toLowerCase()} located in ${school.city}, ${school.province}.\n\n` +
-        `I can help you research its programs, admissions, deadlines, location, or compare it with another Canadian university.\n\n` +
-        `What would you like to know about ${school.shortName}?`,
-      schools: [school],
-    };
+  if (
+    q.includes("need") ||
+    q.includes("requirements") ||
+    q.includes("requirement") ||
+    q.includes("accepted") ||
+    q.includes("admission") ||
+    q.includes("admitted") ||
+    q.includes("grades") ||
+    q.includes("average") ||
+    q.includes("prerequisite") ||
+    q.includes("prerequisites") ||
+    q.includes("get in")
+  ) {
+    return "requirements";
   }
 
-  /*
-   * BUSINESS
-   */
+  if (
+    q.includes("deadline") ||
+    q.includes("deadlines") ||
+    q.includes("when do i apply") ||
+    q.includes("when should i apply") ||
+    q.includes("last day") ||
+    q.includes("application date")
+  ) {
+    return "deadlines";
+  }
+
+  if (
+    q.includes("tuition") ||
+    q.includes("cost") ||
+    q.includes("expensive") ||
+    q.includes("price") ||
+    q.includes("fees")
+  ) {
+    return "cost";
+  }
+
+  if (
+    q.includes("program") ||
+    q.includes("study") ||
+    q.includes("major") ||
+    q.includes("degree") ||
+    q.includes("what can i study")
+  ) {
+    return "programs";
+  }
+
+  if (
+    q.includes("compare") ||
+    q.includes("vs") ||
+    q.includes("versus") ||
+    q.includes("better") ||
+    q.includes("difference")
+  ) {
+    return "comparison";
+  }
+
   if (
     q.includes("business") ||
     q.includes("commerce") ||
     q.includes("marketing") ||
     q.includes("finance") ||
     q.includes("accounting") ||
-    q.includes("entrepreneur")
+    q.includes("management")
+  ) {
+    return "business";
+  }
+
+  if (
+    q.includes("computer science") ||
+    q.includes("computer") ||
+    q.includes("software") ||
+    q.includes("cs")
+  ) {
+    return "computer-science";
+  }
+
+  if (
+    q.includes("engineering") ||
+    q.includes("engineer")
+  ) {
+    return "engineering";
+  }
+
+  if (
+    q.includes("best university") ||
+    q.includes("best school") ||
+    q.includes("which university") ||
+    q.includes("which school") ||
+    q.includes("where should i go")
+  ) {
+    return "recommendation";
+  }
+
+  return "general";
+}
+
+function generateResponse(question: string): Message {
+  const q = normalize(question);
+  const school = findSchool(question);
+  const intent = detectIntent(question);
+
+  /*
+   * SAUDER / UBC
+   */
+
+  if (
+    (q.includes("sauder") || q.includes("ubc")) &&
+    intent === "requirements"
   ) {
     return {
+      role: "assistant",
       text:
-        "If you're interested in business, don't choose a university based only on its overall ranking. Look at the specific business school, specialization options, co-op or internship opportunities, admission requirements, tuition, location, and career outcomes.\n\n" +
-        "Some Canadian schools worth researching include UBC, Waterloo, Toronto, McMaster, Western, Queen's, SFU, Calgary, Alberta, and Laurier. Your ideal choice depends on your grades, preferred location, budget, and the type of business career you're considering.",
-      schools: typedSchools.filter((school) =>
-        [
-          "ubc",
-          "waterloo",
-          "uoft",
-          "mcmaster",
-          "western",
-          "queens",
-          "sfu",
-          "ucalgary",
-          "uofa",
-          "laurier",
-        ].includes(school.id)
-      ),
+        "If you're aiming for UBC Sauder's BCom, there are a few different pieces you should think about rather than just your average. UBC looks at your academic record and required Grade 12 courses, but Sauder also has the personal profile component as part of the application. Your grades matter, but the profile is an important opportunity to show leadership, initiative, experiences, and what you've actually done outside the classroom.\n\nIf you're applying from BC, I'd pay particular attention to your English, Pre-Calculus, and other required courses, then make sure you're prepared for the personal profile well before the application deadline.\n\nIf you tell me your current Grade 11/12 marks and what courses you're taking, I can help you figure out how competitive your application looks and what I'd prioritize improving.",
+      links: [
+        {
+          label: "Open UBC profile",
+          href: "/unis/ubc",
+        },
+        {
+          label: "Explore universities",
+          href: "/universities",
+        },
+      ],
+    };
+  }
+
+  if (
+    (q.includes("sauder") || q.includes("ubc")) &&
+    intent === "business"
+  ) {
+    return {
+      role: "assistant",
+      text:
+        "If you're specifically interested in business, UBC Sauder is the UBC option I'd be looking at. The BCom gives you a broad business foundation and then lets you develop areas such as finance, marketing, accounting, operations, and entrepreneurship.\n\nIf you're deciding whether Sauder is actually a good fit for you, I'd compare three things: how competitive the admission process is, whether you like Vancouver/UBC's environment, and what kind of business career you're aiming for. If you tell me what area of business interests you most, I can help you compare Sauder with schools like SFU Beedie, U of T Rotman, or other Canadian options.",
+      links: [
+        {
+          label: "Open UBC profile",
+          href: "/unis/ubc",
+        },
+        {
+          label: "Compare universities",
+          href: "/universities",
+        },
+      ],
+    };
+  }
+
+  /*
+   * SCHOOL + DEADLINE
+   */
+
+  if (school && intent === "deadlines") {
+    return {
+      role: "assistant",
+      text:
+        `For ${school.name}, I would not rely on a generic date because deadlines can differ by applicant type and program. The safest approach is to verify the current deadline through the university's official admissions site.\n\nI can still help you organize what to look for: application opening date, early/priority deadlines if applicable, final application deadline, document deadlines, and any supplemental application deadlines.`,
+      links: [
+        {
+          label: `Open ${school.shortName} profile`,
+          href: `/unis/${school.id}`,
+        },
+        {
+          label: "View deadlines",
+          href: "/deadlines",
+        },
+      ],
+    };
+  }
+
+  /*
+   * SCHOOL + PROGRAMS
+   */
+
+  if (school && intent === "programs") {
+    return {
+      role: "assistant",
+      text:
+        `${school.name} is located in ${school.city}, ${school.province}. If you're deciding what to study there, I'd narrow it down based on the career or subject you're interested in rather than just choosing a university first.\n\nTell me what you want to study — for example business, engineering, computer science, psychology, economics, or something else — and I can help you think through which programs make the most sense.`,
+      links: [
+        {
+          label: `Open ${school.shortName} profile`,
+          href: `/unis/${school.id}`,
+        },
+        {
+          label: "Explore programs",
+          href: "/programs",
+        },
+      ],
+    };
+  }
+
+  /*
+   * SCHOOL + COST
+   */
+
+  if (school && intent === "cost") {
+    return {
+      role: "assistant",
+      text:
+        `${school.shortName}'s total cost depends heavily on your program, whether you're a domestic or international student, and your living situation. I wouldn't compare universities based on tuition alone.\n\nWhen you're comparing costs, look at tuition, student fees, housing, transportation, food, textbooks, and whether the program has co-op or other paid work opportunities.\n\nIf you tell me whether you're a domestic BC student or coming from elsewhere, I can help you build a more realistic university budget.`,
+      links: [
+        {
+          label: `Open ${school.shortName} profile`,
+          href: `/unis/${school.id}`,
+        },
+      ],
+    };
+  }
+
+  /*
+   * BUSINESS
+   */
+
+  if (intent === "business") {
+    return {
+      role: "assistant",
+      text:
+        "If you're looking at business, don't choose a school purely from a ranking. I'd compare the program itself, admission competitiveness, co-op/internship opportunities, location, tuition, class size, and the areas of business you can specialize in.\n\nFor example, someone interested in finance might prioritize different things than someone interested in entrepreneurship or marketing.\n\nIf you give me your approximate grades and the type of business you want to study, I can help you build a shortlist instead of just giving you a generic list of 'best' schools.",
+      links: [
+        {
+          label: "Explore business programs",
+          href: "/programs",
+        },
+        {
+          label: "Browse universities",
+          href: "/universities",
+        },
+      ],
     };
   }
 
   /*
    * COMPUTER SCIENCE
    */
-  if (
-    q.includes("computer science") ||
-    q.includes("software engineering") ||
-    q.includes("computer") ||
-    q.includes("programming")
-  ) {
+
+  if (intent === "computer-science") {
     return {
+      role: "assistant",
       text:
-        "For computer science, I would compare the actual program rather than relying on a single ranking. Important factors include admission requirements, co-op, curriculum, class size, location, tuition, research opportunities, and the type of career you want after graduation.\n\n" +
-        "Waterloo, Toronto, UBC, Alberta, SFU, McGill, and several other Canadian universities are worth researching.",
-      schools: typedSchools.filter((school) =>
-        [
-          "waterloo",
-          "uoft",
-          "ubc",
-          "uofa",
-          "sfu",
-          "mcgill",
-        ].includes(school.id)
-      ),
+        "For computer science, I'd look beyond the university's overall reputation. The things I'd compare are admission competitiveness, co-op, internship access, course structure, class size, location, and the kinds of technical areas you can pursue.\n\nIf you're choosing between a few schools, send me the names and your approximate grades. I can help you think through the trade-offs rather than simply telling you which one is 'better.'",
+      links: [
+        {
+          label: "Explore programs",
+          href: "/programs",
+        },
+        {
+          label: "Browse universities",
+          href: "/universities",
+        },
+      ],
     };
   }
 
   /*
    * ENGINEERING
    */
-  if (
-    q.includes("engineering") ||
-    q.includes("engineer")
-  ) {
+
+  if (intent === "engineering") {
     return {
+      role: "assistant",
       text:
-        "Engineering is especially important to compare at the program level because different universities have different strengths and admission structures.\n\n" +
-        "When comparing engineering programs, look at the discipline you want, prerequisite courses, admission averages, co-op, professional accreditation, tuition, and internship opportunities.\n\n" +
-        "UBC, Waterloo, Toronto, Alberta, McMaster, Calgary, and several other Canadian universities are worth researching.",
-      schools: typedSchools.filter((school) =>
-        [
-          "ubc",
-          "waterloo",
-          "uoft",
-          "uofa",
-          "mcmaster",
-          "ucalgary",
-        ].includes(school.id)
-      ),
+        "Engineering admissions can be quite different from general university admission, so I'd look at the exact engineering faculty rather than just the university's overall admission average.\n\nI'd compare prerequisites, competitive averages, whether you're admitted directly to a discipline or into a common first year, co-op opportunities, and the type of engineering you actually want to pursue.\n\nIf you tell me the schools you're considering and your current math/physics grades, I can help you narrow them down.",
+      links: [
+        {
+          label: "Explore universities",
+          href: "/universities",
+        },
+        {
+          label: "Explore programs",
+          href: "/programs",
+        },
+      ],
     };
   }
 
   /*
-   * DEADLINES
+   * COMPARISON
    */
-  if (
-    q.includes("deadline") ||
-    q.includes("when should i apply") ||
-    q.includes("when do i apply") ||
-    q.includes("application date")
-  ) {
+
+  if (intent === "comparison") {
     return {
+      role: "assistant",
       text:
-        "University deadlines vary by school, program, applicant type, and sometimes the admission term.\n\n" +
-        "A good strategy is to start researching in Grade 11, build your university list before Grade 12, and keep a separate deadline for each application rather than assuming every program has the same date.\n\n" +
-        "Always verify the final deadline through the university's official admissions website.",
-      schools: [],
+        "I can help with a comparison, but I need the schools you're deciding between. Send me something like 'UBC Sauder vs SFU Beedie' and I'll break down the important differences — admissions, program, co-op, location, cost, and career opportunities — instead of just picking one based on reputation.",
+      links: [
+        {
+          label: "Browse universities",
+          href: "/universities",
+        },
+      ],
     };
   }
 
   /*
-   * HOW MANY SCHOOLS
+   * RECOMMENDATION
    */
+
+  if (intent === "recommendation") {
+    return {
+      role: "assistant",
+      text:
+        "There isn't one Canadian university that's automatically best for everyone. I'd make the decision based on your program, grades, location, budget, career goals, and how competitive you want your application list to be.\n\nA good strategy is to build three groups: a few ambitious choices, several realistic targets, and at least one or two safer options.\n\nIf you tell me your grades, intended program, and whether you want to stay in BC, I can help you build that list.",
+      links: [
+        {
+          label: "Browse universities",
+          href: "/universities",
+        },
+        {
+          label: "Explore programs",
+          href: "/programs",
+        },
+      ],
+    };
+  }
+
+  /*
+   * SCHOOL IDENTIFIED
+   */
+
+  if (school) {
+    return {
+      role: "assistant",
+      text:
+        `You're asking about ${school.name}. It's a ${school.type} in ${school.city}, ${school.province}.\n\nI can help you look at it from a few different angles: admission requirements, programs, deadlines, cost, or how it compares with another university.\n\nWhat are you most interested in?`,
+      links: [
+        {
+          label: `Open ${school.shortName} profile`,
+          href: `/unis/${school.id}`,
+        },
+      ],
+    };
+  }
+
+  /*
+   * GENERAL QUESTIONS
+   */
+
+  if (
+    q.includes("how do i choose") ||
+    q.includes("how should i choose") ||
+    q.includes("choosing a university")
+  ) {
+    return {
+      role: "assistant",
+      text:
+        "I'd start with the program, not the university name. Your program affects admission requirements, career opportunities, co-op options, and often the cost.\n\nThen I'd compare location, admission competitiveness, tuition/living costs, campus environment, and opportunities such as co-op or internships.\n\nOne thing I wouldn't do is build your entire list around rankings. A university that's ranked higher overall isn't necessarily the better choice for your specific program or situation.\n\nIf you tell me what you want to study and your approximate grades, I can help you narrow down some actual schools.",
+      links: [
+        {
+          label: "Explore universities",
+          href: "/universities",
+        },
+      ],
+    };
+  }
+
+  /*
+   * NUMBER OF SCHOOLS
+   */
+
   if (
     q.includes("how many") &&
     (q.includes("school") || q.includes("university"))
   ) {
     return {
+      role: "assistant",
       text:
-        `UniPath currently has ${typedSchools.length} Canadian schools in its directory.\n\n` +
-        "You can browse the full directory and filter your options from the Universities page.",
-      schools: [],
+        `UniPath currently has ${(schools as School[]).length} schools in its directory. The database is being expanded, so the number will change as more Canadian institutions and program information are added.`,
+      links: [
+        {
+          label: "Browse all schools",
+          href: "/universities",
+        },
+      ],
     };
   }
 
   /*
-   * PROVINCE SEARCH
+   * FINAL FALLBACK
    */
-  const provinceMatches = typedSchools.filter((school) =>
-    q.includes(normalize(school.province))
-  );
 
-  if (provinceMatches.length > 0) {
-    const province = provinceMatches[0].province;
-
-    return {
-      text:
-        `There are ${provinceMatches.length} schools in the current UniPath directory for ${province}.\n\n` +
-        "You can browse the schools below and open individual profiles to research them further.",
-      schools: provinceMatches.slice(0, 8),
-    };
-  }
-
-  /*
-   * GENERAL UNIVERSITY QUESTION
-   */
-  if (
-    q.includes("best university") ||
-    q.includes("best school") ||
-    q.includes("good university") ||
-    q.includes("which university")
-  ) {
-    return {
-      text:
-        "There isn't one university that is objectively best for every student.\n\n" +
-        "A better approach is to start with your intended program, then compare admission requirements, co-op opportunities, tuition, location, campus environment, and career opportunities.\n\n" +
-        "If you tell me your intended program and your preferred province or city, I can help you build a much more targeted shortlist.",
-      schools: [],
-    };
-  }
-
-  /*
-   * HELP
-   */
-  if (
-    q.includes("help") ||
-    q.includes("what can you do") ||
-    q.includes("what do you do")
-  ) {
-    return {
-      text:
-        "I can help you research Canadian universities and make your search more organized.\n\n" +
-        "Try asking me:\n\n" +
-        "• Which universities should I consider for business?\n" +
-        "• Compare UBC and SFU.\n" +
-        "• What should I look for in a university?\n" +
-        "• When should I start applying?\n" +
-        "• What should I consider when choosing engineering?\n" +
-        "• Where is McGill located?",
-      schools: [],
-    };
-  }
-
-  /*
-   * FALLBACK
-   */
   return {
+    role: "assistant",
     text:
-      "I can help with Canadian universities, programs, admissions, deadlines, and comparing schools.\n\n" +
-      "For example, try asking “Compare UBC and SFU,” “What universities should I consider for business?” or “When should I start applying to university?”",
-    schools: [],
+      "I can help with that, but I want to give you a useful answer rather than make something up. Tell me the university, program, or decision you're dealing with and I'll help you work through it.\n\nFor example:\n\n• 'I want to go to Sauder — what do I need?'\n• 'UBC Sauder vs SFU Beedie?'\n• 'What Canadian business schools should I apply to with an 88% average?'\n• 'When should I apply to UBC?'\n• 'Is Waterloo good for computer science?'",
+    links: [
+      {
+        label: "Browse universities",
+        href: "/universities",
+      },
+      {
+        label: "Explore programs",
+        href: "/programs",
+      },
+    ],
   };
 }
 
 export default function AIAssistantPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
       role: "assistant",
       text:
-        "Hi! I'm the UniPath Assistant. I can help you research Canadian universities, programs, admissions, deadlines, and compare schools.\n\nWhat are you looking for?",
+        "Hey! I'm the UniPath Assistant. Think of me as a university planning advisor — ask me about schools, programs, admissions, deadlines, or compare options you're considering.",
     },
   ]);
 
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const nextId = useRef(2);
+  const [isThinking, setIsThinking] = useState(false);
 
-  const suggestedQuestions = useMemo(
-    () => quickQuestions,
+  const suggestions = useMemo(
+    () => [
+      "I want to go to Sauder — what do I need?",
+      "UBC Sauder vs SFU Beedie?",
+      "What should I look for when choosing a university?",
+      "What Canadian universities are good for business?",
+    ],
     []
   );
 
-  function sendMessage(questionOverride?: string) {
-    const question = (questionOverride ?? input).trim();
+  function sendMessage(textOverride?: string) {
+    const question = (textOverride ?? input).trim();
 
-    if (!question || isTyping) return;
+    if (!question || isThinking) return;
 
-    const result = generateResponse(question);
+    setIsThinking(true);
 
-    const userMessage: Message = {
-      id: nextId.current++,
-      role: "user",
-      text: question,
-    };
-
-    setMessages((current) => [...current, userMessage]);
-    setInput("");
-    setIsTyping(true);
-
-    window.setTimeout(() => {
-      const assistantMessage: Message = {
-        id: nextId.current++,
-        role: "assistant",
-        text: result.text,
-        schools: result.schools,
-      };
-
-      setMessages((current) => [
-        ...current,
-        assistantMessage,
-      ]);
-
-      setIsTyping(false);
-    }, 450);
-  }
-
-  function clearChat() {
-    setMessages([
+    setMessages((current) => [
+      ...current,
       {
-        id: nextId.current++,
-        role: "assistant",
-        text:
-          "Chat cleared. What would you like to research?",
+        role: "user",
+        text: question,
       },
     ]);
+
     setInput("");
+
+    setTimeout(() => {
+      const response = generateResponse(question);
+
+      setMessages((current) => [...current, response]);
+
+      setIsThinking(false);
+    }, 350);
   }
 
   return (
-    <main className="min-h-screen bg-[#f4f6f5] text-[#172126]">
+    <main className="min-h-screen bg-[#f5f7f8] text-[#172126]">
 
-      {/* HEADER */}
+      <header className="border-b border-black/5 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
 
-      <header className="sticky top-0 z-50 border-b border-black/[0.06] bg-[#f4f6f5]/90 backdrop-blur-xl">
-
-        <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-6 lg:px-10">
-
-          <Link
-            href="/"
-            className="flex items-center gap-3"
-          >
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#172126] text-white">
-              <span className="font-semibold">U</span>
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#172126] text-sm font-bold text-white">
+              U
             </div>
 
-            <div>
-              <div className="text-lg font-semibold tracking-tight">
-                UniPath
-              </div>
-
-              <div className="hidden text-[9px] uppercase tracking-[0.18em] text-gray-500 sm:block">
-                University guide
-              </div>
-            </div>
-
+            <span className="text-xl font-bold tracking-tight">
+              UniPath
+            </span>
           </Link>
 
-          <div className="flex items-center gap-5">
-
-            <Link
-              href="/universities"
-              className="hidden text-sm font-medium text-gray-600 transition hover:text-[#172126] sm:block"
-            >
-              Universities
-            </Link>
-
-            <Link
-              href="/programs"
-              className="hidden text-sm font-medium text-gray-600 transition hover:text-[#172126] sm:block"
-            >
-              Programs
-            </Link>
-
-            <Link
-              href="/deadlines"
-              className="hidden text-sm font-medium text-gray-600 transition hover:text-[#172126] sm:block"
-            >
-              Deadlines
-            </Link>
-
-            <Link
-              href="/"
-              className="flex items-center gap-2 rounded-full bg-[#172126] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a3b41]"
-            >
-              Home
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-
-          </div>
+          <Link
+            href="/universities"
+            className="text-sm font-semibold text-gray-600 transition hover:text-black"
+          >
+            Universities
+          </Link>
 
         </div>
-
       </header>
 
+      <section className="mx-auto max-w-5xl px-6 py-12 lg:py-16">
 
-      {/* PAGE */}
+        <div className="mb-8">
 
-      <section className="mx-auto max-w-6xl px-6 py-10 lg:px-10 lg:py-14">
-
-        {/* TOP */}
-
-        <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-
-          <div className="max-w-3xl">
-
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/[0.07] bg-white/70 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
-
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-
-              UniPath Assistant
-
-            </div>
-
-            <h1 className="mt-5 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
-
-              Your university questions,
-              <span className="block text-[#68797d]">
-                answered in one place.
-              </span>
-
-            </h1>
-
-            <p className="mt-5 max-w-2xl text-base leading-7 text-gray-500">
-              Research Canadian universities, compare your options,
-              and get guidance while planning your application.
-            </p>
-
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/5 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 shadow-sm">
+            <Sparkles className="h-3.5 w-3.5" />
+            UniPath Assistant
           </div>
 
-          <button
-            onClick={clearChat}
-            className="inline-flex items-center gap-2 self-start rounded-full border border-black/10 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50 md:self-auto"
-          >
-            <RotateCcw className="h-4 w-4" />
-            New chat
-          </button>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
+            Let's figure out your university plan.
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-base leading-7 text-gray-500">
+            Ask me a specific question and I'll help you work through it —
+            whether you're choosing a school, figuring out admission
+            requirements, or comparing programs.
+          </p>
 
         </div>
 
+        <div className="mb-6 flex flex-wrap gap-2">
 
-        {/* CHAT */}
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              onClick={() => sendMessage(suggestion)}
+              className="rounded-full border border-black/10 bg-white px-4 py-2 text-left text-xs font-medium text-gray-600 transition hover:border-black/20 hover:bg-gray-50"
+            >
+              {suggestion}
+            </button>
+          ))}
 
-        <div className="mt-10 overflow-hidden rounded-[1.75rem] border border-black/[0.07] bg-white shadow-[0_25px_80px_rgba(23,33,38,0.07)]">
+        </div>
 
-          {/* CHAT HEADER */}
+        <div className="overflow-hidden rounded-[1.75rem] border border-black/10 bg-white shadow-[0_25px_70px_rgba(23,33,38,0.08)]">
 
-          <div className="flex items-center justify-between border-b border-black/[0.06] px-5 py-4 sm:px-7">
+          <div className="min-h-[500px] space-y-6 p-6 sm:p-8">
 
-            <div className="flex items-center gap-3">
-
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#172126] text-white">
-                <Bot className="h-5 w-5" />
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold">
-                  UniPath Assistant
-                </p>
-
-                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-gray-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Ready to help
-                </div>
-              </div>
-
-            </div>
-
-            <div className="hidden text-xs text-gray-400 sm:block">
-              Canadian university guidance
-            </div>
-
-          </div>
-
-
-          {/* MESSAGES */}
-
-          <div className="min-h-[460px] space-y-7 overflow-y-auto p-5 sm:p-8">
-
-            {messages.map((message) => (
+            {messages.map((message, index) => (
 
               <div
-                key={message.id}
+                key={index}
                 className={`flex gap-3 ${
                   message.role === "user"
                     ? "justify-end"
@@ -635,7 +654,7 @@ export default function AIAssistantPage() {
               >
 
                 {message.role === "assistant" && (
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#172126] text-white">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#172126] text-white">
                     <Bot className="h-4 w-4" />
                   </div>
                 )}
@@ -643,175 +662,86 @@ export default function AIAssistantPage() {
                 <div className="max-w-[85%]">
 
                   <div
-                    className={`rounded-2xl px-4 py-3.5 text-sm leading-7 ${
+                    className={`rounded-2xl px-5 py-4 text-sm leading-7 ${
                       message.role === "user"
-                        ? "rounded-br-md bg-[#172126] text-white"
-                        : "rounded-bl-md bg-[#f0f3f2] text-[#344247]"
+                        ? "bg-[#172126] text-white"
+                        : "bg-[#f1f4f4] text-gray-700"
                     }`}
                   >
-                    {message.text.split("\n").map((line, index) => (
-                      <span key={index}>
+                    {message.text.split("\n").map((line, i) => (
+                      <p key={i} className={i > 0 ? "mt-2" : ""}>
                         {line}
-                        {index <
-                          message.text.split("\n").length - 1 && (
-                          <br />
-                        )}
-                      </span>
+                      </p>
                     ))}
                   </div>
 
-
                   {message.role === "assistant" &&
-                    message.schools &&
-                    message.schools.length > 0 && (
+                    message.links &&
+                    message.links.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
 
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {message.links.map((link) => (
+                          <Link
+                            key={link.href + link.label}
+                            href={link.href}
+                            className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2 text-xs font-semibold text-[#172126] transition hover:bg-gray-50"
+                          >
+                            {link.label}
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        ))}
 
-                      {message.schools.map((school) => (
-
-                        <Link
-                          key={school.id}
-                          href={schoolLink(school)}
-                          className="group flex items-center justify-between rounded-xl border border-black/[0.07] bg-white p-4 transition hover:-translate-y-0.5 hover:border-black/15 hover:shadow-md"
-                        >
-
-                          <div className="flex min-w-0 items-center gap-3">
-
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#edf1f0] text-xs font-bold text-[#42545a]">
-                              {school.shortName.slice(0, 3)}
-                            </div>
-
-                            <div className="min-w-0">
-
-                              <p className="truncate text-sm font-semibold">
-                                {school.shortName}
-                              </p>
-
-                              <p className="mt-0.5 truncate text-xs text-gray-500">
-                                {school.city}, {school.province}
-                              </p>
-
-                            </div>
-
-                          </div>
-
-                          <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 transition group-hover:translate-x-1 group-hover:text-gray-700" />
-
-                        </Link>
-
-                      ))}
-
-                    </div>
-
-                  )}
-
-                {message.role === "user" && (
-                  <div className="mt-1 flex justify-end">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200">
-                      <User className="h-3.5 w-3.5 text-gray-600" />
-                    </div>
-                  </div>
-                )}
+                      </div>
+                    )}
 
                 </div>
+
+                {message.role === "user" && (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-200">
+                    <User className="h-4 w-4 text-gray-600" />
+                  </div>
+                )}
 
               </div>
 
             ))}
 
+            {isThinking && (
+              <div className="flex items-center gap-3">
 
-            {isTyping && (
-
-              <div className="flex gap-3">
-
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#172126] text-white">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#172126] text-white">
                   <Bot className="h-4 w-4" />
                 </div>
 
-                <div className="rounded-2xl rounded-bl-md bg-[#f0f3f2] px-5 py-4">
-
-                  <div className="flex gap-1.5">
-
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400" />
-
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:120ms]" />
-
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:240ms]" />
-
-                  </div>
-
+                <div className="rounded-2xl bg-[#f1f4f4] px-5 py-4 text-sm text-gray-500">
+                  Thinking through that...
                 </div>
 
               </div>
-
             )}
 
           </div>
 
+          <div className="border-t border-black/5 bg-gray-50/70 p-4">
 
-          {/* SUGGESTIONS */}
-
-          <div className="border-t border-black/[0.06] bg-[#fafbfa] px-5 py-4 sm:px-7">
-
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
-              Try asking
-            </p>
-
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-
-              {suggestedQuestions.map((item) => {
-
-                const Icon = item.icon;
-
-                return (
-                  <button
-                    key={item.label}
-                    onClick={() =>
-                      sendMessage(item.question)
-                    }
-                    className="group flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white px-3 py-3 text-left text-xs font-medium text-gray-600 transition hover:border-black/15 hover:bg-gray-50"
-                  >
-
-                    <Icon className="h-4 w-4 shrink-0 text-gray-400 transition group-hover:text-[#172126]" />
-
-                    <span>{item.label}</span>
-
-                  </button>
-                );
-
-              })}
-
-            </div>
-
-          </div>
-
-
-          {/* INPUT */}
-
-          <div className="border-t border-black/[0.06] bg-white p-4 sm:p-5">
-
-            <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-[#fafbfa] px-3 py-2 transition focus-within:border-[#172126]/30 focus-within:bg-white focus-within:shadow-sm">
-
-              <Search className="ml-2 h-4 w-4 shrink-0 text-gray-400" />
+            <div className="flex items-center gap-3 rounded-xl border border-black/10 bg-white px-4 shadow-sm">
 
               <input
                 value={input}
-                onChange={(e) =>
-                  setInput(e.target.value)
-                }
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     sendMessage();
                   }
                 }}
-                placeholder="Ask about a university, program, admission, or deadline..."
-                className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm outline-none placeholder:text-gray-400"
+                placeholder="Ask me anything about your university options..."
+                className="min-w-0 flex-1 bg-transparent py-4 text-sm outline-none placeholder:text-gray-400"
               />
 
               <button
                 onClick={() => sendMessage()}
-                disabled={!input.trim() || isTyping}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#172126] text-white transition hover:bg-[#2a3b41] disabled:cursor-not-allowed disabled:opacity-30"
+                disabled={!input.trim() || isThinking}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#172126] text-white transition hover:bg-[#29383e] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -822,78 +752,37 @@ export default function AIAssistantPage() {
 
         </div>
 
+        <div className="mt-8 grid gap-3 sm:grid-cols-3">
 
-        {/* BELOW CHAT */}
-
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
-
-          <Link
-            href="/universities"
-            className="group rounded-2xl border border-black/[0.07] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-
-            <MapPin className="h-5 w-5 text-gray-400" />
-
-            <h3 className="mt-5 text-sm font-semibold">
-              Explore universities
-            </h3>
-
-            <p className="mt-2 text-xs leading-5 text-gray-500">
-              Browse Canadian schools and open individual profiles.
+          <div className="rounded-2xl border border-black/5 bg-white p-5">
+            <GraduationCap className="h-5 w-5 text-gray-500" />
+            <p className="mt-4 text-sm font-semibold">
+              Admissions
             </p>
-
-            <div className="mt-4 flex items-center gap-1 text-xs font-semibold">
-              Browse
-              <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
-            </div>
-
-          </Link>
-
-
-          <Link
-            href="/programs"
-            className="group rounded-2xl border border-black/[0.07] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-
-            <GraduationCap className="h-5 w-5 text-gray-400" />
-
-            <h3 className="mt-5 text-sm font-semibold">
-              Explore programs
-            </h3>
-
-            <p className="mt-2 text-xs leading-5 text-gray-500">
-              Find programs and understand your study options.
+            <p className="mt-1 text-xs leading-5 text-gray-500">
+              Understand requirements and competitiveness.
             </p>
+          </div>
 
-            <div className="mt-4 flex items-center gap-1 text-xs font-semibold">
-              Explore
-              <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
-            </div>
-
-          </Link>
-
-
-          <Link
-            href="/deadlines"
-            className="group rounded-2xl border border-black/[0.07] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-
-            <CalendarDays className="h-5 w-5 text-gray-400" />
-
-            <h3 className="mt-5 text-sm font-semibold">
-              Application deadlines
-            </h3>
-
-            <p className="mt-2 text-xs leading-5 text-gray-500">
-              Keep track of important application dates.
+          <div className="rounded-2xl border border-black/5 bg-white p-5">
+            <BookOpen className="h-5 w-5 text-gray-500" />
+            <p className="mt-4 text-sm font-semibold">
+              Programs
             </p>
+            <p className="mt-1 text-xs leading-5 text-gray-500">
+              Find programs that fit your interests.
+            </p>
+          </div>
 
-            <div className="mt-4 flex items-center gap-1 text-xs font-semibold">
-              View deadlines
-              <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
-            </div>
-
-          </Link>
+          <div className="rounded-2xl border border-black/5 bg-white p-5">
+            <CalendarDays className="h-5 w-5 text-gray-500" />
+            <p className="mt-4 text-sm font-semibold">
+              Planning
+            </p>
+            <p className="mt-1 text-xs leading-5 text-gray-500">
+              Organize applications and important dates.
+            </p>
+          </div>
 
         </div>
 
