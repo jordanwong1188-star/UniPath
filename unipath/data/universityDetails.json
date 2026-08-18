@@ -1,0 +1,49 @@
+{
+  "ubc": {
+    "description": "The University of British Columbia is a major public research university with campuses in Vancouver and the Okanagan.",
+    "knownFor": ["Business", "Engineering", "Computer Science", "Life Sciences", "Research"],
+    "admissionAverage": "Competitive; varies significantly by program",
+    "admissionRequirements": [
+      "BC high school graduation",
+      "English Studies 12 or equivalent",
+      "Program-specific Grade 11 and 12 courses",
+      "Some programs require additional personal profile or supplemental information"
+    ],
+    "deadline": "January 15 for most September-entry undergraduate programs",
+    "tuition": "Varies by program and course load",
+    "officialWebsite": "https://www.ubc.ca",
+    "admissionsWebsite": "https://you.ubc.ca/"
+  },
+
+  "sfu": {
+    "description": "Simon Fraser University is a public research university with campuses in Burnaby, Vancouver and Surrey.",
+    "knownFor": ["Business", "Computing Science", "Engineering", "Communication", "Health Sciences"],
+    "admissionAverage": "Competitive; varies by program and applicant pool",
+    "admissionRequirements": [
+      "High school graduation",
+      "English language requirement",
+      "Quantitative and analytical skills requirement",
+      "Program-specific prerequisites"
+    ],
+    "deadline": "Varies by intake and applicant type",
+    "tuition": "Varies by program and course load",
+    "officialWebsite": "https://www.sfu.ca",
+    "admissionsWebsite": "https://www.sfu.ca/students/admission/"
+  },
+
+  "uvic": {
+    "description": "The University of Victoria is a public research university located in Victoria, British Columbia.",
+    "knownFor": ["Business", "Engineering", "Computer Science", "Social Sciences", "Sciences"],
+    "admissionAverage": "Varies by program",
+    "admissionRequirements": [
+      "BC high school graduation",
+      "Program-specific Grade 11 and 12 requirements",
+      "English language requirement",
+      "Some programs require supplemental information"
+    ],
+    "deadline": "January 31 for most September-entry degree programs",
+    "tuition": "Varies by program and course load",
+    "officialWebsite": "https://www.uvic.ca",
+    "admissionsWebsite": "https://www.uvic.ca/undergraduate/admissions/"
+  }
+}

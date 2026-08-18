@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
@@ -51,16 +52,14 @@ const programs = [
   },
 ];
 
-export default function ProgramsPage() {
+function ProgramsContent() {
   const searchParams = useSearchParams();
   const school = searchParams.get("school");
 
   return (
     <main className="min-h-screen bg-[#f5f7f8] text-[#172126]">
-
       <header className="border-b border-black/5 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
-
           <Link href="/" className="text-2xl font-bold">
             UniPath
           </Link>
@@ -71,13 +70,10 @@ export default function ProgramsPage() {
           >
             Universities
           </Link>
-
         </div>
       </header>
 
-
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
-
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
           Find your field
         </p>
@@ -97,11 +93,8 @@ export default function ProgramsPage() {
           </div>
         )}
 
-
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
           {programs.map((program) => {
-
             const Icon = program.icon;
 
             return (
@@ -109,7 +102,6 @@ export default function ProgramsPage() {
                 key={program.name}
                 className="rounded-2xl border border-black/5 bg-white p-7 shadow-sm"
               >
-
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#edf1f1]">
                   <Icon className="h-5 w-5" />
                 </div>
@@ -133,15 +125,25 @@ export default function ProgramsPage() {
                   Find universities
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-
               </div>
             );
           })}
-
         </div>
-
       </section>
-
     </main>
+  );
+}
+
+export default function ProgramsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#f5f7f8] p-10 text-[#172126]">
+          Loading programs...
+        </main>
+      }
+    >
+      <ProgramsContent />
+    </Suspense>
   );
 }
