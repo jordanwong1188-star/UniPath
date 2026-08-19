@@ -13,14 +13,95 @@ const scholarships = [
 
 const reviewItems = ["I answered every part of the prompt", "I used a specific example", "I explained my personal contribution", "I showed impact with evidence", "I included reflection or growth", "My writing sounds like me", "I stayed within the word limit"];
 
+const ubcGeneralDegrees = [
+  ["ubc-applied-science", "Applied Science (Engineering) · Vancouver"],
+  ["ubc-applied-science-okanagan", "Applied Science (Engineering) · Okanagan"],
+  ["ubc-applied-biology", "Applied Biology · Vancouver"],
+  ["ubc-arts-vancouver", "Arts · Vancouver"],
+  ["ubc-arts-okanagan", "Arts · Okanagan"],
+  ["ubc-bie", "Bachelor of International Economics · Vancouver"],
+  ["ubc-commerce-okanagan", "Commerce · Okanagan"],
+  ["ubc-food-nutrition-health", "Food, Nutrition and Health · Vancouver"],
+  ["ubc-global-resource-systems", "Global Resource Systems · Vancouver"],
+  ["ubc-human-kinetics-okanagan", "Human Kinetics · Okanagan"],
+  ["ubc-indigenous-land-stewardship", "Indigenous Land Stewardship · Vancouver"],
+  ["ubc-kinesiology", "Kinesiology · Vancouver"],
+  ["ubc-natural-resources", "Natural Resources · Vancouver"],
+  ["ubc-nursing-okanagan", "Nursing · Okanagan"],
+  ["ubc-science-vancouver", "Science · Vancouver"],
+  ["ubc-science-okanagan", "Science · Okanagan"],
+  ["ubc-urban-forestry", "Urban Forestry · Vancouver"],
+  ["ubc-other-personal-profile", "Another UBC undergraduate degree requiring the Personal Profile"],
+] as const;
+
+const ubcGeneralProfiles = ubcGeneralDegrees.map(([id, program]) => ({
+  id,
+  university: "University of British Columbia",
+  program,
+  deadline: "Submit with the UBC application · confirm your Applicant Service Centre",
+  source: "https://you.ubc.ca/applying-ubc/how-to-apply/personal-profile/",
+  note: "High-school applicants to this degree complete UBC's general Personal Profile. The exact selection of prompts and character limits appears in the application.",
+  timerAccuracy: "UBC does not publish a timed writing requirement for the Personal Profile, so UniPath intentionally does not add a countdown.",
+  practice: {
+    written: { seconds: null, limit: null, questions: ["Official prompt focus: introduce who you are through how people close to you would describe you, including something you value about yourself.", "Official prompt focus: explain what matters to you and why.", "Official prompt focus: develop one or two of your most meaningful activities, including your role and what you learned.", "Official prompt focus: add relevant context about your academic choices, circumstances, or preparation for your intended area of study."] },
+    video: { prepSeconds: null, responseSeconds: null, questions: ["This UBC degree does not list a general video-interview component. Follow any additional instructions shown in your application."] },
+  },
+  components: [
+    { title: "Personal introduction", format: "Written · official UBC prompt family", help: "Show who you are through a specific detail, value, or experience instead of a list of adjectives." },
+    { title: "Activities and deeper reflection", format: "Up to five activities plus a deeper response", help: "Record responsibilities accurately, then explain your contribution and learning for the experiences that matter most." },
+    { title: "References and additional context", format: "Two referees plus optional academic context", help: "Choose eligible referees who can verify your experiences and use additional information only when it helps UBC understand your record or plans." },
+  ],
+}));
+
+const ubcSpecialRequirements = [
+  ["ubc-bdes", "Bachelor of Design · Vancouver", "Video interview, three-project creative test, and a 1–2 page résumé", "https://sala.ubc.ca/program/bachelor-of-design-in-architecture-landscape-architecture-and-urbanism/"],
+  ["ubc-music", "Bachelor of Music · Vancouver", "Supplemental application, references, and required audition", "https://music.ubc.ca/undergraduate/admissions/"],
+  ["ubc-fine-arts-okanagan", "Fine Arts · Okanagan", "Portfolio and additional materials", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-media-studies-okanagan", "Media Studies · Okanagan", "Portfolio and additional materials", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-media-studies-vancouver", "Media Studies · Vancouver", "Supplemental application", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-sustainability", "Sustainability · Okanagan", "Concentration form", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-computer-science-bcs", "Bachelor of Computer Science · Vancouver", "Supplemental application", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-dental-science", "Dental Science · Vancouver", "Supplemental application", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-education", "Bachelor of Education · Vancouver or Okanagan", "Supplemental application and additional materials", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-fine-arts-vancouver", "Fine Arts specializations · Vancouver", "Specialization-dependent supplemental materials", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-food-resource-economics", "Food and Resource Economics · Vancouver", "Letter of academic intent", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-midwifery", "Midwifery · Vancouver", "Supplemental application", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-nursing-vancouver", "Nursing · Vancouver", "Supplemental application and additional materials", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-pharmaceutical-sciences", "Pharmaceutical Sciences · Vancouver", "Application fee and prerecorded virtual interview", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-sciences-po", "Arts Dual Degree with Sciences Po", "Supplemental application", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-bmm", "Bachelor + Master of Management Dual Degree", "Supplemental application", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-social-work", "Bachelor of Social Work · Vancouver", "Supplemental application and additional materials", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+  ["ubc-pharmd", "Entry-to-Practice Doctor of Pharmacy", "Application fee and prerecorded interview", "https://you.ubc.ca/applying-ubc/how-to-apply/application/"],
+] as const;
+
+const ubcSpecialProfiles = ubcSpecialRequirements.map(([id, program, requirement, source]) => ({
+  id,
+  university: "University of British Columbia",
+  program,
+  deadline: "Confirm the program-specific deadline on the official page and in your applicant portal",
+  source,
+  note: `UBC lists the following additional requirement for this program: ${requirement}.`,
+  timerAccuracy: "No countdown is added unless UBC publishes a current, verified time limit for this exact component.",
+  practice: {
+    written: { seconds: null, limit: null, questions: ["Portal-only prompt: paste the current question or task from your official UBC supplemental application here before drafting.", "Preparation prompt: identify what the assessors ask you to submit, what evidence supports it, and how your response demonstrates fit without exaggeration."] },
+    video: { prepSeconds: null, responseSeconds: null, questions: ["Portal-only interview: use the current question displayed by UBC. UniPath will not claim an unverified practice question is official.", "Practice question: explain one experience that demonstrates your preparation for this field and reflect on what it taught you."] },
+  },
+  components: [
+    { title: "Required supplemental package", format: requirement, help: "Open the official source and your applicant portal together. Record every required component, upload rule, fee, and deadline before starting." },
+    { title: "Prompt-by-prompt workspace", format: "Current portal wording", help: "Paste each live prompt into the workspace and answer every part using specific, verifiable evidence." },
+    { title: "Submission audit", format: "Files, references, technology, and confirmation", help: "Check file types and sizes, confirm referees and technical setup where applicable, and save the submission confirmation." },
+  ],
+}));
+
 export const applicationProfiles = [
   {
     id: "ubc-sauder-bcom", university: "University of British Columbia", program: "Sauder Bachelor of Commerce", deadline: "Confirm in the UBC application", source: "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/program-admission",
+    communitySource: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/",
     note: "UBC Sauder assesses a Personal Profile containing short written responses and video interview components.",
-    timerAccuracy: "Practice settings only — confirm the current limits shown in your UBC application.",
+    timerAccuracy: "No countdown is shown because Sauder's current official page does not publish a reliable universal timer for this cycle. Follow the instructions inside your application.",
     practice: {
-      written: { seconds: 900, limit: null, questions: ["Describe an experience that mattered to you. What did you contribute, and what did you learn?", "Tell us about a time you made a positive difference in a group or community."] },
-      video: { prepSeconds: 60, responseSeconds: 90, questions: ["Tell us about a time you worked with people whose perspectives differed from yours.", "Describe a decision you made under pressure and what you learned from it."] },
+      written: { seconds: null, limit: null, questions: ["Official Commerce prompt focus: explain your response to a problem or unfamiliar situation, including the outcome and learning.", "Official Commerce prompt focus: explain your positive community impact and how a Sauder education could strengthen that work.", "Official UBC prompt focus: develop one or two meaningful activities by explaining your role and learning."] },
+      video: { prepSeconds: null, responseSeconds: null, questions: ["Applicant-reported past question: Describe a time you helped someone in need. How did you make an impact?", "Applicant-reported past question: What could you talk about for hours?", "Applicant-reported past question: Describe a time you misunderstood a task. What did you do next?", "Official question type: respond to a fictional creative challenge and explain your approach."] },
     },
     components: [
       { title: "Personal Profile responses", format: "Written · prompts and limits appear in the UBC application", help: "Build specific stories showing your role, decisions, impact, and reflection. Paste each current UBC prompt into the workspace before drafting." },
@@ -28,6 +109,8 @@ export const applicationProfiles = [
       { title: "Video interview preparation", format: "Recorded responses", help: "Practice concise spoken answers using context, action, outcome, and reflection. Use bullet points rather than memorizing a script." },
     ],
   },
+  ...ubcGeneralProfiles,
+  ...ubcSpecialProfiles,
   {
     id: "queens-commerce", university: "Queen's University", program: "Smith Bachelor of Commerce", deadline: "February 15, 2027", source: "https://smith.queensu.ca/bcom/program-details/supplementary-application.php",
     note: "Queen's Commerce uses Kira Talent. Questions are randomly assigned and are not released in advance.",
@@ -96,13 +179,15 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const selectedApplication = applicationProfiles.find(item => item.id === applicationId) ?? applicationProfiles[0];
   const practice = selectedApplication.practice[practiceMode];
   const questions = practice.questions;
+  const configuredSeconds = practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds;
+  const hasTimer = configuredSeconds !== null;
 
   useEffect(() => {
     setTimerRunning(false);
     setQuestionIndex(0);
     const firstPhase = practiceMode === "video" ? "prep" : "response";
     setTimerPhase(firstPhase);
-    setSecondsLeft(practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds);
+    setSecondsLeft((practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds) ?? 0);
   }, [applicationId, practiceMode, selectedApplication]);
 
   useEffect(() => {
@@ -111,7 +196,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
       if (current > 1) return current - 1;
       if (practiceMode === "video" && timerPhase === "prep") {
         setTimerPhase("response");
-        return selectedApplication.practice.video.responseSeconds;
+        return selectedApplication.practice.video.responseSeconds ?? 0;
       }
       setTimerRunning(false);
       return 0;
@@ -123,7 +208,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
     setTimerRunning(false);
     const firstPhase = practiceMode === "video" ? "prep" : "response";
     setTimerPhase(firstPhase);
-    setSecondsLeft(practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds);
+    setSecondsLeft((practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds) ?? 0);
   };
 
   const timerText = `${Math.floor(secondsLeft / 60).toString().padStart(2, "0")}:${(secondsLeft % 60).toString().padStart(2, "0")}`;
@@ -176,6 +261,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
                 <p className="mt-1 font-semibold text-[#ffd48a]">{selectedApplication.deadline}</p>
                 <p className="mt-3 text-sm leading-6 text-white/65">{selectedApplication.note}</p>
                 <a href={selectedApplication.source} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white underline decoration-white/30 underline-offset-4 hover:decoration-white">View official requirements <ExternalLink className="h-4 w-4" /></a>
+                {"communitySource" in selectedApplication ? <a href={selectedApplication.communitySource} target="_blank" rel="noreferrer" className="mt-3 flex items-center gap-2 text-xs font-semibold text-white/60 underline decoration-white/20 underline-offset-4">View applicant-reported question source <ExternalLink className="h-3.5 w-3.5" /></a> : null}
               </div>
             </div>
             <div>
@@ -189,7 +275,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
 
         <section className="mt-6 rounded-3xl border border-[#692f46]/10 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8c4964]">Timed practice room</p><h2 className="mt-3 text-3xl font-semibold tracking-tight">Rehearse under realistic pressure</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">These are original practice questions based on the published assessment criteria. They are not actual, leaked, or predicted application questions.</p></div>
+            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8c4964]">Application practice room</p><h2 className="mt-3 text-3xl font-semibold tracking-tight">Practice the real format</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Prompts are labelled by evidence: official prompt focus, official question type, applicant-reported past question, or original practice question. Past questions are not guaranteed to repeat.</p></div>
             <div className="grid grid-cols-2 rounded-xl bg-[#f1e6d2] p-1">
               {(["written", "video"] as const).map(item => <button type="button" key={item} onClick={() => setPracticeMode(item)} className={`cursor-pointer rounded-lg px-5 py-2.5 text-sm font-semibold capitalize ${practiceMode === item ? "bg-white text-[#692f46] shadow-sm" : "text-gray-500"}`}>{item}</button>)}
             </div>
@@ -204,10 +290,12 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
             </div>
 
             <aside className="rounded-2xl bg-[#172126] p-6 text-white">
+              {hasTimer ? <>
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/45"><Clock3 className="h-4 w-4" /> {practiceMode === "video" ? timerPhase : "Writing time"}</div>
               <p aria-live="polite" className={`mt-5 font-mono text-6xl font-semibold tracking-tight ${secondsLeft === 0 ? "text-red-300" : "text-[#ffd48a]"}`}>{timerText}</p>
               {practiceMode === "video" && <p className="mt-3 text-sm text-white/55">The timer automatically moves from preparation to the recorded-response phase.</p>}
               <div className="mt-6 grid grid-cols-2 gap-2"><button type="button" onClick={() => secondsLeft > 0 && setTimerRunning(current => !current)} className="cursor-pointer rounded-xl bg-[#ffd48a] px-4 py-3 text-sm font-semibold text-[#172126]">{timerRunning ? "Pause" : secondsLeft === 0 ? "Finished" : "Start"}</button><button type="button" onClick={resetTimer} className="cursor-pointer rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold hover:bg-white/15">Reset</button></div>
+              </> : <div className="rounded-xl bg-white/8 p-5"><Clock3 className="h-6 w-6 text-[#ffd48a]" /><p className="mt-4 text-xl font-semibold">No timer added</p><p className="mt-2 text-sm leading-6 text-white/60">This application does not publish a verified countdown for this component. Practice thoughtfully, then follow the live portal instructions.</p></div>}
               <div className="mt-6 border-t border-white/10 pt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Accuracy note</p><p className="mt-2 text-sm leading-6 text-white/65">{selectedApplication.timerAccuracy}</p></div>
             </aside>
           </div>
