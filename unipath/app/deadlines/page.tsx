@@ -167,6 +167,9 @@ const allDeadlines: Deadline[] = [
 ];
 
 const categories = ["All", "Application", "Scholarship", "Documents", "To confirm"] as const;
+const provinces = Array.from(
+  new Set(schools.map((school) => school.province))
+).sort();
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -266,7 +269,12 @@ export default function DeadlinesPage() {
             </div>
             <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Province</label>
             <div className="relative mt-2">
-              <select value={province} onChange={(event) => setProvince(event.target.value)} className="w-full appearance-none rounded-xl border border-black/10 bg-[#f7f8f8] px-3 py-3 pr-9 text-sm outline-none"><option>All</option><option>British Columbia</option><option>Ontario</option></select>
+              <select value={province} onChange={(event) => setProvince(event.target.value)} className="w-full appearance-none rounded-xl border border-black/10 bg-[#f7f8f8] px-3 py-3 pr-9 text-sm outline-none">
+                <option value="All">All provinces</option>
+                {provinces.map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
+              </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-gray-400" />
             </div>
           </aside>
