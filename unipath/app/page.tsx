@@ -129,7 +129,14 @@ export default function Home() {
             </Link>
 
             <Link
-              href="/application-hub"
+              href="/scholarships"
+              className="text-sm font-medium text-gray-700 transition hover:text-black"
+            >
+              Scholarships
+            </Link>
+
+            <Link
+              href="/applications"
               className="text-sm font-medium text-gray-700 transition hover:text-black"
             >
               Applications
