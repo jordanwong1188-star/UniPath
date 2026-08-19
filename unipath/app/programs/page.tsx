@@ -5,7 +5,6 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
-  BookOpen,
   ChevronDown,
   Clock,
   Compass,
@@ -43,9 +42,17 @@ function getProgramField(program: (typeof programDetails)[number]) {
 function ProgramsContent() {
   const searchParams = useSearchParams();
   const schoolFilter = searchParams.get("school")?.trim().toLowerCase() ?? "";
+  const schoolFromUrl = schoolFilter
+    ? schools.find(
+        (school) =>
+          school.id.toLowerCase() === schoolFilter ||
+          school.name.toLowerCase().includes(schoolFilter) ||
+          school.shortName.toLowerCase().includes(schoolFilter)
+      )
+    : undefined;
   const [query, setQuery] = useState("");
   const [province, setProvince] = useState("All");
-  const [institution, setInstitution] = useState("All");
+  const [institution, setInstitution] = useState(schoolFromUrl?.id ?? "All");
   const [entryType, setEntryType] = useState<(typeof entryTypes)[number]>("All");
   const [field, setField] = useState<(typeof fields)[number]>("All fields");
   const [sortBy, setSortBy] = useState("program");
@@ -69,12 +76,6 @@ function ProgramsContent() {
       const school = schools.find((item) => item.id === program.universityId);
       if (!school) return false;
 
-      const matchesSchoolFilter =
-        !schoolFilter ||
-        school.id.toLowerCase() === schoolFilter ||
-        school.name.toLowerCase().includes(schoolFilter) ||
-        school.shortName.toLowerCase().includes(schoolFilter);
-
       const matchesProvince =
         province === "All" || school.province === province;
       const matchesInstitution =
@@ -97,7 +98,7 @@ function ProgramsContent() {
       const matchesQuery =
         !normalizedQuery || haystack.includes(normalizedQuery);
 
-      return matchesSchoolFilter && matchesProvince && matchesInstitution && matchesEntryType && matchesField && matchesQuery;
+      return matchesProvince && matchesInstitution && matchesEntryType && matchesField && matchesQuery;
     }).sort((a, b) => {
       const schoolA = schools.find((school) => school.id === a.universityId)?.name ?? "";
       const schoolB = schools.find((school) => school.id === b.universityId)?.name ?? "";
@@ -105,16 +106,9 @@ function ProgramsContent() {
         ? schoolA.localeCompare(schoolB) || a.name.localeCompare(b.name)
         : a.name.localeCompare(b.name) || schoolA.localeCompare(schoolB);
     });
-  }, [entryType, field, institution, province, query, schoolFilter, sortBy]);
+  }, [entryType, field, institution, province, query, sortBy]);
 
-  const selectedSchool = schoolFilter
-    ? schools.find(
-        (school) =>
-          school.id.toLowerCase() === schoolFilter ||
-          school.name.toLowerCase().includes(schoolFilter) ||
-          school.shortName.toLowerCase().includes(schoolFilter)
-      )
-    : undefined;
+  const selectedSchool = schoolFromUrl;
 
   const hasActiveFilters =
     query !== "" || province !== "All" || institution !== "All" || entryType !== "All" || field !== "All fields";
@@ -145,8 +139,8 @@ function ProgramsContent() {
       </header>
 
       <section className="relative overflow-hidden bg-[#172126] text-white">
-        <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[#c8f169]/15 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-56 w-56 rounded-full bg-[#6cc5b4]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[#c8f169]/15 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-56 w-56 rounded-full bg-[#6cc5b4]/10 blur-3xl" />
         <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1fr_360px] lg:px-10 lg:py-24">
           <div className="max-w-4xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#c8f169]">
@@ -198,7 +192,7 @@ function ProgramsContent() {
               <h2 className="text-sm font-semibold">Filter programs</h2>
               </div>
               {hasActiveFilters && (
-                <button onClick={clearFilters} className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-[#172126]">
+                <button type="button" onClick={clearFilters} className="flex cursor-pointer items-center gap-1 text-xs font-semibold text-gray-500 hover:text-[#172126]">
                   <X className="h-3.5 w-3.5" /> Clear
                 </button>
               )}
@@ -221,7 +215,7 @@ function ProgramsContent() {
             <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Field of study</label>
             <div className="mt-2 space-y-1">
               {fields.map((item) => (
-                <button key={item} onClick={() => setField(item)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${field === item ? "bg-[#172126] font-semibold text-white" : "text-[#344247] hover:bg-white/60"}`}>
+                <button type="button" key={item} aria-pressed={field === item} onClick={() => setField(item)} className={`relative z-10 flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${field === item ? "bg-[#172126] font-semibold text-white" : "text-[#344247] hover:bg-white/60"}`}>
                   <span>{item}</span>{field === item && <span className="h-2 w-2 rounded-full bg-[#c8f169]" />}
                 </button>
               ))}
@@ -234,7 +228,7 @@ function ProgramsContent() {
               <select
                 value={province}
                 onChange={(event) => { setProvince(event.target.value); setInstitution("All"); }}
-                className="w-full appearance-none rounded-xl border border-[#172126]/10 bg-white/70 px-3 py-3 pr-9 text-sm outline-none"
+                className="relative z-10 w-full cursor-pointer appearance-none rounded-xl border border-[#172126]/10 bg-white/70 px-3 py-3 pr-9 text-sm outline-none"
               >
                 <option value="All">All provinces</option>
                 {provinces.map((item) => <option key={item} value={item}>{item}</option>)}
@@ -244,16 +238,16 @@ function ProgramsContent() {
 
             <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">School</label>
             <div className="relative mt-2">
-              <select value={institution} onChange={(event) => setInstitution(event.target.value)} className="w-full appearance-none rounded-xl border border-[#172126]/10 bg-white/70 px-3 py-3 pr-9 text-sm outline-none disabled:opacity-60" disabled={Boolean(selectedSchool)}>
-                <option value="All">{selectedSchool ? selectedSchool.shortName : "All schools"}</option>
-                {!selectedSchool && availableSchools.map((school) => <option key={school.id} value={school.id}>{school.name}</option>)}
+              <select value={institution} onChange={(event) => setInstitution(event.target.value)} className="relative z-10 w-full cursor-pointer appearance-none rounded-xl border border-[#172126]/10 bg-white/70 px-3 py-3 pr-9 text-sm outline-none">
+                <option value="All">{selectedSchool ? `${selectedSchool.shortName} (current)` : "All schools"}</option>
+                {availableSchools.map((school) => <option key={school.id} value={school.id}>{school.name}</option>)}
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-gray-400" />
             </div>
 
             <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Entry pathway</label>
             <div className="relative mt-2">
-              <select value={entryType} onChange={(event) => setEntryType(event.target.value as (typeof entryTypes)[number])} className="w-full appearance-none rounded-xl border border-[#172126]/10 bg-white/70 px-3 py-3 pr-9 text-sm outline-none">
+              <select value={entryType} onChange={(event) => setEntryType(event.target.value as (typeof entryTypes)[number])} className="relative z-10 w-full cursor-pointer appearance-none rounded-xl border border-[#172126]/10 bg-white/70 px-3 py-3 pr-9 text-sm outline-none">
                 {entryTypes.map((item) => <option key={item} value={item}>{item === "All" ? "All pathways" : item}</option>)}
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-gray-400" />
@@ -275,7 +269,7 @@ function ProgramsContent() {
                 <h2 className="mt-1 text-2xl font-semibold">Programs and study areas</h2>
               </div>
               <div className="relative">
-                <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} aria-label="Sort programs" className="appearance-none rounded-xl border border-black/10 bg-white py-2.5 pl-3 pr-9 text-sm font-medium outline-none">
+                <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} aria-label="Sort programs" className="cursor-pointer appearance-none rounded-xl border border-black/10 bg-white py-2.5 pl-3 pr-9 text-sm font-medium outline-none">
                   <option value="program">Program A–Z</option>
                   <option value="school">School A–Z</option>
                 </select>
@@ -301,7 +295,7 @@ function ProgramsContent() {
                     <Link
                       key={`${program.universityId}-${program.id}`}
                       href={`/unis/${program.universityId}/programs/${program.id}`}
-                      className="group relative grid overflow-hidden rounded-2xl border border-black/7 bg-white shadow-sm transition hover:border-[#172126]/20 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#172126] sm:grid-cols-[64px_1fr] lg:grid-cols-[64px_minmax(0,1fr)_230px_44px]"
+                      className="group relative z-0 grid cursor-pointer overflow-hidden rounded-2xl border border-black/7 bg-white shadow-sm transition hover:border-[#172126]/20 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#172126] sm:grid-cols-[64px_1fr] lg:grid-cols-[64px_minmax(0,1fr)_230px_44px]"
                     >
                       <div className="flex items-start justify-center bg-[#172126] px-3 py-6 text-sm font-semibold text-[#c8f169] sm:items-center">
                         {String(index + 1).padStart(2, "0")}
