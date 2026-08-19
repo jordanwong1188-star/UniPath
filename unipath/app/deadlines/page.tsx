@@ -332,26 +332,31 @@ export default function DeadlinesPage() {
 
       <section className="mx-auto max-w-7xl px-6 py-10 lg:px-10 lg:py-12">
         <div className="grid gap-8 lg:grid-cols-[270px_1fr]">
-          <aside className="h-fit rounded-2xl border border-black/5 bg-white p-5 shadow-sm lg:sticky lg:top-28">
-            <div className="flex items-center gap-2"><SlidersHorizontal className="h-4 w-4" /><h2 className="text-sm font-semibold">Filter deadlines</h2></div>
-            <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Search</label>
-            <div className="mt-2 flex items-center gap-2 rounded-xl border border-black/10 bg-[#f7f8f8] px-3">
-              <Search className="h-4 w-4 text-gray-400" />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="School or deadline..." className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-gray-400" />
+          <aside className="flex h-fit max-h-[70vh] flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)]">
+            <div className="flex shrink-0 items-center gap-2 border-b border-black/5 bg-white px-5 py-4">
+              <SlidersHorizontal className="h-4 w-4" />
+              <h2 className="text-sm font-semibold">Filter deadlines</h2>
             </div>
-            <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Type</label>
-            <div className="mt-2 space-y-1">
-              {categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm ${category === item ? "bg-[#172126] font-semibold text-white" : "text-gray-600 hover:bg-[#f5f7f8]"}`}><span>{item}</span>{category === item && <Check className="h-4 w-4" />}</button>)}
-            </div>
-            <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Province</label>
-            <div className="relative mt-2">
-              <select value={province} onChange={(event) => setProvince(event.target.value)} className="w-full appearance-none rounded-xl border border-black/10 bg-[#f7f8f8] px-3 py-3 pr-9 text-sm outline-none">
-                <option value="All">All provinces</option>
-                {provinces.map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-gray-400" />
+            <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-5 [scrollbar-gutter:stable]">
+              <label className="mt-5 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Search</label>
+              <div className="mt-2 flex items-center gap-2 rounded-xl border border-black/10 bg-[#f7f8f8] px-3">
+                <Search className="h-4 w-4 text-gray-400" />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="School or deadline..." className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-gray-400" />
+              </div>
+              <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Type</label>
+              <div className="mt-2 space-y-1">
+                {categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm ${category === item ? "bg-[#172126] font-semibold text-white" : "text-gray-600 hover:bg-[#f5f7f8]"}`}><span>{item}</span>{category === item && <Check className="h-4 w-4" />}</button>)}
+              </div>
+              <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Province</label>
+              <div className="relative mt-2">
+                <select value={province} onChange={(event) => setProvince(event.target.value)} className="w-full appearance-none rounded-xl border border-black/10 bg-[#f7f8f8] px-3 py-3 pr-9 text-sm outline-none">
+                  <option value="All">All provinces</option>
+                  {provinces.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-gray-400" />
+              </div>
             </div>
           </aside>
 
