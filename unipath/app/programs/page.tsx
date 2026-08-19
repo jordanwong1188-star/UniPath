@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
   ChevronDown,
@@ -39,20 +38,10 @@ function getProgramField(program: (typeof programDetails)[number]) {
   return "Arts & humanities";
 }
 
-function ProgramsContent() {
-  const searchParams = useSearchParams();
-  const schoolFilter = searchParams.get("school")?.trim().toLowerCase() ?? "";
-  const schoolFromUrl = schoolFilter
-    ? schools.find(
-        (school) =>
-          school.id.toLowerCase() === schoolFilter ||
-          school.name.toLowerCase().includes(schoolFilter) ||
-          school.shortName.toLowerCase().includes(schoolFilter)
-      )
-    : undefined;
+export default function ProgramsPage() {
   const [query, setQuery] = useState("");
   const [province, setProvince] = useState("All");
-  const [institution, setInstitution] = useState(schoolFromUrl?.id ?? "All");
+  const [institution, setInstitution] = useState("All");
   const [entryType, setEntryType] = useState<(typeof entryTypes)[number]>("All");
   const [field, setField] = useState<(typeof fields)[number]>("All fields");
   const [sortBy, setSortBy] = useState("program");
@@ -107,8 +96,6 @@ function ProgramsContent() {
         : a.name.localeCompare(b.name) || schoolA.localeCompare(schoolB);
     });
   }, [entryType, field, institution, province, query, sortBy]);
-
-  const selectedSchool = schoolFromUrl;
 
   const hasActiveFilters =
     query !== "" || province !== "All" || institution !== "All" || entryType !== "All" || field !== "All fields";
@@ -165,25 +152,6 @@ function ProgramsContent() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        {selectedSchool && (
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/5 bg-[#edf1f1] px-5 py-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">
-                School filter
-              </p>
-              <p className="mt-1 text-sm font-semibold">
-                {selectedSchool.name}
-              </p>
-            </div>
-            <Link
-              href="/programs"
-              className="text-sm font-semibold underline-offset-4 hover:underline"
-            >
-              Clear school filter
-            </Link>
-          </div>
-        )}
-
         <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
           <aside className="flex h-fit max-h-[75vh] flex-col overflow-hidden rounded-[1.5rem] border border-[#172126]/10 bg-[#dfe9e5] shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)]">
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#172126]/10 bg-[#dfe9e5] px-5 py-4">
@@ -239,7 +207,7 @@ function ProgramsContent() {
             <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">School</label>
             <div className="relative mt-2">
               <select value={institution} onChange={(event) => setInstitution(event.target.value)} className="relative z-10 w-full cursor-pointer appearance-none rounded-xl border border-[#172126]/10 bg-white/70 px-3 py-3 pr-9 text-sm outline-none">
-                <option value="All">{selectedSchool ? `${selectedSchool.shortName} (current)` : "All schools"}</option>
+                <option value="All">All schools</option>
                 {availableSchools.map((school) => <option key={school.id} value={school.id}>{school.name}</option>)}
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-gray-400" />
@@ -333,19 +301,5 @@ function ProgramsContent() {
         </div>
       </section>
     </main>
-  );
-}
-
-export default function ProgramsPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-[#f5f7f8] p-10 text-[#172126]">
-          Loading program finder...
-        </main>
-      }
-    >
-      <ProgramsContent />
-    </Suspense>
   );
 }
