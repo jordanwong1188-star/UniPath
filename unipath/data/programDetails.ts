@@ -1,4 +1,5 @@
 import { britishColumbiaPrograms } from "./programs/britishColumbia";
+import { getMissingProgramSchoolIds } from "./programs/coverage";
 import { ontarioPrograms } from "./programs/ontario";
 import { prairiePrograms } from "./programs/prairies";
 import { quebecAtlanticPrograms } from "./programs/quebecAtlantic";
@@ -26,6 +27,15 @@ export const programDetails: ProgramDetail[] = [
   ...program,
   officialUrl: verifiedOfficialUrls[program.id] ?? program.officialUrl,
 }));
+
+export const missingProgramSchoolIds =
+  getMissingProgramSchoolIds(programDetails);
+
+if (missingProgramSchoolIds.length > 0) {
+  throw new Error(
+    `Program data is missing for: ${missingProgramSchoolIds.join(", ")}`
+  );
+}
 
 export function getProgramsForUniversity(
   universityId: string
