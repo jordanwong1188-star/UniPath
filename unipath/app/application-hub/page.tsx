@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowRight, Award, Check, CheckCircle2, Copy, ExternalLink, FilePenLine, Search, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, Award, Check, CheckCircle2, Clock3, Copy, ExternalLink, FilePenLine, RefreshCw, Search, Sparkles } from "lucide-react";
 
 const scholarships = [
   { name: "Loran Award", value: "Major renewable award", focus: "Character, service & leadership", eligibility: "Canadian citizens or permanent residents entering university", deadline: "October 15, 2026 · noon ET", url: "https://loranscholar.ca/the-program/how-to-apply/", tag: "Leadership" },
@@ -17,6 +17,11 @@ const applicationProfiles = [
   {
     id: "ubc-sauder-bcom", university: "University of British Columbia", program: "Sauder Bachelor of Commerce", deadline: "Confirm in the UBC application", source: "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/program-admission",
     note: "UBC Sauder assesses a Personal Profile containing short written responses and video interview components.",
+    timerAccuracy: "Practice settings only — confirm the current limits shown in your UBC application.",
+    practice: {
+      written: { seconds: 900, limit: null, questions: ["Describe an experience that mattered to you. What did you contribute, and what did you learn?", "Tell us about a time you made a positive difference in a group or community."] },
+      video: { prepSeconds: 60, responseSeconds: 90, questions: ["Tell us about a time you worked with people whose perspectives differed from yours.", "Describe a decision you made under pressure and what you learned from it."] },
+    },
     components: [
       { title: "Personal Profile responses", format: "Written · prompts and limits appear in the UBC application", help: "Build specific stories showing your role, decisions, impact, and reflection. Paste each current UBC prompt into the workspace before drafting." },
       { title: "Activity and achievement details", format: "Structured application information", help: "Prepare accurate dates, roles, time commitments, responsibilities, and verifiable impact for your strongest experiences." },
@@ -26,6 +31,11 @@ const applicationProfiles = [
   {
     id: "queens-commerce", university: "Queen's University", program: "Smith Bachelor of Commerce", deadline: "February 15, 2027", source: "https://smith.queensu.ca/bcom/program-details/supplementary-application.php",
     note: "Queen's Commerce uses Kira Talent. Questions are randomly assigned and are not released in advance.",
+    timerAccuracy: "Matches Queen's published format: 10-minute written response (335-word maximum), then 2-minute preparation and 2-minute video response.",
+    practice: {
+      written: { seconds: 600, limit: 335, questions: ["Describe a significant challenge you faced. How did you respond, and how has the experience shaped what you do now?", "Tell us about a difficult obstacle that required you to adapt. What actions did you take and what did you learn?"] },
+      video: { prepSeconds: 120, responseSeconds: 120, questions: ["Describe a time a team faced a setback. How did you respond to others and what was the outcome?", "Tell us about a time you had to reconsider your approach after hearing a different perspective."] },
+    },
     components: [
       { title: "Timed written response", format: "10 minutes to write and submit", help: "Practice quickly choosing one relevant example, answering the question directly, explaining your decisions, and ending with meaningful learning." },
       { title: "Timed video response", format: "2 minutes preparation · 2 minutes recording", help: "Practice speaking naturally under time pressure. Show initiative, adaptability, respect for others, ownership, impact, and reflection." },
@@ -35,6 +45,11 @@ const applicationProfiles = [
   {
     id: "rotman-commerce", university: "University of Toronto", program: "Rotman Commerce", deadline: "Confirm in Join U of T", source: "https://rotmancommerce.utoronto.ca/future-students/our-supplemental-application/",
     note: "Rotman Commerce provides its current written and video instructions through the Join U of T portal and Kira Talent.",
+    timerAccuracy: "Practice settings only — use the instructions in Join U of T for the current official timing.",
+    practice: {
+      written: { seconds: 900, limit: null, questions: ["Describe an issue in business or society that interests you and explain why.", "Tell us about an experience that changed how you approach teamwork or leadership."] },
+      video: { prepSeconds: 60, responseSeconds: 90, questions: ["Describe a time you used evidence to make a difficult decision.", "Tell us about a setback and how it changed your next action."] },
+    },
     components: [
       { title: "Written response preparation", format: "Kira Talent · current format shown in applicant portal", help: "Paste the live prompt from your portal, identify every part of it, and prepare a direct response supported by one detailed example." },
       { title: "Video response preparation", format: "Recorded interview component", help: "Create a flexible bank of examples covering teamwork, leadership, setbacks, decision-making, and interest in business." },
@@ -44,6 +59,11 @@ const applicationProfiles = [
   {
     id: "schulich-bba", university: "York University", program: "Schulich BBA", deadline: "February 1, 2027 · 11:59 p.m. ET", source: "https://schulich.yorku.ca/admissions/suppapp/",
     note: "Schulich requires a Leadership Profile before applicants continue to the timed writing and video components.",
+    timerAccuracy: "Practice settings only — confirm the current timed-component instructions in your Kira invitation.",
+    practice: {
+      written: { seconds: 600, limit: null, questions: ["Describe an initiative you took that created a meaningful result for others.", "Tell us about a challenge that tested your resourcefulness and how you handled it."] },
+      video: { prepSeconds: 60, responseSeconds: 90, questions: ["Which of your leadership experiences best demonstrates personal growth, and why?", "Tell us about a time collaboration changed the result of a project."] },
+    },
     components: [
       { title: "Leadership Profile", format: "3–5 experiences · references required", help: "Record each experience, your role, organization, dates, responsibilities, impact, growth, and a reference who can verify it." },
       { title: "Timed writing exercise", format: "Kira Talent", help: "Practice answering directly with a clear example that demonstrates initiative, collaboration, integrity, resilience, or resourcefulness." },
@@ -61,6 +81,11 @@ export function ApplicationHub({ mode }: { mode: "scholarships" | "applications"
   const [checked, setChecked] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [applicationId, setApplicationId] = useState(applicationProfiles[0].id as string);
+  const [practiceMode, setPracticeMode] = useState<"written" | "video">("written");
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [timerPhase, setTimerPhase] = useState<"prep" | "response">("response");
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
 
   const results = useMemo(() => scholarships.filter((item) => {
     const text = `${item.name} ${item.focus} ${item.eligibility} ${item.tag}`.toLowerCase();
@@ -69,6 +94,39 @@ export function ApplicationHub({ mode }: { mode: "scholarships" | "applications"
 
   const wordCount = draft.trim() ? draft.trim().split(/\s+/).length : 0;
   const selectedApplication = applicationProfiles.find(item => item.id === applicationId) ?? applicationProfiles[0];
+  const practice = selectedApplication.practice[practiceMode];
+  const questions = practice.questions;
+
+  useEffect(() => {
+    setTimerRunning(false);
+    setQuestionIndex(0);
+    const firstPhase = practiceMode === "video" ? "prep" : "response";
+    setTimerPhase(firstPhase);
+    setSecondsLeft(practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds);
+  }, [applicationId, practiceMode, selectedApplication]);
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const timer = window.setInterval(() => setSecondsLeft(current => {
+      if (current > 1) return current - 1;
+      if (practiceMode === "video" && timerPhase === "prep") {
+        setTimerPhase("response");
+        return selectedApplication.practice.video.responseSeconds;
+      }
+      setTimerRunning(false);
+      return 0;
+    }), 1000);
+    return () => window.clearInterval(timer);
+  }, [practiceMode, selectedApplication, timerPhase, timerRunning]);
+
+  const resetTimer = () => {
+    setTimerRunning(false);
+    const firstPhase = practiceMode === "video" ? "prep" : "response";
+    setTimerPhase(firstPhase);
+    setSecondsLeft(practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds);
+  };
+
+  const timerText = `${Math.floor(secondsLeft / 60).toString().padStart(2, "0")}:${(secondsLeft % 60).toString().padStart(2, "0")}`;
 
   return <main className="min-h-screen bg-[#f4f1ea] text-[#172126]">
     <header className="border-b border-black/5 bg-white">
@@ -128,6 +186,32 @@ export function ApplicationHub({ mode }: { mode: "scholarships" | "applications"
                 <div className="flex items-start gap-4"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f1e6d2] text-sm font-bold text-[#692f46]">{index + 1}</span><div><h3 className="font-semibold">{component.title}</h3><p className="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-[#8c4964]">{component.format}</p><p className="mt-3 text-sm leading-6 text-gray-600">{component.help}</p></div></div>
               </article>)}</div>
             </div>
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-3xl border border-[#692f46]/10 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8c4964]">Timed practice room</p><h2 className="mt-3 text-3xl font-semibold tracking-tight">Rehearse under realistic pressure</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">These are original practice questions based on the published assessment criteria. They are not actual, leaked, or predicted application questions.</p></div>
+            <div className="grid grid-cols-2 rounded-xl bg-[#f1e6d2] p-1">
+              {(["written", "video"] as const).map(item => <button type="button" key={item} onClick={() => setPracticeMode(item)} className={`cursor-pointer rounded-lg px-5 py-2.5 text-sm font-semibold capitalize ${practiceMode === item ? "bg-white text-[#692f46] shadow-sm" : "text-gray-500"}`}>{item}</button>)}
+            </div>
+          </div>
+
+          <div className="mt-7 grid gap-5 lg:grid-cols-[1fr_310px]">
+            <div className="rounded-2xl bg-[#f7f4ee] p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-[#692f46] px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-white">Practice question {questionIndex + 1}</span><button type="button" onClick={() => { setQuestionIndex(current => (current + 1) % questions.length); resetTimer(); }} className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#692f46]"><RefreshCw className="h-4 w-4" /> New question</button></div>
+              <p className="mt-6 text-xl font-semibold leading-8">{questions[questionIndex]}</p>
+              {practiceMode === "written" ? <textarea value={draft} onChange={e => setDraft(e.target.value)} placeholder="Start writing when you start the timer..." className="mt-6 min-h-64 w-full resize-y rounded-xl border border-black/10 bg-white p-5 leading-7 outline-none focus:border-[#8c4964]" /> : <div className="mt-6 rounded-xl border border-dashed border-[#692f46]/25 bg-white p-5"><p className="font-semibold">Video response plan</p><p className="mt-2 text-sm leading-6 text-gray-500">During preparation, write only a few anchors: situation, your action, result, and reflection. When the timer changes to Response, look at the camera and speak naturally.</p><textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Preparation notes..." className="mt-4 min-h-28 w-full resize-y rounded-lg border border-black/10 p-3 text-sm outline-none focus:border-[#8c4964]" /></div>}
+              {practiceMode === "written" && <div className="mt-3 flex justify-between text-sm font-semibold"><span className="text-gray-500">{wordCount} words{selectedApplication.practice.written.limit ? ` / ${selectedApplication.practice.written.limit} maximum` : ""}</span>{selectedApplication.practice.written.limit && wordCount > selectedApplication.practice.written.limit ? <span className="text-red-600">Over the practice limit</span> : null}</div>}
+            </div>
+
+            <aside className="rounded-2xl bg-[#172126] p-6 text-white">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/45"><Clock3 className="h-4 w-4" /> {practiceMode === "video" ? timerPhase : "Writing time"}</div>
+              <p aria-live="polite" className={`mt-5 font-mono text-6xl font-semibold tracking-tight ${secondsLeft === 0 ? "text-red-300" : "text-[#ffd48a]"}`}>{timerText}</p>
+              {practiceMode === "video" && <p className="mt-3 text-sm text-white/55">The timer automatically moves from preparation to the recorded-response phase.</p>}
+              <div className="mt-6 grid grid-cols-2 gap-2"><button type="button" onClick={() => secondsLeft > 0 && setTimerRunning(current => !current)} className="cursor-pointer rounded-xl bg-[#ffd48a] px-4 py-3 text-sm font-semibold text-[#172126]">{timerRunning ? "Pause" : secondsLeft === 0 ? "Finished" : "Start"}</button><button type="button" onClick={resetTimer} className="cursor-pointer rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold hover:bg-white/15">Reset</button></div>
+              <div className="mt-6 border-t border-white/10 pt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Accuracy note</p><p className="mt-2 text-sm leading-6 text-white/65">{selectedApplication.timerAccuracy}</p></div>
+            </aside>
           </div>
         </section>
 
