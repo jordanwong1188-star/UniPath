@@ -13,7 +13,7 @@ const scholarships = [
 
 const reviewItems = ["I answered every part of the prompt", "I used a specific example", "I explained my personal contribution", "I showed impact with evidence", "I included reflection or growth", "My writing sounds like me", "I stayed within the word limit"];
 
-const applicationProfiles = [
+export const applicationProfiles = [
   {
     id: "ubc-sauder-bcom", university: "University of British Columbia", program: "Sauder Bachelor of Commerce", deadline: "Confirm in the UBC application", source: "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/program-admission",
     note: "UBC Sauder assesses a Personal Profile containing short written responses and video interview components.",
@@ -72,7 +72,7 @@ const applicationProfiles = [
   },
 ] as const;
 
-export function ApplicationHub({ mode }: { mode: "scholarships" | "applications" }) {
+export function ApplicationHub({ mode, initialApplicationId, showChooser = true }: { mode: "scholarships" | "applications"; initialApplicationId?: string; showChooser?: boolean }) {
   const [query, setQuery] = useState("");
   const [focus, setFocus] = useState("All");
   const [prompt, setPrompt] = useState("");
@@ -80,7 +80,7 @@ export function ApplicationHub({ mode }: { mode: "scholarships" | "applications"
   const [limit, setLimit] = useState(500);
   const [checked, setChecked] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
-  const [applicationId, setApplicationId] = useState(applicationProfiles[0].id as string);
+  const [applicationId, setApplicationId] = useState(initialApplicationId && applicationProfiles.some(item => item.id === initialApplicationId) ? initialApplicationId : applicationProfiles[0].id as string);
   const [practiceMode, setPracticeMode] = useState<"written" | "video">("written");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"prep" | "response">("response");
@@ -167,12 +167,10 @@ export function ApplicationHub({ mode }: { mode: "scholarships" | "applications"
           <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ffd48a]">Your application path</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight">Choose a school and program</h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">The preparation steps, timing, and writing guidance below change to match the selected supplemental application.</p>
-              <label htmlFor="application-profile" className="mt-6 block text-sm font-semibold">University and program</label>
-              <select id="application-profile" value={applicationId} onChange={e => setApplicationId(e.target.value)} className="mt-2 w-full cursor-pointer rounded-xl border border-white/15 bg-white px-4 py-3.5 text-sm font-semibold text-[#172126] outline-none focus:ring-2 focus:ring-[#ffd48a]">
-                {applicationProfiles.map(item => <option key={item.id} value={item.id}>{item.university} — {item.program}</option>)}
-              </select>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight">{selectedApplication.program}</h2>
+              <p className="mt-2 text-sm font-semibold text-white/75">{selectedApplication.university}</p>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">This workspace is built specifically around this program’s supplemental application.</p>
+              {showChooser ? <><label htmlFor="application-profile" className="mt-6 block text-sm font-semibold">University and program</label><select id="application-profile" value={applicationId} onChange={e => setApplicationId(e.target.value)} className="mt-2 w-full cursor-pointer rounded-xl border border-white/15 bg-white px-4 py-3.5 text-sm font-semibold text-[#172126] outline-none focus:ring-2 focus:ring-[#ffd48a]">{applicationProfiles.map(item => <option key={item.id} value={item.id}>{item.university} — {item.program}</option>)}</select></> : <Link href="/applications" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold hover:bg-white/15">← Choose a different program</Link>}
               <div className="mt-5 rounded-2xl bg-white/8 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Deadline</p>
                 <p className="mt-1 font-semibold text-[#ffd48a]">{selectedApplication.deadline}</p>
