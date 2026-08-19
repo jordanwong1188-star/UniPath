@@ -234,11 +234,27 @@ function formatDate(value: string) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "America/Vancouver",
   }).format(new Date(value));
 }
 
-function daysUntil(value: string) {
-  return Math.ceil((new Date(value).getTime() - Date.now()) / 86_400_000);
+function dateParts(value: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/Vancouver",
+  }).formatToParts(new Date(value));
+
+  return {
+    month: parts.find((part) => part.type === "month")?.value ?? "",
+    day: parts.find((part) => part.type === "day")?.value ?? "",
+    year: parts.find((part) => part.type === "year")?.value ?? "",
+  };
+}
+
+function daysUntil(value: string, now: number) {
+  return Math.ceil((new Date(value).getTime() - now) / 86_400_000);
 }
 
 export default function DeadlinesPage() {
@@ -247,10 +263,12 @@ export default function DeadlinesPage() {
   const [province, setProvince] = useState("All");
   const [saved, setSaved] = useState<string[]>([]);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
     const stored = window.localStorage.getItem("unipath-deadlines");
     if (stored) setSaved(JSON.parse(stored));
+    setNow(Date.now());
   }, []);
 
   const results = useMemo(() => {
@@ -348,11 +366,12 @@ export default function DeadlinesPage() {
             ) : (
               <div className="space-y-4">
                 {results.map((deadline) => {
-                  const remaining = deadline.date ? daysUntil(deadline.date) : null;
+                  const remaining = deadline.date && now !== null ? daysUntil(deadline.date, now) : null;
+                  const displayedDate = deadline.date ? dateParts(deadline.date) : null;
                   const isSaved = saved.includes(deadline.id);
                   return <article key={deadline.id} className="group rounded-2xl border border-black/5 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
                     <div className="grid gap-5 sm:grid-cols-[100px_1fr_auto] sm:items-start">
-                      <div className="rounded-xl bg-[#edf1f1] px-3 py-4 text-center">{deadline.date ? <><p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">{new Date(deadline.date).toLocaleString("en-CA", { month: "short" })}</p><p className="mt-1 text-3xl font-semibold">{new Date(deadline.date).getDate()}</p><p className="text-xs text-gray-500">{new Date(deadline.date).getFullYear()}</p></> : <><p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Date</p><p className="mt-2 text-sm font-semibold leading-5">Not yet<br />confirmed</p></>}</div>
+                      <div className="rounded-xl bg-[#edf1f1] px-3 py-4 text-center">{displayedDate ? <><p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">{displayedDate.month}</p><p className="mt-1 text-3xl font-semibold">{displayedDate.day}</p><p className="text-xs text-gray-500">{displayedDate.year}</p></> : <><p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Date</p><p className="mt-2 text-sm font-semibold leading-5">Not yet<br />confirmed</p></>}</div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#172126] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-white">{deadline.category}</span><span className="text-xs font-semibold text-gray-400">{deadline.shortName}</span></div>
                         <h3 className="mt-3 text-xl font-semibold tracking-tight">{deadline.title}</h3>
@@ -361,7 +380,7 @@ export default function DeadlinesPage() {
                         <p className="mt-3 text-xs text-gray-400">{deadline.audience}</p>
                       </div>
                       <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-                        <div className="text-left sm:text-right"><p className="text-sm font-semibold">{deadline.date ? formatDate(deadline.date) : "Check official site"}</p><p className="mt-1 text-xs text-gray-400">{remaining === null ? "Awaiting verification" : remaining > 0 ? `${remaining} days away` : remaining === 0 ? "Due today" : "Passed"}</p></div>
+                        <div className="text-left sm:text-right"><p className="text-sm font-semibold">{deadline.date ? formatDate(deadline.date) : "Check official site"}</p><p className="mt-1 text-xs text-gray-400">{!deadline.date ? "Awaiting verification" : remaining === null ? "Calculating countdown…" : remaining > 0 ? `${remaining} days away` : remaining === 0 ? "Due today" : "Passed"}</p></div>
                         <button onClick={() => toggleSaved(deadline.id)} aria-label={isSaved ? `Remove ${deadline.title} from saved deadlines` : `Save ${deadline.title}`} className={`flex h-10 w-10 items-center justify-center rounded-full border transition ${isSaved ? "border-[#172126] bg-[#172126] text-white" : "border-black/10 text-gray-400 hover:text-[#172126]"}`}><Star className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} /></button>
                       </div>
                     </div>
