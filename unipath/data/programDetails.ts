@@ -6,12 +6,26 @@ import type { ProgramDetail } from "./programs/schema";
 
 export type { ProgramDetail } from "./programs/schema";
 
+const verifiedOfficialUrls: Record<string, string> = {
+  "ubc-sauder-bcom":
+    "https://org-www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce",
+  "uoft-rotman-commerce": "https://rotmancommerce.utoronto.ca/",
+  "waterloo-afm":
+    "https://uwaterloo.ca/future-students/programs/accounting-and-financial-management",
+  "mcmaster-commerce": "https://ug.degroote.mcmaster.ca/programs/commerce/",
+  "queens-commerce": "https://smith.queensu.ca/bcom/",
+  "western-ivey": "https://www.ivey.uwo.ca/hba/",
+};
+
 export const programDetails: ProgramDetail[] = [
   ...britishColumbiaPrograms,
   ...prairiePrograms,
   ...ontarioPrograms,
   ...quebecAtlanticPrograms,
-];
+].map((program) => ({
+  ...program,
+  officialUrl: verifiedOfficialUrls[program.id] ?? program.officialUrl,
+}));
 
 export function getProgramsForUniversity(
   universityId: string
