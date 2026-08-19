@@ -19,7 +19,26 @@ const verifiedOfficialUrls: Record<string, string> = {
   "western-ivey": "https://www.ivey.uwo.ca/hba/",
 };
 
-export const programDetails: ProgramDetail[] = [
+function makeRouteIdsUnique(programs: ProgramDetail[]): ProgramDetail[] {
+  const seen = new Map<string, number>();
+
+  return programs.map((program) => {
+    const key = `${program.universityId}:${program.id}`;
+    const occurrence = (seen.get(key) ?? 0) + 1;
+    seen.set(key, occurrence);
+
+    if (occurrence === 1) {
+      return program;
+    }
+
+    return {
+      ...program,
+      id: `${program.id}-${occurrence}`,
+    };
+  });
+}
+
+const rawProgramDetails: ProgramDetail[] = [
   ...britishColumbiaPrograms,
   ...prairiePrograms,
   ...ontarioPrograms,
@@ -28,6 +47,8 @@ export const programDetails: ProgramDetail[] = [
   ...program,
   officialUrl: verifiedOfficialUrls[program.id] ?? program.officialUrl,
 }));
+
+export const programDetails = makeRouteIdsUnique(rawProgramDetails);
 
 export const missingProgramSchoolIds =
   getMissingProgramSchoolIds(programDetails);
