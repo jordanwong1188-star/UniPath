@@ -10,6 +10,7 @@ import {
   ExternalLink,
   GraduationCap,
   Lightbulb,
+  Route,
   Target,
 } from "lucide-react";
 import schools from "@/data/canadianSchools.json";
@@ -57,9 +58,14 @@ export default async function ProgramPage({
                 <GraduationCap className="h-7 w-7" />
               </div>
 
-              <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-                {university.shortName} · {program.school}
-              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                  {university.shortName} · {program.school}
+                </p>
+                <span className="rounded-full bg-[#edf1f1] px-3 py-1 text-xs font-semibold text-gray-600">
+                  {program.entryType}
+                </span>
+              </div>
 
               <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
                 {program.name}
@@ -93,9 +99,10 @@ export default async function ProgramPage({
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <InfoCard label="Degree" value={program.degree} />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <InfoCard label="Degree / credential" value={program.degree} />
           <InfoCard label="Typical duration" value={program.duration} />
+          <InfoCard label="Admission path" value={program.entryType} />
           <InfoCard label="Admission average" value={program.admissionAverage} />
           <InfoCard label="Application deadline" value={program.applicationDeadline} />
         </div>
@@ -183,6 +190,23 @@ export default async function ProgramPage({
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="rounded-2xl border border-black/8 bg-white p-7">
+              <div className="flex items-center gap-3">
+                <Route className="h-5 w-5" />
+                <h2 className="text-lg font-semibold">How you enter</h2>
+              </div>
+              <p className="mt-4 text-sm font-semibold">{program.entryType}</p>
+              <p className="mt-3 text-sm leading-7 text-gray-600">
+                {program.entryType === "Choose after first year"
+                  ? "You normally enter a broader degree or faculty first, then select or apply to this field after completing university coursework."
+                  : program.entryType === "Second entry"
+                    ? "This program normally requires previous post-secondary study, so it is not a standard direct-from-high-school admission choice."
+                    : program.entryType === "Direct entry"
+                      ? "This is represented as a program or admission category that a high-school applicant can normally apply to directly."
+                      : "The entry route depends on the applicant or program option. Use the official source to confirm the pathway that applies to you."}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-black/8 bg-white p-7">
