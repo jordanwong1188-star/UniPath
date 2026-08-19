@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -256,10 +257,10 @@ function SectionCard({
   title,
   children,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   eyebrow: string;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="rounded-2xl border border-black/5 bg-white p-7 shadow-sm sm:p-8">
