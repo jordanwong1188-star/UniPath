@@ -1,16 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error("GEMINI_API_KEY is not configured.");
-}
-
-const ai = new GoogleGenAI({
-  apiKey,
-});
-
 const SYSTEM_PROMPT = `
 You are UniPath Assistant, a knowledgeable and conversational Canadian university admissions consultant.
 
@@ -177,6 +167,19 @@ You are UniPath Assistant.
 
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json(
+        {
+          error:
+            "UniPath Assistant is temporarily unavailable because GEMINI_API_KEY is not configured.",
+        },
+        { status: 503 }
+      );
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     const body = await request.json();
 
     const incomingMessages = Array.isArray(body?.messages)
