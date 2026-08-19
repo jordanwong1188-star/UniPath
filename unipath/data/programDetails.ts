@@ -2,6 +2,7 @@ import { britishColumbiaPrograms } from "./programs/britishColumbia";
 import { getMissingProgramSchoolIds } from "./programs/coverage";
 import { ontarioPrograms } from "./programs/ontario";
 import { prairiePrograms } from "./programs/prairies";
+import { getProgramDataIssues } from "./programs/quality";
 import { quebecAtlanticPrograms } from "./programs/quebecAtlantic";
 import type { ProgramDetail } from "./programs/schema";
 
@@ -30,11 +31,16 @@ export const programDetails: ProgramDetail[] = [
 
 export const missingProgramSchoolIds =
   getMissingProgramSchoolIds(programDetails);
+export const programDataIssues = getProgramDataIssues(programDetails);
 
 if (missingProgramSchoolIds.length > 0) {
   throw new Error(
     `Program data is missing for: ${missingProgramSchoolIds.join(", ")}`
   );
+}
+
+if (programDataIssues.length > 0) {
+  throw new Error(`Program data issues: ${programDataIssues.join("; ")}`);
 }
 
 export function getProgramsForUniversity(
