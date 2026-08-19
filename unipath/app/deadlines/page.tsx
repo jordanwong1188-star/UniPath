@@ -305,6 +305,7 @@ export default function DeadlinesPage() {
             <Link href="/universities" className="hidden transition hover:text-gray-500 sm:block">Universities</Link>
             <Link href="/programs" className="transition hover:text-gray-500">Programs</Link>
             <span className="rounded-full bg-[#edf1f1] px-4 py-2">Deadlines</span>
+            <Link href="/application-hub" className="hidden transition hover:text-gray-500 lg:block">Applications</Link>
           </nav>
         </div>
       </header>
