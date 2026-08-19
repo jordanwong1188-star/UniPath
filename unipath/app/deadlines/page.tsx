@@ -12,23 +12,27 @@ import {
   SlidersHorizontal,
   Star,
 } from "lucide-react";
+import schools from "@/data/canadianSchools.json";
 
 type Deadline = {
   id: string;
+  schoolId: string;
   university: string;
   shortName: string;
   province: string;
   title: string;
-  date: string;
-  category: "Application" | "Scholarship" | "Documents";
+  date: string | null;
+  category: "Application" | "Scholarship" | "Documents" | "To confirm";
   audience: string;
   detail: string;
   source: string;
+  confirmed: boolean;
 };
 
 const deadlines: Deadline[] = [
   {
     id: "ubc-international-scholars",
+    schoolId: "ubc",
     university: "University of British Columbia",
     shortName: "UBC",
     province: "British Columbia",
@@ -38,9 +42,11 @@ const deadlines: Deadline[] = [
     audience: "International students · Fall 2027",
     detail: "Submit the award application and complete the required UBC application steps by 11:59 p.m. Pacific time.",
     source: "https://you.ubc.ca/applying-ubc/dates-deadlines/",
+    confirmed: true,
   },
   {
     id: "ubc-canadian-awards",
+    schoolId: "ubc",
     university: "University of British Columbia",
     shortName: "UBC",
     province: "British Columbia",
@@ -50,9 +56,11 @@ const deadlines: Deadline[] = [
     audience: "Canadian citizens and permanent residents · Fall 2027",
     detail: "Apply to UBC by this date to be considered for major entrance awards, including Presidential Scholars and Centennial Scholars.",
     source: "https://you.ubc.ca/applying-ubc/dates-deadlines/",
+    confirmed: true,
   },
   {
     id: "waterloo-engineering",
+    schoolId: "waterloo",
     university: "University of Waterloo",
     shortName: "Waterloo",
     province: "Ontario",
@@ -62,9 +70,11 @@ const deadlines: Deadline[] = [
     audience: "Engineering applicants, excluding Architecture · Fall 2027",
     detail: "The undergraduate application must be submitted by this date. Required documents follow on February 1.",
     source: "https://uwaterloo.ca/future-students/admissions/deadlines",
+    confirmed: true,
   },
   {
     id: "ubc-general-application",
+    schoolId: "ubc",
     university: "University of British Columbia",
     shortName: "UBC",
     province: "British Columbia",
@@ -74,9 +84,11 @@ const deadlines: Deadline[] = [
     audience: "Winter and Summer Session applicants · 2027 entry",
     detail: "The general application deadline for Winter Session 2027–28 and Summer Session 2027 is 11:59 p.m. Pacific time.",
     source: "https://you.ubc.ca/applying-ubc/dates-deadlines/",
+    confirmed: true,
   },
   {
     id: "waterloo-engineering-documents",
+    schoolId: "waterloo",
     university: "University of Waterloo",
     shortName: "Waterloo",
     province: "Ontario",
@@ -86,9 +98,11 @@ const deadlines: Deadline[] = [
     audience: "Engineering applicants, excluding Architecture · Fall 2027",
     detail: "Submit all required documents, which can include transcripts, the AIF, English-language results, and the video interview.",
     source: "https://uwaterloo.ca/future-students/admissions/deadlines",
+    confirmed: true,
   },
   {
     id: "sfu-fall-high-school",
+    schoolId: "sfu",
     university: "Simon Fraser University",
     shortName: "SFU",
     province: "British Columbia",
@@ -98,9 +112,11 @@ const deadlines: Deadline[] = [
     audience: "High school applicants · Fall 2027",
     detail: "SFU’s Fall 2027 high school application period runs from October 1, 2026 through January 31, 2027.",
     source: "https://www.sfu.ca/students/admission/apply.html",
+    confirmed: true,
   },
   {
     id: "waterloo-general",
+    schoolId: "waterloo",
     university: "University of Waterloo",
     shortName: "Waterloo",
     province: "Ontario",
@@ -110,9 +126,11 @@ const deadlines: Deadline[] = [
     audience: "Most non-Engineering programs · Fall 2027",
     detail: "This applies to most undergraduate programs other than Engineering. Program-specific exceptions may use another date.",
     source: "https://uwaterloo.ca/future-students/admissions/deadlines",
+    confirmed: true,
   },
   {
     id: "waterloo-general-documents",
+    schoolId: "waterloo",
     university: "University of Waterloo",
     shortName: "Waterloo",
     province: "Ontario",
@@ -122,10 +140,33 @@ const deadlines: Deadline[] = [
     audience: "Most non-Engineering programs · Fall 2027",
     detail: "Submit the documents listed in your applicant portal by this date. Faculty and program requirements can differ.",
     source: "https://uwaterloo.ca/future-students/admissions/deadlines",
+    confirmed: true,
   },
 ];
 
-const categories = ["All", "Application", "Scholarship", "Documents"] as const;
+const coveredSchoolIds = new Set(deadlines.map((deadline) => deadline.schoolId));
+const allDeadlines: Deadline[] = [
+  ...deadlines,
+  ...schools
+    .filter((school) => !coveredSchoolIds.has(school.id))
+    .map((school) => ({
+      id: `${school.id}-pending-2027`,
+      schoolId: school.id,
+      university: school.name,
+      shortName: school.shortName,
+      province: school.province,
+      title: "2027 undergraduate deadline",
+      date: null,
+      category: "To confirm" as const,
+      audience: "Undergraduate applicants · 2027 entry",
+      detail:
+        "This school is included in UniPath, but its 2027 date has not yet been verified. Use the official school website for the latest program-specific information.",
+      source: `https://${school.domain}`,
+      confirmed: false,
+    })),
+];
+
+const categories = ["All", "Application", "Scholarship", "Documents", "To confirm"] as const;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -153,7 +194,7 @@ export default function DeadlinesPage() {
 
   const results = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return deadlines.filter((deadline) => {
+    return allDeadlines.filter((deadline) => {
       const matchesQuery =
         !normalizedQuery ||
         [deadline.university, deadline.shortName, deadline.title, deadline.audience]
@@ -241,11 +282,11 @@ export default function DeadlinesPage() {
             ) : (
               <div className="space-y-4">
                 {results.map((deadline) => {
-                  const remaining = daysUntil(deadline.date);
+                  const remaining = deadline.date ? daysUntil(deadline.date) : null;
                   const isSaved = saved.includes(deadline.id);
                   return <article key={deadline.id} className="group rounded-2xl border border-black/5 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
                     <div className="grid gap-5 sm:grid-cols-[100px_1fr_auto] sm:items-start">
-                      <div className="rounded-xl bg-[#edf1f1] px-3 py-4 text-center"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">{new Date(deadline.date).toLocaleString("en-CA", { month: "short" })}</p><p className="mt-1 text-3xl font-semibold">{new Date(deadline.date).getDate()}</p><p className="text-xs text-gray-500">{new Date(deadline.date).getFullYear()}</p></div>
+                      <div className="rounded-xl bg-[#edf1f1] px-3 py-4 text-center">{deadline.date ? <><p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">{new Date(deadline.date).toLocaleString("en-CA", { month: "short" })}</p><p className="mt-1 text-3xl font-semibold">{new Date(deadline.date).getDate()}</p><p className="text-xs text-gray-500">{new Date(deadline.date).getFullYear()}</p></> : <><p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Date</p><p className="mt-2 text-sm font-semibold leading-5">Not yet<br />confirmed</p></>}</div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#172126] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-white">{deadline.category}</span><span className="text-xs font-semibold text-gray-400">{deadline.shortName}</span></div>
                         <h3 className="mt-3 text-xl font-semibold tracking-tight">{deadline.title}</h3>
@@ -254,7 +295,7 @@ export default function DeadlinesPage() {
                         <p className="mt-3 text-xs text-gray-400">{deadline.audience}</p>
                       </div>
                       <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-                        <div className="text-left sm:text-right"><p className="text-sm font-semibold">{formatDate(deadline.date)}</p><p className="mt-1 text-xs text-gray-400">{remaining > 0 ? `${remaining} days away` : remaining === 0 ? "Due today" : "Passed"}</p></div>
+                        <div className="text-left sm:text-right"><p className="text-sm font-semibold">{deadline.date ? formatDate(deadline.date) : "Check official site"}</p><p className="mt-1 text-xs text-gray-400">{remaining === null ? "Awaiting verification" : remaining > 0 ? `${remaining} days away` : remaining === 0 ? "Due today" : "Passed"}</p></div>
                         <button onClick={() => toggleSaved(deadline.id)} aria-label={isSaved ? `Remove ${deadline.title} from saved deadlines` : `Save ${deadline.title}`} className={`flex h-10 w-10 items-center justify-center rounded-full border transition ${isSaved ? "border-[#172126] bg-[#172126] text-white" : "border-black/10 text-gray-400 hover:text-[#172126]"}`}><Star className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} /></button>
                       </div>
                     </div>
@@ -265,7 +306,7 @@ export default function DeadlinesPage() {
             )}
 
             <div className="mt-8 rounded-2xl border border-amber-900/10 bg-[#f3eee4] p-5 text-sm leading-6 text-[#5a5142]">
-              <strong className="font-semibold text-[#3c372f]">A planning guide, not the final authority.</strong> Universities can change dates and individual programs may have earlier supplemental deadlines. Open the official source before submitting anything.
+              <strong className="font-semibold text-[#3c372f]">All {schools.length} UniPath schools are included.</strong> Confirmed dates appear in the timeline; schools awaiting published or verified 2027 information are marked “To confirm.” Universities can change dates and individual programs may have earlier supplemental deadlines, so always open the official source before submitting anything.
             </div>
           </div>
         </div>
