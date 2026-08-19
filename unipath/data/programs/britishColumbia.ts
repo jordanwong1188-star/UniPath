@@ -1,46 +1,9 @@
-import { makePrograms, type ProgramSeed } from "./schema";
+import { bcCollegePrograms } from "./bcColleges";
+import { bcPolytechnicPrograms } from "./bcPolytechnic";
+import { bcResearchPrograms } from "./bcResearch";
 
-const seeds: ProgramSeed[] = [
-  ["ubc-sauder-bcom","ubc","Sauder School of Business","Bachelor of Commerce","BCom","4 years",["Accounting","Finance","Marketing","Business analytics","Strategy","Economics"],["Finance","Consulting","Accounting","Marketing","Product management","Entrepreneurship"],"https://org-www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce","UBC Sauder's Bachelor of Commerce combines a broad business foundation with opportunities to specialize in major areas of commerce and build experience through case work, projects and extracurricular opportunities."],
-  ["ubc-arts","ubc","Faculty of Arts","Bachelor of Arts","BA","4 years",["Economics","Psychology","Political science","History","Languages","Sociology"],["Government","Law","Communications","Research","Education","Business"],"https://www.arts.ubc.ca/"],
-  ["ubc-engineering","ubc","Faculty of Applied Science","Engineering","BASc","4 years",["Engineering design","Calculus","Physics","Programming","Technical communication","Discipline-specific engineering"],["Engineering","Technology","Consulting","Product development","Research","Infrastructure"],"https://engineering.ubc.ca/"],
-  ["ubc-science","ubc","Faculty of Science","Bachelor of Science","BSc","4 years",["Biology","Chemistry","Physics","Mathematics","Statistics","Computer science"],["Research","Technology","Data science","Biotechnology","Healthcare","Graduate study"],"https://science.ubc.ca/"],
-
-  ["sfu-beedie-bba","sfu","Beedie School of Business","Bachelor of Business Administration","BBA","4 years",["Accounting","Finance","Marketing","Management","Entrepreneurship","Business analytics"],["Finance","Consulting","Accounting","Marketing","Management","Entrepreneurship"],"https://beedie.sfu.ca/programs/undergraduate","SFU Beedie's BBA combines core business education with concentrations, experiential learning and opportunities to connect classroom work with the Vancouver business community."],
-  ["sfu-computing","sfu","School of Computing Science","Computing Science","BSc","4 years",["Programming","Algorithms","Data structures","Artificial intelligence","Databases","Computer systems"],["Software development","AI","Data science","Cybersecurity","Research","Technology"],"https://www.sfu.ca/computing.html"],
-  ["sfu-arts","sfu","Faculty of Arts and Social Sciences","Arts and Social Sciences","BA","4 years",["Economics","Psychology","Political science","Criminology","History","Sociology"],["Public policy","Law","Communications","Research","Business","Education"],"https://www.sfu.ca/fass.html"],
-
-  ["uvic-business","uvic","Gustavson School of Business","Bachelor of Commerce","BCom","4 years",["Accounting","Finance","Marketing","Management","Entrepreneurship","International business"],["Finance","Marketing","Consulting","Accounting","Management","Entrepreneurship"],"https://www.uvic.ca/gustavson/undergraduate/"],
-  ["uvic-engineering","uvic","Faculty of Engineering and Computer Science","Engineering","BEng","4–5 years",["Engineering design","Calculus","Physics","Programming","Systems","Technical communication"],["Engineering","Software","Technology","Design","Research","Consulting"],"https://www.uvic.ca/ecs/undergraduate/programs/"],
-  ["uvic-arts","uvic","Faculty of Humanities / Faculty of Social Sciences","Arts and Social Sciences","BA","4 years",["History","Languages","Psychology","Economics","Political science","Sociology"],["Government","Law","Education","Communications","Research","Public policy"],"https://www.uvic.ca/undergraduate/programs/"],
-
-  ["bcit-business","bcit","School of Business + Media","Business","Diploma / Degree","2–4 years",["Accounting","Finance","Marketing","Management","Business technology","Operations"],["Accounting","Finance","Marketing","Management","Sales","Entrepreneurship"],"https://www.bcit.ca/study/business-media/"],
-  ["bcit-computing","bcit","School of Computing and Academic Studies","Computing & IT","Diploma / Degree","2–4 years",["Programming","Software development","Networking","Cybersecurity","Cloud systems","Data"],["Software development","IT","Cybersecurity","Networking","Cloud computing","Data"],"https://www.bcit.ca/study/computing-it/"],
-  ["bcit-engineering","bcit","Engineering and Technology schools","Engineering & Technology","Diploma / Degree","2–4 years",["Engineering technology","Electronics","Energy","Construction","Design","Applied mathematics"],["Engineering technology","Construction","Energy","Manufacturing","Electronics","Technical operations"],"https://www.bcit.ca/study/engineering/"],
-
-  ["kpu-business","kpu","Melville School of Business","Business Administration","BBA","4 years",["Accounting","Finance","Marketing","Human resources","Entrepreneurship","Operations"],["Accounting","Finance","Marketing","Management","Human resources","Entrepreneurship"],"https://www.kpu.ca/business"],
-  ["kpu-arts","kpu","Faculty of Arts","Bachelor of Arts","BA","4 years",["Psychology","Criminology","Economics","English","History","Political science"],["Government","Law","Communications","Research","Education","Business"],"https://www.kpu.ca/arts"],
-
-  ["capu-business","capu","School of Business","Business Administration","BBA","4 years",["Management","Marketing","Finance","Accounting","Entrepreneurship","Business communication"],["Management","Marketing","Finance","Sales","Entrepreneurship","Operations"],"https://www.capilanou.ca/programs--courses/search--select/find-a-program-or-course/"],
-  ["capu-motion-picture","capu","School of Motion Picture Arts","Motion Picture Arts","Bachelor's degree","4 years",["Film production","Screenwriting","Directing","Editing","Cinematography","Production management"],["Film production","Post-production","Writing","Directing","Media production","Creative industries"],"https://www.capilanou.ca/programs--courses/search--select/find-a-program-or-course/"],
-
-  ["ufv-business","ufv","School of Business","Business Administration","BBA","4 years",["Accounting","Finance","Marketing","Management","Economics","Business analytics"],["Accounting","Finance","Marketing","Management","Business analytics","Entrepreneurship"],"https://www.ufv.ca/business/"],
-  ["ufv-cis","ufv","School of Computing","Computer Information Systems","BCIS","4 years",["Programming","Databases","Systems analysis","Networking","Information security","Project management"],["Software development","Systems analysis","IT","Cybersecurity","Project management","Business technology"],"https://www.ufv.ca/computing/"],
-
-  ["tru-business","tru","Bob Gaglardi School of Business and Economics","Business Administration","BBA","4 years",["Accounting","Finance","Marketing","Management","Economics","Entrepreneurship"],["Business","Finance","Accounting","Marketing","Management","Entrepreneurship"],"https://www.tru.ca/gaglardi.html"],
-  ["tru-computing","tru","Faculty of Science","Computing Science","Bachelor's degree","4 years",["Programming","Algorithms","Software engineering","Databases","Data","Computer systems"],["Software development","Data","IT","Technology","Research","Systems"],"https://www.tru.ca/science/programs.html"],
-
-  ["viu-business","viu","Faculty of Management","Business Administration","BBA","4 years",["Management","Accounting","Marketing","Finance","Economics","Entrepreneurship"],["Management","Marketing","Finance","Accounting","Sales","Entrepreneurship"],"https://www.viu.ca/programs"],
-  ["viu-science","viu","Faculty of Science and Technology","Science","BSc","4 years",["Biology","Chemistry","Computer science","Mathematics","Earth science","Environmental science"],["Research","Technology","Environmental work","Data","Laboratory work","Graduate study"],"https://www.viu.ca/programs"],
-
-  ["ecu-fine-arts","ecu","Faculty of Culture + Community","Fine Arts","BFA","4 years",["Drawing","Painting","Sculpture","Media arts","Critical studies","Studio practice"],["Visual art","Creative practice","Galleries","Arts administration","Media arts","Graduate study"],"https://www.ecuad.ca/academics/undergraduate-degrees"],
-  ["ecu-design","ecu","Faculty of Design + Dynamic Media","Design","BDes","4 years",["Visual communication","Interaction design","Typography","Research","Prototyping","Design systems"],["Graphic design","UX/UI","Product design","Creative direction","Branding","Design research"],"https://www.ecuad.ca/academics/undergraduate-degrees"],
-
-  ["langara-business","langara","Langara School of Management","Business","Diploma / BBA","2–4 years",["Accounting","Management","Marketing","Finance","Business communication","Economics"],["Accounting","Marketing","Management","Finance","Sales","Business operations"],"https://langara.ca/programs-courses/search-all-programs"],
-  ["langara-arts","langara","Faculty of Arts","Arts & University Transfer","Associate degree / Diploma","2 years",["English","Psychology","Economics","History","Political science","Sociology"],["University transfer","Communications","Public service","Business","Research","Further study"],"https://langara.ca/programs-courses/search-all-programs"],
-
-  ["douglas-business","douglas","Commerce and Business Administration","Business","Diploma / BBA","2–4 years",["Accounting","Management","Finance","Marketing","Economics","Business law"],["Accounting","Finance","Management","Marketing","Financial services","Operations"],"https://www.douglascollege.ca/programs"],
-  ["douglas-computing","douglas","Commerce and Business Administration","Computing Studies and Information Systems","Diploma","2 years",["Programming","Databases","Systems","Networking","Web development","IT project work"],["Software support","IT","Systems analysis","Web development","Data","Technology operations"],"https://www.douglascollege.ca/programs"],
+export const britishColumbiaPrograms = [
+  ...bcResearchPrograms,
+  ...bcPolytechnicPrograms,
+  ...bcCollegePrograms,
 ];
-
-export const britishColumbiaPrograms = makePrograms(seeds);
