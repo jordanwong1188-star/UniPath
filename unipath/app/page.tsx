@@ -129,6 +129,13 @@ export default function Home() {
             </Link>
 
             <Link
+              href="/application-hub"
+              className="text-sm font-medium text-gray-700 transition hover:text-black"
+            >
+              Applications
+            </Link>
+
+            <Link
               href="/ai-assistant"
               className="text-sm font-medium text-gray-700 transition hover:text-black"
             >
