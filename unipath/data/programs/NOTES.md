@@ -1,0 +1,1 @@
+The first comprehensive catalog pass prioritizes architecture and reliable school-specific coverage. It intentionally uses conservative admissions labels when a current-cycle number has not been verified. Future passes can add more programs per institution and sourced cycle-specific admissions/deadline fields without changing the routing architecture.
