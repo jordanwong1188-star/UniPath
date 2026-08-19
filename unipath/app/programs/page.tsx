@@ -121,6 +121,7 @@ export default function ProgramsPage() {
             <Link href="/universities" className="hidden text-white/70 transition hover:text-white sm:block">Universities</Link>
             <span className="rounded-full bg-white/10 px-4 py-2">Programs</span>
             <Link href="/deadlines" className="text-white/70 transition hover:text-white">Deadlines</Link>
+            <Link href="/application-hub" className="hidden text-white/70 transition hover:text-white lg:block">Applications</Link>
           </nav>
         </div>
       </header>
