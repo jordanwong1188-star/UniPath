@@ -1,7 +1,497 @@
 [
-  {"id":"ubc","shortName":"UBC","name":"University of British Columbia","province":"British Columbia","city":"Vancouver","type":"University","domain":"ubc.ca"},
-  {"id":"sfu","shortName":"SFU","name":"Simon Fraser University","province":"British Columbia","city":"Burnaby","type":"University","domain":"sfu.ca"},
-  {"id":"waterloo","shortName":"Waterloo","name":"University of Waterloo","province":"Ontario","city":"Waterloo","type":"University","domain":"uwaterloo.ca"},
-  {"id":"mcgill","shortName":"McGill","name":"McGill University","province":"Quebec","city":"Montreal","type":"University","domain":"mcgill.ca"},
-  {"id":"western","shortName":"Western","name":"Western University","province":"Ontario","city":"London","type":"University","domain":"uwo.ca"}
+  {
+    "id": "ubc",
+    "shortName": "UBC",
+    "name": "University of British Columbia",
+    "province": "British Columbia",
+    "city": "Vancouver",
+    "type": "University",
+    "domain": "ubc.ca"
+  },
+  {
+    "id": "sfu",
+    "shortName": "SFU",
+    "name": "Simon Fraser University",
+    "province": "British Columbia",
+    "city": "Burnaby",
+    "type": "University",
+    "domain": "sfu.ca"
+  },
+  {
+    "id": "uvic",
+    "shortName": "UVic",
+    "name": "University of Victoria",
+    "province": "British Columbia",
+    "city": "Victoria",
+    "type": "University",
+    "domain": "uvic.ca"
+  },
+  {
+    "id": "bcit",
+    "shortName": "BCIT",
+    "name": "British Columbia Institute of Technology",
+    "province": "British Columbia",
+    "city": "Burnaby",
+    "type": "College",
+    "domain": "bcit.ca"
+  },
+  {
+    "id": "kpu",
+    "shortName": "KPU",
+    "name": "Kwantlen Polytechnic University",
+    "province": "British Columbia",
+    "city": "Surrey",
+    "type": "University",
+    "domain": "kpu.ca"
+  },
+  {
+    "id": "capu",
+    "shortName": "CapU",
+    "name": "Capilano University",
+    "province": "British Columbia",
+    "city": "North Vancouver",
+    "type": "University",
+    "domain": "capilanou.ca"
+  },
+  {
+    "id": "ufv",
+    "shortName": "UFV",
+    "name": "University of the Fraser Valley",
+    "province": "British Columbia",
+    "city": "Abbotsford",
+    "type": "University",
+    "domain": "ufv.ca"
+  },
+  {
+    "id": "tru",
+    "shortName": "TRU",
+    "name": "Thompson Rivers University",
+    "province": "British Columbia",
+    "city": "Kamloops",
+    "type": "University",
+    "domain": "tru.ca"
+  },
+  {
+    "id": "viu",
+    "shortName": "VIU",
+    "name": "Vancouver Island University",
+    "province": "British Columbia",
+    "city": "Nanaimo",
+    "type": "University",
+    "domain": "viu.ca"
+  },
+  {
+    "id": "ecu",
+    "shortName": "ECU",
+    "name": "Emily Carr University of Art + Design",
+    "province": "British Columbia",
+    "city": "Vancouver",
+    "type": "University",
+    "domain": "ecuad.ca"
+  },
+  {
+    "id": "langara",
+    "shortName": "Langara",
+    "name": "Langara College",
+    "province": "British Columbia",
+    "city": "Vancouver",
+    "type": "College",
+    "domain": "langara.ca"
+  },
+  {
+    "id": "douglas",
+    "shortName": "Douglas",
+    "name": "Douglas College",
+    "province": "British Columbia",
+    "city": "New Westminster",
+    "type": "College",
+    "domain": "douglascollege.ca"
+  },
+  {
+    "id": "ualberta",
+    "shortName": "UAlberta",
+    "name": "University of Alberta",
+    "province": "Alberta",
+    "city": "Edmonton",
+    "type": "University",
+    "domain": "ualberta.ca"
+  },
+  {
+    "id": "ucalgary",
+    "shortName": "UCalgary",
+    "name": "University of Calgary",
+    "province": "Alberta",
+    "city": "Calgary",
+    "type": "University",
+    "domain": "ucalgary.ca"
+  },
+  {
+    "id": "ulethbridge",
+    "shortName": "ULethbridge",
+    "name": "University of Lethbridge",
+    "province": "Alberta",
+    "city": "Lethbridge",
+    "type": "University",
+    "domain": "uleth.ca"
+  },
+  {
+    "id": "athabasca",
+    "shortName": "Athabasca",
+    "name": "Athabasca University",
+    "province": "Alberta",
+    "city": "Athabasca",
+    "type": "University",
+    "domain": "athabascau.ca"
+  },
+  {
+    "id": "mru",
+    "shortName": "MRU",
+    "name": "Mount Royal University",
+    "province": "Alberta",
+    "city": "Calgary",
+    "type": "University",
+    "domain": "mtroyal.ca"
+  },
+  {
+    "id": "macewan",
+    "shortName": "MacEwan",
+    "name": "MacEwan University",
+    "province": "Alberta",
+    "city": "Edmonton",
+    "type": "University",
+    "domain": "macewan.ca"
+  },
+  {
+    "id": "nait",
+    "shortName": "NAIT",
+    "name": "Northern Alberta Institute of Technology",
+    "province": "Alberta",
+    "city": "Edmonton",
+    "type": "College",
+    "domain": "nait.ca"
+  },
+  {
+    "id": "sait",
+    "shortName": "SAIT",
+    "name": "Southern Alberta Institute of Technology",
+    "province": "Alberta",
+    "city": "Calgary",
+    "type": "College",
+    "domain": "sait.ca"
+  },
+  {
+    "id": "usask",
+    "shortName": "USask",
+    "name": "University of Saskatchewan",
+    "province": "Saskatchewan",
+    "city": "Saskatoon",
+    "type": "University",
+    "domain": "usask.ca"
+  },
+  {
+    "id": "uregina",
+    "shortName": "Regina",
+    "name": "University of Regina",
+    "province": "Saskatchewan",
+    "city": "Regina",
+    "type": "University",
+    "domain": "uregina.ca"
+  },
+  {
+    "id": "saskpoly",
+    "shortName": "Sask Polytech",
+    "name": "Saskatchewan Polytechnic",
+    "province": "Saskatchewan",
+    "city": "Saskatoon",
+    "type": "College",
+    "domain": "saskpolytech.ca"
+  },
+  {
+    "id": "umanitoba",
+    "shortName": "Manitoba",
+    "name": "University of Manitoba",
+    "province": "Manitoba",
+    "city": "Winnipeg",
+    "type": "University",
+    "domain": "umanitoba.ca"
+  },
+  {
+    "id": "uwinnipeg",
+    "shortName": "Winnipeg",
+    "name": "University of Winnipeg",
+    "province": "Manitoba",
+    "city": "Winnipeg",
+    "type": "University",
+    "domain": "uwinnipeg.ca"
+  },
+  {
+    "id": "brandon",
+    "shortName": "Brandon",
+    "name": "Brandon University",
+    "province": "Manitoba",
+    "city": "Brandon",
+    "type": "University",
+    "domain": "brandonu.ca"
+  },
+  {
+    "id": "uoft",
+    "shortName": "UofT",
+    "name": "University of Toronto",
+    "province": "Ontario",
+    "city": "Toronto",
+    "type": "University",
+    "domain": "utoronto.ca"
+  },
+  {
+    "id": "waterloo",
+    "shortName": "Waterloo",
+    "name": "University of Waterloo",
+    "province": "Ontario",
+    "city": "Waterloo",
+    "type": "University",
+    "domain": "uwaterloo.ca"
+  },
+  {
+    "id": "mcmaster",
+    "shortName": "McMaster",
+    "name": "McMaster University",
+    "province": "Ontario",
+    "city": "Hamilton",
+    "type": "University",
+    "domain": "mcmaster.ca"
+  },
+  {
+    "id": "queens",
+    "shortName": "Queen's",
+    "name": "Queen's University",
+    "province": "Ontario",
+    "city": "Kingston",
+    "type": "University",
+    "domain": "queensu.ca"
+  },
+  {
+    "id": "western",
+    "shortName": "Western",
+    "name": "Western University",
+    "province": "Ontario",
+    "city": "London",
+    "type": "University",
+    "domain": "uwo.ca"
+  },
+  {
+    "id": "york",
+    "shortName": "York",
+    "name": "York University",
+    "province": "Ontario",
+    "city": "Toronto",
+    "type": "University",
+    "domain": "yorku.ca"
+  },
+  {
+    "id": "tmu",
+    "shortName": "TMU",
+    "name": "Toronto Metropolitan University",
+    "province": "Ontario",
+    "city": "Toronto",
+    "type": "University",
+    "domain": "torontomu.ca"
+  },
+  {
+    "id": "uottawa",
+    "shortName": "uOttawa",
+    "name": "University of Ottawa",
+    "province": "Ontario",
+    "city": "Ottawa",
+    "type": "University",
+    "domain": "uottawa.ca"
+  },
+  {
+    "id": "carleton",
+    "shortName": "Carleton",
+    "name": "Carleton University",
+    "province": "Ontario",
+    "city": "Ottawa",
+    "type": "University",
+    "domain": "carleton.ca"
+  },
+  {
+    "id": "guelph",
+    "shortName": "Guelph",
+    "name": "University of Guelph",
+    "province": "Ontario",
+    "city": "Guelph",
+    "type": "University",
+    "domain": "uoguelph.ca"
+  },
+  {
+    "id": "laurier",
+    "shortName": "Laurier",
+    "name": "Wilfrid Laurier University",
+    "province": "Ontario",
+    "city": "Waterloo",
+    "type": "University",
+    "domain": "wlu.ca"
+  },
+  {
+    "id": "brock",
+    "shortName": "Brock",
+    "name": "Brock University",
+    "province": "Ontario",
+    "city": "St Catharines",
+    "type": "University",
+    "domain": "brocku.ca"
+  },
+  {
+    "id": "windsor",
+    "shortName": "Windsor",
+    "name": "University of Windsor",
+    "province": "Ontario",
+    "city": "Windsor",
+    "type": "University",
+    "domain": "uwindsor.ca"
+  },
+  {
+    "id": "ontariotech",
+    "shortName": "Ontario Tech",
+    "name": "Ontario Tech University",
+    "province": "Ontario",
+    "city": "Oshawa",
+    "type": "University",
+    "domain": "ontariotechu.ca"
+  },
+  {
+    "id": "lakehead",
+    "shortName": "Lakehead",
+    "name": "Lakehead University",
+    "province": "Ontario",
+    "city": "Thunder Bay",
+    "type": "University",
+    "domain": "lakeheadu.ca"
+  },
+  {
+    "id": "nipissing",
+    "shortName": "Nipissing",
+    "name": "Nipissing University",
+    "province": "Ontario",
+    "city": "North Bay",
+    "type": "University",
+    "domain": "nipissingu.ca"
+  },
+  {
+    "id": "mcgill",
+    "shortName": "McGill",
+    "name": "McGill University",
+    "province": "Quebec",
+    "city": "Montreal",
+    "type": "University",
+    "domain": "mcgill.ca"
+  },
+  {
+    "id": "concordia",
+    "shortName": "Concordia",
+    "name": "Concordia University",
+    "province": "Quebec",
+    "city": "Montreal",
+    "type": "University",
+    "domain": "concordia.ca"
+  },
+  {
+    "id": "udem",
+    "shortName": "UdeM",
+    "name": "Université de Montréal",
+    "province": "Quebec",
+    "city": "Montreal",
+    "type": "University",
+    "domain": "umontreal.ca"
+  },
+  {
+    "id": "laval",
+    "shortName": "Laval",
+    "name": "Université Laval",
+    "province": "Quebec",
+    "city": "Quebec City",
+    "type": "University",
+    "domain": "ulaval.ca"
+  },
+  {
+    "id": "usherbrooke",
+    "shortName": "Sherbrooke",
+    "name": "Université de Sherbrooke",
+    "province": "Quebec",
+    "city": "Sherbrooke",
+    "type": "University",
+    "domain": "usherbrooke.ca"
+  },
+  {
+    "id": "uqam",
+    "shortName": "UQAM",
+    "name": "Université du Québec à Montréal",
+    "province": "Quebec",
+    "city": "Montreal",
+    "type": "University",
+    "domain": "uqam.ca"
+  },
+  {
+    "id": "dalhousie",
+    "shortName": "Dalhousie",
+    "name": "Dalhousie University",
+    "province": "Nova Scotia",
+    "city": "Halifax",
+    "type": "University",
+    "domain": "dal.ca"
+  },
+  {
+    "id": "smu",
+    "shortName": "SMU",
+    "name": "Saint Mary's University",
+    "province": "Nova Scotia",
+    "city": "Halifax",
+    "type": "University",
+    "domain": "smu.ca"
+  },
+  {
+    "id": "stfx",
+    "shortName": "StFX",
+    "name": "St. Francis Xavier University",
+    "province": "Nova Scotia",
+    "city": "Antigonish",
+    "type": "University",
+    "domain": "stfx.ca"
+  },
+  {
+    "id": "unb",
+    "shortName": "UNB",
+    "name": "University of New Brunswick",
+    "province": "New Brunswick",
+    "city": "Fredericton",
+    "type": "University",
+    "domain": "unb.ca"
+  },
+  {
+    "id": "moncton",
+    "shortName": "Moncton",
+    "name": "Université de Moncton",
+    "province": "New Brunswick",
+    "city": "Moncton",
+    "type": "University",
+    "domain": "umoncton.ca"
+  },
+  {
+    "id": "upei",
+    "shortName": "UPEI",
+    "name": "University of Prince Edward Island",
+    "province": "PEI",
+    "city": "Charlottetown",
+    "type": "University",
+    "domain": "upei.ca"
+  },
+  {
+    "id": "memorial",
+    "shortName": "Memorial",
+    "name": "Memorial University of Newfoundland",
+    "province": "Newfoundland",
+    "city": "St. John's",
+    "type": "University",
+    "domain": "mun.ca"
+  }
 ]
