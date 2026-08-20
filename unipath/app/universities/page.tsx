@@ -10,6 +10,7 @@ import {
   Building2,
 } from "lucide-react";
 import schools from "@/data/canadianSchools.json";
+import UniversityLogo from "@/app/components/UniversityLogo";
 
 export default function UniversitiesPage() {
   const [search, setSearch] = useState("");
@@ -156,15 +157,11 @@ export default function UniversitiesPage() {
 
               <div className="flex items-start justify-between">
 
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#f1f4f4] p-2">
-
-                  <img
-                    src={`https://www.google.com/s2/favicons?domain=${school.domain}&sz=128`}
-                    alt={`${school.name} logo`}
-                    className="h-10 w-10 object-contain"
-                  />
-
-                </div>
+                <UniversityLogo
+                  domain={school.domain}
+                  name={school.name}
+                  shortName={school.shortName}
+                />
 
                 <ArrowRight className="h-5 w-5 text-gray-300 transition group-hover:translate-x-1 group-hover:text-black" />
 
