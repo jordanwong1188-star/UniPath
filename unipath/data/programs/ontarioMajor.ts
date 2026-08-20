@@ -479,6 +479,31 @@ const groups: ProgramGroup[] = [
     officialUrl: "https://www.ivey.uwo.ca/hba/",
     programs: [{ id: "western-ivey", name: "Honours Business Administration" }],
   },
+  {
+    universityId: "western",
+    school: "Ivey Business School",
+    degree: "Conditional pre-admission to HBA",
+    duration: "2 + 2 pathway",
+    entryType: "Second entry",
+    officialUrl:
+      "https://www.ivey.uwo.ca/hba/admissions/high-school-students/",
+    programs: [
+      {
+        id: "western-ivey-aeo",
+        name: "Ivey Advanced Entry Opportunity (AEO)",
+        overview:
+          "Earn conditional pre-admission status to Ivey HBA while completing your first two years in an eligible Western, Huron, or King's program.",
+        whatYouStudy: [
+          "Case-method business",
+          "Leadership",
+          "Strategy",
+          "Finance",
+          "Consulting",
+        ],
+        careers: ["Consulting", "Finance", "Entrepreneurship", "Management"],
+      },
+    ],
+  },
 ];
 
 export const ontarioMajorPrograms = makeProgramGroups(groups);
