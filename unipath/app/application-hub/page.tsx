@@ -153,6 +153,20 @@ export const applicationProfiles = [
       { title: "Video interviews", format: "Kira Talent", help: "Prepare a varied story bank and practice concise, natural delivery. Upload the completed Leadership Profile before beginning timed components." },
     ],
   },
+  {
+    id: "western-ivey-aeo", university: "Western University", program: "Ivey Advanced Entry Opportunity (AEO)", deadline: "2027 deadline not yet published · confirm in the Ivey application portal", source: "https://www.ivey.uwo.ca/hba/admissions/secondary-school-students/",
+    note: "Ivey AEO is a separate conditional pre-admission status, not a first-year Western degree. Applicants first choose any Western, Huron, or King's program and submit a separate Ivey AEO application.",
+    timerAccuracy: "Ivey confirms that each Kira question has preparation time and a timed response, but does not publish the exact per-question limits on its public page. Use the portal's live timing.",
+    practice: {
+      written: { seconds: null, limit: 500, questions: ["Official activity-essay focus: choose one significant extracurricular, employment, volunteer, or entrepreneurial experience and demonstrate leadership, initiative, achievement, commitment, integrity, resilience, and reflection.", "Official activity-essay focus: explain a second substantial activity, emphasizing your individual decisions, influence on others, verifiable results, and growth."] },
+      video: { prepSeconds: null, responseSeconds: null, questions: ["Original Ivey-style practice: Tell us about a time you led without having formal authority.", "Original Ivey-style practice: Describe a difficult team decision and how you handled competing perspectives.", "Original Ivey-style practice: Which commitment best demonstrates your integrity, and what did it cost you?", "Original Ivey-style practice: Describe a setback that changed how you lead.", "Original Ivey-style practice: What meaningful contribution are you most proud of, and how do you know it mattered?"] },
+    },
+    components: [
+      { title: "Two leadership activity essays", format: "Maximum 500 words each", help: "Select two experiences with sustained responsibility and enough complexity to show decisions, teamwork, initiative, results, integrity, resilience, and reflection." },
+      { title: "Activities, awards, and references", format: "Up to five additional activities · non-academic awards · verifier for every activity", help: "Record dates, hours, role, organization, outcomes, and accurate reference contact information. Ivey states that applications without verified references will not be considered." },
+      { title: "Kira video assessment", format: "Five questions · timed preparation and response · one sitting", help: "Build a flexible story bank and complete unlimited practice before starting. Once the formal interview begins, all five questions must be completed in one attempt." },
+    ],
+  },
 ] as const;
 
 export function ApplicationHub({ mode, initialApplicationId, showChooser = true }: { mode: "scholarships" | "applications"; initialApplicationId?: string; showChooser?: boolean }) {
