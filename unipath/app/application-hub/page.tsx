@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Award, Check, CheckCircle2, Clock3, Copy, ExternalLink, FilePenLine, LoaderCircle, RefreshCw, Search, Sparkles } from "lucide-react";
+import { getApplicationRubric, rubricScale } from "@/data/applicationRubrics";
 
 type ApplicationFeedback = {
   overallAssessment: string;
@@ -317,6 +318,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
 
   const wordCount = draft.trim() ? draft.trim().split(/\s+/).length : 0;
   const selectedApplication = applicationProfiles.find(item => item.id === applicationId) ?? applicationProfiles[0];
+  const selectedRubric = getApplicationRubric(selectedApplication);
   const practice = selectedApplication.practice[practiceMode];
   const questions = practice.questions;
   const configuredSeconds = practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds;
@@ -334,6 +336,12 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
       selectedApplication.note,
       ...selectedApplication.components.map(
         (component) => `${component.title}: ${component.format}. ${component.help}`
+      ),
+      `RUBRIC EVIDENCE STATUS: ${selectedRubric.evidence}`,
+      `RUBRIC NOTE: ${selectedRubric.note}`,
+      ...selectedRubric.criteria.map(
+        (criterion) =>
+          `${criterion.name}: ${criterion.description}. A 5 requires: ${criterion.five}`
       ),
     ].join("\n");
 
@@ -496,13 +504,42 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
             {feedback ? <>
               <p className="mt-6 leading-7 text-white/75">{feedback.overallAssessment}</p>
               <div className="mt-5 rounded-xl bg-white/7 p-4"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Prompt coverage</p><p className="mt-2 text-sm leading-6 text-white/70">{feedback.promptCoverage}</p></div>
-              <div className="mt-6 grid gap-3 lg:grid-cols-2">{feedback.rubric.map(item => <div key={item.criterion} className="rounded-xl bg-white/7 p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">{item.criterion}</p><span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-[#ffd48a]">{Math.max(0, Math.min(4, Math.round(item.rating)))}/4</span></div><p className="mt-3 text-sm leading-6 text-white/60"><strong className="text-white/80">Evidence:</strong> {item.evidence}</p><p className="mt-2 text-sm leading-6 text-white/60"><strong className="text-white/80">Improve:</strong> {item.nextStep}</p></div>)}</div>
+              <div className="mt-6 grid gap-3 lg:grid-cols-2">{feedback.rubric.map(item => <div key={item.criterion} className="rounded-xl bg-white/7 p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">{item.criterion}</p><span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-[#ffd48a]">{Math.max(1, Math.min(5, Math.round(item.rating)))}/5</span></div><p className="mt-3 text-sm leading-6 text-white/60"><strong className="text-white/80">Evidence:</strong> {item.evidence}</p><p className="mt-2 text-sm leading-6 text-white/60"><strong className="text-white/80">Improve:</strong> {item.nextStep}</p></div>)}</div>
               {feedback.strongestEvidence.length > 0 ? <div className="mt-6"><h4 className="font-semibold">Strongest evidence already present</h4><ul className="mt-3 space-y-2 text-sm leading-6 text-white/65">{feedback.strongestEvidence.map(item => <li key={item} className="rounded-lg bg-emerald-400/10 px-4 py-3">✓ {item}</li>)}</ul></div> : null}
               <div className="mt-6"><h4 className="font-semibold">Revision priorities</h4><div className="mt-3 space-y-3">{feedback.revisionPriorities.map((item, index) => <div key={`${item.priority}-${index}`} className="rounded-xl border border-[#ffd48a]/15 bg-[#ffd48a]/5 p-4"><p className="text-sm font-semibold text-[#ffd48a]">{index + 1}. {item.priority}</p><p className="mt-2 text-sm leading-6 text-white/60">{item.why}</p><p className="mt-2 text-sm leading-6 text-white/75"><strong>How:</strong> {item.how}</p></div>)}</div></div>
               {feedback.authenticityCautions.length > 0 ? <div className="mt-6 rounded-xl bg-amber-300/10 p-4"><p className="text-sm font-semibold text-amber-100">Authenticity check</p><ul className="mt-2 space-y-1 text-sm leading-6 text-amber-50/65">{feedback.authenticityCautions.map(item => <li key={item}>• {item}</li>)}</ul></div> : null}
               <div className="mt-6 border-t border-white/10 pt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Limits of this review</p><ul className="mt-2 space-y-1 text-xs leading-5 text-white/45">{feedback.limitations.map(item => <li key={item}>• {item}</li>)}</ul></div>
             </> : null}
           </section> : null}
+
+          <section className="mt-6 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+            <div className="border-b border-black/5 bg-[#f7f3ec] p-6 sm:p-8">
+              <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8c4964]">What reviewers are looking for</p>
+                  <h3 className="mt-2 text-2xl font-semibold">{selectedRubric.title}</h3>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">{selectedRubric.note}</p>
+                </div>
+                <span className={`w-fit rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  selectedRubric.evidence === "Official published rubric"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : selectedRubric.evidence === "Official criteria converted to practice scale"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-amber-100 text-amber-800"
+                }`}>{selectedRubric.evidence}</span>
+              </div>
+              <a href={selectedRubric.source} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline">View evidence source <ExternalLink className="h-4 w-4" /></a>
+            </div>
+
+            <div className="p-6 sm:p-8">
+              <h4 className="font-semibold">Universal practice scale</h4>
+              <div className="mt-4 grid gap-2 md:grid-cols-5">{rubricScale.map(level => <div key={level.score} className={`rounded-xl border p-3 ${level.score === 5 ? "border-[#8c4964]/20 bg-[#f7edf1]" : "border-black/5 bg-[#fafafa]"}`}><div className="flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#172126] text-xs font-bold text-white">{level.score}</span><p className="text-sm font-semibold">{level.label}</p></div><p className="mt-2 text-xs leading-5 text-gray-500">{level.description}</p></div>)}</div>
+
+              <div className="mt-8 grid gap-4 lg:grid-cols-2">{selectedRubric.criteria.map(item => <article key={item.name} className="rounded-2xl border border-black/5 p-5"><div className="flex items-start justify-between gap-4"><h4 className="font-semibold">{item.name}</h4><span className="shrink-0 rounded-full bg-[#172126] px-2.5 py-1 text-xs font-semibold text-white">Target 5</span></div><p className="mt-3 text-sm leading-6 text-gray-500">{item.description}</p><div className="mt-4 rounded-xl bg-[#eef2f1] p-4"><p className="text-xs font-semibold uppercase tracking-[0.11em] text-[#365d55]">What a 5 requires</p><p className="mt-2 text-sm leading-6 text-gray-700">{item.five}</p></div></article>)}</div>
+
+              <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>Important:</strong> A 5 is an exceptional practice target, not a guarantee of admission. The feedback reviewer must justify each rating from evidence in the student’s response and should not award a 5 merely for polished wording.</div>
+            </div>
+          </section>
         </section>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1.35fr]">
