@@ -169,6 +169,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const [timerPhase, setTimerPhase] = useState<"prep" | "response">("response");
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const results = useMemo(() => scholarships.filter((item) => {
     const text = `${item.name} ${item.focus} ${item.eligibility} ${item.tag}`.toLowerCase();
@@ -181,9 +182,24 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const questions = practice.questions;
   const configuredSeconds = practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds;
   const hasTimer = configuredSeconds !== null;
+  const responseFeedback = useMemo(() => {
+    const text = draft.trim();
+    const lower = text.toLowerCase();
+    const checks = [
+      { label: "Specific example", pass: /\b(when|during|after|before|at my|in grade|last year)\b/i.test(text), advice: "Anchor the response in one identifiable moment instead of speaking generally." },
+      { label: "Personal action", pass: /\b(i (created|organized|decided|asked|built|changed|led|helped|learned|responded|worked|proposed|started|improved))\b/i.test(text), advice: "State what you personally decided and did—not only what the team accomplished." },
+      { label: "Evidence of impact", pass: /\b(\d+|result|increased|reduced|improved|raised|reached|because of this|as a result)\b/i.test(text), advice: "Show what changed using a result, observable outcome, or credible evidence." },
+      { label: "Reflection and growth", pass: /\b(learned|realized|understood|now i|since then|changed my|taught me|going forward)\b/i.test(text), advice: "Explain how the experience changed your thinking or future behaviour." },
+      { label: "Enough development", pass: wordCount >= (practiceMode === "video" ? 75 : 120), advice: practiceMode === "video" ? "Add enough detail for a developed spoken response while keeping it natural." : "Develop the example further; strong written responses usually need context, action, impact, and reflection." },
+      { label: "Clear, readable sentences", pass: text.length > 0 && text.split(/[.!?]+/).filter(Boolean).length >= 3 && !/\b(very very|things and stuff|etc\.)\b/i.test(lower), advice: "Use complete, direct sentences and replace vague filler with precise wording." },
+    ];
+    const passed = checks.filter(item => item.pass).length;
+    return { checks, score: Math.round((passed / checks.length) * 100), passed };
+  }, [draft, practiceMode, wordCount]);
 
   useEffect(() => {
     setTimerRunning(false);
+    setShowFeedback(false);
     setQuestionIndex(0);
     const firstPhase = practiceMode === "video" ? "prep" : "response";
     setTimerPhase(firstPhase);
@@ -206,6 +222,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
 
   const resetTimer = () => {
     setTimerRunning(false);
+    setShowFeedback(false);
     const firstPhase = practiceMode === "video" ? "prep" : "response";
     setTimerPhase(firstPhase);
     setSecondsLeft((practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds) ?? 0);
@@ -283,9 +300,9 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
 
           <div className="mt-7 grid gap-5 lg:grid-cols-[1fr_310px]">
             <div className="rounded-2xl bg-[#f7f4ee] p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-[#692f46] px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-white">Practice question {questionIndex + 1}</span><button type="button" onClick={() => { setQuestionIndex(current => (current + 1) % questions.length); resetTimer(); }} className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#692f46]"><RefreshCw className="h-4 w-4" /> New question</button></div>
+              <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-[#692f46] px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-white">Practice question {questionIndex + 1}</span><button type="button" onClick={() => { setQuestionIndex(current => (current + 1) % questions.length); setDraft(""); setPrompt(""); resetTimer(); }} className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#692f46]"><RefreshCw className="h-4 w-4" /> New question</button></div>
               <p className="mt-6 text-xl font-semibold leading-8">{questions[questionIndex]}</p>
-              {practiceMode === "written" ? <textarea value={draft} onChange={e => setDraft(e.target.value)} placeholder="Start writing when you start the timer..." className="mt-6 min-h-64 w-full resize-y rounded-xl border border-black/10 bg-white p-5 leading-7 outline-none focus:border-[#8c4964]" /> : <div className="mt-6 rounded-xl border border-dashed border-[#692f46]/25 bg-white p-5"><p className="font-semibold">Video response plan</p><p className="mt-2 text-sm leading-6 text-gray-500">During preparation, write only a few anchors: situation, your action, result, and reflection. When the timer changes to Response, look at the camera and speak naturally.</p><textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Preparation notes..." className="mt-4 min-h-28 w-full resize-y rounded-lg border border-black/10 p-3 text-sm outline-none focus:border-[#8c4964]" /></div>}
+              {practiceMode === "written" ? <textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); }} placeholder="Start writing when you start the timer..." className="mt-6 min-h-64 w-full resize-y rounded-xl border border-black/10 bg-white p-5 leading-7 outline-none focus:border-[#8c4964]" /> : <div className="mt-6 rounded-xl border border-dashed border-[#692f46]/25 bg-white p-5"><p className="font-semibold">Video response plan</p><p className="mt-2 text-sm leading-6 text-gray-500">During preparation, write only a few anchors: situation, your action, result, and reflection. When responding, look at the camera and speak naturally.</p><textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Short preparation notes..." className="mt-4 min-h-24 w-full resize-y rounded-lg border border-black/10 p-3 text-sm outline-none focus:border-[#8c4964]" /><label className="mt-4 block text-sm font-semibold">Response transcript <span className="font-normal text-gray-400">(for feedback)</span><textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); }} placeholder="After practising aloud, type or paste what you said so UniPath can review its structure..." className="mt-2 min-h-36 w-full resize-y rounded-lg border border-black/10 p-3 font-normal leading-6 outline-none focus:border-[#8c4964]" /></label></div>}
               {practiceMode === "written" && <div className="mt-3 flex justify-between text-sm font-semibold"><span className="text-gray-500">{wordCount} words{selectedApplication.practice.written.limit ? ` / ${selectedApplication.practice.written.limit} maximum` : ""}</span>{selectedApplication.practice.written.limit && wordCount > selectedApplication.practice.written.limit ? <span className="text-red-600">Over the practice limit</span> : null}</div>}
             </div>
 
@@ -299,6 +316,8 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
               <div className="mt-6 border-t border-white/10 pt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Accuracy note</p><p className="mt-2 text-sm leading-6 text-white/65">{selectedApplication.timerAccuracy}</p></div>
             </aside>
           </div>
+          <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-[#692f46]/10 bg-[#fffaf5] p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold">Finished this attempt?</p><p className="mt-1 text-sm text-gray-500">Get transparent rubric feedback before trying the next question.</p></div><button type="button" disabled={!draft.trim()} onClick={() => setShowFeedback(true)} className="cursor-pointer rounded-xl bg-[#692f46] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">Finish practice & get feedback</button></div>
+          {showFeedback ? <section className="mt-5 rounded-2xl bg-[#172126] p-6 text-white sm:p-8"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#ffd48a]">Counsellor feedback</p><h3 className="mt-2 text-2xl font-semibold">{responseFeedback.score >= 84 ? "Strong foundation" : responseFeedback.score >= 60 ? "Promising—revise once more" : "Build more evidence before submitting"}</h3></div><div className="text-left sm:text-right"><p className="text-4xl font-semibold text-[#ffd48a]">{responseFeedback.score}%</p><p className="text-xs text-white/40">structure readiness · not an admission prediction</p></div></div><div className="mt-6 grid gap-3 sm:grid-cols-2">{responseFeedback.checks.map(item => <div key={item.label} className={`rounded-xl p-4 ${item.pass ? "bg-emerald-400/10" : "bg-white/7"}`}><div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${item.pass ? "text-emerald-300" : "text-white/25"}`} /><p className="text-sm font-semibold">{item.label}</p></div><p className="mt-2 text-sm leading-6 text-white/55">{item.pass ? "Present in this response. Keep it specific and authentic." : item.advice}</p></div>)}</div><div className="mt-6 rounded-xl bg-white/7 p-4 text-sm leading-6 text-white/60"><strong className="text-white">Next revision:</strong> Fix the first unmet criterion, then read the answer aloud. Do not add accomplishments just to impress—add detail that proves what you actually did, why it mattered, and what changed.</div></section> : null}
         </section>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1.35fr]">
