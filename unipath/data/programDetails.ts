@@ -1,104 +1,211 @@
-export type ProgramDetail = {
-  id: string;
-  universityId: string;
-  school: string;
-  name: string;
-  degree: string;
-  duration: string;
-  entryType:
-    | "Direct entry"
-    | "Choose after first year"
-    | "Second entry"
-    | "Varies";
-  overview: string;
-  whatYouStudy: string[];
-  careers: string[];
-  officialUrl: string;
+import { britishColumbiaPrograms } from "./programs/britishColumbia";
+import { getMissingProgramSchoolIds } from "./programs/coverage";
+import { ontarioPrograms } from "./programs/ontario";
+import { prairiePrograms } from "./programs/prairies";
+import { getProgramDataIssues } from "./programs/quality";
+import { quebecAtlanticPrograms } from "./programs/quebecAtlantic";
+import type { ProgramDetail } from "./programs/schema";
+
+export type { ProgramDetail } from "./programs/schema";
+
+const verifiedOfficialUrls: Record<string, string> = {
+  "ubc-sauder-bcom":
+    "https://org-www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce",
+  "uoft-rotman-commerce": "https://rotmancommerce.utoronto.ca/",
+  "waterloo-afm":
+    "https://uwaterloo.ca/future-students/programs/accounting-and-financial-management",
+  "mcmaster-commerce": "https://ug.degroote.mcmaster.ca/programs/commerce/",
+  "queens-commerce": "https://smith.queensu.ca/bcom/",
+  "western-ivey": "https://www.ivey.uwo.ca/hba/",
 };
 
-export const programDetails: ProgramDetail[] = [
-  {
-    id: "ubc-computer-science",
-    universityId: "ubc",
-    school: "Faculty of Science",
-    name: "Computer Science",
-    degree: "BSc",
-    duration: "4 years (typical)",
-    entryType: "Choose after first year",
-    overview:
-      "Study programming, algorithms, software systems and computational problem-solving.",
-    whatYouStudy: ["Programming", "Algorithms", "Software development"],
-    careers: ["Software development", "Data science", "Product engineering"],
-    officialUrl: "https://you.ubc.ca/ubc_programs/computer-science/",
-  },
-  {
-    id: "sfu-business",
-    universityId: "sfu",
-    school: "Beedie School of Business",
-    name: "Business Administration",
-    degree: "BBA",
-    duration: "4 years (typical)",
-    entryType: "Direct entry",
-    overview:
-      "Build foundations in accounting, finance, marketing, strategy and management.",
-    whatYouStudy: ["Finance", "Marketing", "Management"],
-    careers: ["Consulting", "Finance", "Marketing"],
-    officialUrl: "https://www.sfu.ca/students/admission/programs/a-z/b/business-administration.html",
-  },
-  {
-    id: "waterloo-engineering",
-    universityId: "waterloo",
-    school: "Faculty of Engineering",
-    name: "Engineering",
-    degree: "BASc",
-    duration: "5 years with co-op",
-    entryType: "Direct entry",
-    overview:
-      "Combine technical coursework, design projects and extensive co-op experience.",
-    whatYouStudy: ["Engineering design", "Mathematics", "Co-op"],
-    careers: ["Engineering", "Technology", "Product development"],
-    officialUrl: "https://uwaterloo.ca/future-students/programs/engineering",
-  },
-  {
-    id: "mcgill-psychology",
+const legacyProgramAliases: Record<
+  string,
+  { universityId: string; targetName: string }
+> = {
+  "uvic-arts": { universityId: "uvic", targetName: "English" },
+  "mcgill-management": {
     universityId: "mcgill",
-    school: "Faculty of Science",
-    name: "Psychology",
-    degree: "BSc",
-    duration: "3–4 years",
-    entryType: "Choose after first year",
-    overview:
-      "Explore cognition, behaviour, research methods and biological psychology.",
-    whatYouStudy: ["Cognition", "Research methods", "Behaviour"],
-    careers: ["Research", "Mental health services", "Human resources"],
-    officialUrl: "https://www.mcgill.ca/undergraduate-admissions/program/psychology",
+    targetName: "Bachelor of Commerce",
   },
-  {
-    id: "western-ivey-aeo",
-    universityId: "western",
-    school: "Ivey Business School",
-    name: "Ivey Advanced Entry Opportunity (AEO)",
-    degree: "Conditional pre-admission to HBA",
-    duration: "2 + 2 pathway",
-    entryType: "Second entry",
-    overview:
-      "Earn conditional pre-admission status to Ivey HBA while completing your first two years in any Western, Huron, or King's program.",
-    whatYouStudy: [
-      "Case-method business",
-      "Leadership",
-      "Strategy",
-      "Finance",
-      "Consulting",
-    ],
-    careers: ["Consulting", "Finance", "Entrepreneurship", "Management"],
-    officialUrl: "https://www.ivey.uwo.ca/hba/admissions/high-school-students/",
+  "mcgill-engineering": {
+    universityId: "mcgill",
+    targetName: "Chemical Engineering - McGill",
   },
-];
+  "concordia-engineering": {
+    universityId: "concordia",
+    targetName: "Aerospace Engineering - Concordia",
+  },
+  "udem-informatique": {
+    universityId: "udem",
+    targetName: "Baccalauréat en informatique",
+  },
+  "udem-psychologie": {
+    universityId: "udem",
+    targetName: "Baccalauréat en psychologie",
+  },
+  "laval-business": {
+    universityId: "laval",
+    targetName: "Baccalauréat en administration des affaires - Laval",
+  },
+  "laval-engineering": {
+    universityId: "laval",
+    targetName: "Baccalauréat en génie civil - Laval",
+  },
+  "usherbrooke-business": {
+    universityId: "usherbrooke",
+    targetName: "Baccalauréat en administration des affaires - Sherbrooke",
+  },
+  "usherbrooke-engineering": {
+    universityId: "usherbrooke",
+    targetName: "Baccalauréat en génie civil - Sherbrooke",
+  },
+  "uqam-business": {
+    universityId: "uqam",
+    targetName: "Baccalauréat en administration - UQAM",
+  },
+  "uqam-informatique": {
+    universityId: "uqam",
+    targetName: "Baccalauréat en informatique et génie logiciel",
+  },
+  "dalhousie-commerce": {
+    universityId: "dalhousie",
+    targetName: "Commerce - Dalhousie",
+  },
+  "dalhousie-engineering": {
+    universityId: "dalhousie",
+    targetName: "Engineering - Dalhousie",
+  },
+  "smu-business": {
+    universityId: "smu",
+    targetName: "Accounting - Sobey",
+  },
+  "smu-science": {
+    universityId: "smu",
+    targetName: "Biology - SMU",
+  },
+  "stfx-business": {
+    universityId: "stfx",
+    targetName: "Business Administration - StFX",
+  },
+  "stfx-science": {
+    universityId: "stfx",
+    targetName: "Biology - StFX",
+  },
+  "unb-business": {
+    universityId: "unb",
+    targetName: "Accounting - UNB Fredericton",
+  },
+  "unb-engineering": {
+    universityId: "unb",
+    targetName: "Civil Engineering - UNB",
+  },
+  "moncton-business": {
+    universityId: "moncton",
+    targetName: "Baccalauréat en administration des affaires - général UMoncton",
+  },
+  "moncton-engineering": {
+    universityId: "moncton",
+    targetName: "Génie civil - UMoncton",
+  },
+  "upei-business": {
+    universityId: "upei",
+    targetName: "Business Administration - UPEI",
+  },
+  "upei-science": {
+    universityId: "upei",
+    targetName: "Bachelor of Science - UPEI",
+  },
+  "memorial-business": {
+    universityId: "memorial",
+    targetName: "Bachelor of Commerce - Memorial",
+  },
+  "memorial-science": {
+    universityId: "memorial",
+    targetName: "Bachelor of Science - Memorial",
+  },
+};
+
+function makeRouteIdsUnique(programs: ProgramDetail[]): ProgramDetail[] {
+  const seen = new Map<string, number>();
+
+  return programs.map((program) => {
+    const key = `${program.universityId}:${program.id}`;
+    const occurrence = (seen.get(key) ?? 0) + 1;
+    seen.set(key, occurrence);
+
+    if (occurrence === 1) {
+      return program;
+    }
+
+    return {
+      ...program,
+      id: `${program.id}-${occurrence}`,
+    };
+  });
+}
+
+const rawProgramDetails: ProgramDetail[] = [
+  ...britishColumbiaPrograms,
+  ...prairiePrograms,
+  ...ontarioPrograms,
+  ...quebecAtlanticPrograms,
+].map((program) => ({
+  ...program,
+  officialUrl: verifiedOfficialUrls[program.id] ?? program.officialUrl,
+}));
+
+export const programDetails = makeRouteIdsUnique(rawProgramDetails);
+
+export const missingProgramSchoolIds =
+  getMissingProgramSchoolIds(programDetails);
+export const programDataIssues = getProgramDataIssues(programDetails);
+
+if (missingProgramSchoolIds.length > 0) {
+  throw new Error(
+    `Program data is missing for: ${missingProgramSchoolIds.join(", ")}`
+  );
+}
+
+if (programDataIssues.length > 0) {
+  throw new Error(`Program data issues: ${programDataIssues.join("; ")}`);
+}
 
 export function getProgramsForUniversity(
   universityId: string
 ): ProgramDetail[] {
   return programDetails.filter(
+    (program) => program.universityId === universityId
+  );
+}
+
+export function getProgramById(
+  universityId: string,
+  programId: string
+): ProgramDetail | undefined {
+  const exact = programDetails.find(
+    (program) =>
+      program.universityId === universityId && program.id === programId
+  );
+
+  if (exact) {
+    return exact;
+  }
+
+  const alias = legacyProgramAliases[programId];
+  if (!alias || alias.universityId !== universityId) {
+    return undefined;
+  }
+
+  return programDetails.find(
+    (program) =>
+      program.universityId === universityId &&
+      program.name === alias.targetName
+  );
+}
+
+export function hasPrograms(universityId: string): boolean {
+  return programDetails.some(
     (program) => program.universityId === universityId
   );
 }
