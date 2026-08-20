@@ -2,7 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Award, Check, CheckCircle2, Clock3, Copy, ExternalLink, FilePenLine, RefreshCw, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Award, Check, CheckCircle2, Clock3, Copy, ExternalLink, FilePenLine, LoaderCircle, RefreshCw, Search, Sparkles } from "lucide-react";
+
+type ApplicationFeedback = {
+  overallAssessment: string;
+  readinessLabel: string;
+  promptCoverage: string;
+  strongestEvidence: string[];
+  revisionPriorities: Array<{ priority: string; why: string; how: string }>;
+  rubric: Array<{ criterion: string; rating: number; evidence: string; nextStep: string }>;
+  authenticityCautions: string[];
+  limitations: string[];
+};
 
 const scholarships = [
   { name: "Loran Award", value: "Major renewable award", focus: "Character, service & leadership", eligibility: "Canadian citizens or permanent residents entering university", deadline: "October 15, 2026 · noon ET", url: "https://loranscholar.ca/the-program/how-to-apply/", tag: "Leadership" },
@@ -295,6 +306,9 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState<ApplicationFeedback | null>(null);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
 
   const results = useMemo(() => scholarships.filter((item) => {
     const text = `${item.name} ${item.focus} ${item.eligibility} ${item.tag}`.toLowerCase();
@@ -307,20 +321,49 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const questions = practice.questions;
   const configuredSeconds = practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds;
   const hasTimer = configuredSeconds !== null;
-  const responseFeedback = useMemo(() => {
-    const text = draft.trim();
-    const lower = text.toLowerCase();
-    const checks = [
-      { label: "Specific example", pass: /\b(when|during|after|before|at my|in grade|last year)\b/i.test(text), advice: "Anchor the response in one identifiable moment instead of speaking generally." },
-      { label: "Personal action", pass: /\b(i (created|organized|decided|asked|built|changed|led|helped|learned|responded|worked|proposed|started|improved))\b/i.test(text), advice: "State what you personally decided and did—not only what the team accomplished." },
-      { label: "Evidence of impact", pass: /\b(\d+|result|increased|reduced|improved|raised|reached|because of this|as a result)\b/i.test(text), advice: "Show what changed using a result, observable outcome, or credible evidence." },
-      { label: "Reflection and growth", pass: /\b(learned|realized|understood|now i|since then|changed my|taught me|going forward)\b/i.test(text), advice: "Explain how the experience changed your thinking or future behaviour." },
-      { label: "Enough development", pass: wordCount >= (practiceMode === "video" ? 75 : 120), advice: practiceMode === "video" ? "Add enough detail for a developed spoken response while keeping it natural." : "Develop the example further; strong written responses usually need context, action, impact, and reflection." },
-      { label: "Clear, readable sentences", pass: text.length > 0 && text.split(/[.!?]+/).filter(Boolean).length >= 3 && !/\b(very very|things and stuff|etc\.)\b/i.test(lower), advice: "Use complete, direct sentences and replace vague filler with precise wording." },
-    ];
-    const passed = checks.filter(item => item.pass).length;
-    return { checks, score: Math.round((passed / checks.length) * 100), passed };
-  }, [draft, practiceMode, wordCount]);
+  const requestFeedback = async () => {
+    if (!draft.trim() || feedbackLoading) return;
+    setFeedbackLoading(true);
+    setFeedbackError("");
+    setFeedback(null);
+    setShowFeedback(true);
+
+    const activeQuestion = questions[questionIndex] ?? "";
+    const exactOrPracticePrompt = prompt.trim() || activeQuestion;
+    const context = [
+      selectedApplication.note,
+      ...selectedApplication.components.map(
+        (component) => `${component.title}: ${component.format}. ${component.help}`
+      ),
+    ].join("\n");
+
+    try {
+      const response = await fetch("/api/application-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          university: selectedApplication.university,
+          program: selectedApplication.program,
+          mode: practiceMode,
+          prompt: exactOrPracticePrompt,
+          response: draft,
+          context,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.feedback) {
+        throw new Error(data?.error || "Feedback could not be generated.");
+      }
+      setFeedback(data.feedback as ApplicationFeedback);
+    } catch (error) {
+      setFeedbackError(
+        error instanceof Error ? error.message : "Feedback could not be generated."
+      );
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     setTimerRunning(false);
@@ -427,7 +470,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
             <div className="rounded-2xl bg-[#f7f4ee] p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-[#692f46] px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-white">Practice question {questionIndex + 1}</span><button type="button" onClick={() => { setQuestionIndex(current => (current + 1) % questions.length); setDraft(""); setPrompt(""); resetTimer(); }} className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#692f46]"><RefreshCw className="h-4 w-4" /> New question</button></div>
               <p className="mt-6 text-xl font-semibold leading-8">{questions[questionIndex]}</p>
-              {practiceMode === "written" ? <textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); }} placeholder="Start writing when you start the timer..." className="mt-6 min-h-64 w-full resize-y rounded-xl border border-black/10 bg-white p-5 leading-7 outline-none focus:border-[#8c4964]" /> : <div className="mt-6 rounded-xl border border-dashed border-[#692f46]/25 bg-white p-5"><p className="font-semibold">Video response plan</p><p className="mt-2 text-sm leading-6 text-gray-500">During preparation, write only a few anchors: situation, your action, result, and reflection. When responding, look at the camera and speak naturally.</p><textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Short preparation notes..." className="mt-4 min-h-24 w-full resize-y rounded-lg border border-black/10 p-3 text-sm outline-none focus:border-[#8c4964]" /><label className="mt-4 block text-sm font-semibold">Response transcript <span className="font-normal text-gray-400">(for feedback)</span><textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); }} placeholder="After practising aloud, type or paste what you said so UniPath can review its structure..." className="mt-2 min-h-36 w-full resize-y rounded-lg border border-black/10 p-3 font-normal leading-6 outline-none focus:border-[#8c4964]" /></label></div>}
+              {practiceMode === "written" ? <textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); setFeedback(null); }} placeholder="Start writing when you start the timer..." className="mt-6 min-h-64 w-full resize-y rounded-xl border border-black/10 bg-white p-5 leading-7 outline-none focus:border-[#8c4964]" /> : <div className="mt-6 rounded-xl border border-dashed border-[#692f46]/25 bg-white p-5"><p className="font-semibold">Video response plan</p><p className="mt-2 text-sm leading-6 text-gray-500">During preparation, write only a few anchors: situation, your action, result, and reflection. When responding, look at the camera and speak naturally.</p><textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Short preparation notes..." className="mt-4 min-h-24 w-full resize-y rounded-lg border border-black/10 p-3 text-sm outline-none focus:border-[#8c4964]" /><label className="mt-4 block text-sm font-semibold">Response transcript <span className="font-normal text-gray-400">(for feedback)</span><textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); setFeedback(null); }} placeholder="After practising aloud, type or paste what you said so UniPath can review its structure..." className="mt-2 min-h-36 w-full resize-y rounded-lg border border-black/10 p-3 font-normal leading-6 outline-none focus:border-[#8c4964]" /></label></div>}
               {practiceMode === "written" && <div className="mt-3 flex justify-between text-sm font-semibold"><span className="text-gray-500">{wordCount} words{selectedApplication.practice.written.limit ? ` / ${selectedApplication.practice.written.limit} maximum` : ""}</span>{selectedApplication.practice.written.limit && wordCount > selectedApplication.practice.written.limit ? <span className="text-red-600">Over the practice limit</span> : null}</div>}
             </div>
 
@@ -441,8 +484,25 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
               <div className="mt-6 border-t border-white/10 pt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Accuracy note</p><p className="mt-2 text-sm leading-6 text-white/65">{selectedApplication.timerAccuracy}</p></div>
             </aside>
           </div>
-          <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-[#692f46]/10 bg-[#fffaf5] p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold">Finished this attempt?</p><p className="mt-1 text-sm text-gray-500">Get transparent rubric feedback before trying the next question.</p></div><button type="button" disabled={!draft.trim()} onClick={() => setShowFeedback(true)} className="cursor-pointer rounded-xl bg-[#692f46] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">Finish practice & get feedback</button></div>
-          {showFeedback ? <section className="mt-5 rounded-2xl bg-[#172126] p-6 text-white sm:p-8"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#ffd48a]">Counsellor feedback</p><h3 className="mt-2 text-2xl font-semibold">{responseFeedback.score >= 84 ? "Strong foundation" : responseFeedback.score >= 60 ? "Promising—revise once more" : "Build more evidence before submitting"}</h3></div><div className="text-left sm:text-right"><p className="text-4xl font-semibold text-[#ffd48a]">{responseFeedback.score}%</p><p className="text-xs text-white/40">structure readiness · not an admission prediction</p></div></div><div className="mt-6 grid gap-3 sm:grid-cols-2">{responseFeedback.checks.map(item => <div key={item.label} className={`rounded-xl p-4 ${item.pass ? "bg-emerald-400/10" : "bg-white/7"}`}><div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${item.pass ? "text-emerald-300" : "text-white/25"}`} /><p className="text-sm font-semibold">{item.label}</p></div><p className="mt-2 text-sm leading-6 text-white/55">{item.pass ? "Present in this response. Keep it specific and authentic." : item.advice}</p></div>)}</div><div className="mt-6 rounded-xl bg-white/7 p-4 text-sm leading-6 text-white/60"><strong className="text-white">Next revision:</strong> Fix the first unmet criterion, then read the answer aloud. Do not add accomplishments just to impress—add detail that proves what you actually did, why it mattered, and what changed.</div></section> : null}
+          <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-[#692f46]/10 bg-[#fffaf5] p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold">Finished this attempt?</p><p className="mt-1 text-sm text-gray-500">Get transparent rubric feedback before trying the next question.</p></div><button type="button" disabled={!draft.trim()} onClick={requestFeedback} className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#692f46] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">{feedbackLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}{feedbackLoading ? "Reviewing response…" : "Finish practice & get feedback"}</button></div>
+          {showFeedback ? <section className="mt-5 rounded-2xl bg-[#172126] p-6 text-white sm:p-8">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#ffd48a]">Evidence-based coaching review</p>
+              <h3 className="mt-2 text-2xl font-semibold">{feedback?.readinessLabel ?? (feedbackLoading ? "Reviewing your evidence…" : "Feedback unavailable")}</h3>
+              <p className="mt-2 text-xs text-white/40">Coaching assessment · not an admission score or prediction</p>
+            </div>
+            {feedbackLoading ? <div className="mt-6 flex items-center gap-3 rounded-xl bg-white/7 p-5 text-sm text-white/65"><LoaderCircle className="h-5 w-5 animate-spin text-[#ffd48a]" />Checking prompt coverage, evidence, reflection, clarity, and authenticity…</div> : null}
+            {feedbackError ? <div className="mt-6 rounded-xl bg-red-400/10 p-4 text-sm leading-6 text-red-100">{feedbackError} Check that the site feedback service is configured, then try again.</div> : null}
+            {feedback ? <>
+              <p className="mt-6 leading-7 text-white/75">{feedback.overallAssessment}</p>
+              <div className="mt-5 rounded-xl bg-white/7 p-4"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Prompt coverage</p><p className="mt-2 text-sm leading-6 text-white/70">{feedback.promptCoverage}</p></div>
+              <div className="mt-6 grid gap-3 lg:grid-cols-2">{feedback.rubric.map(item => <div key={item.criterion} className="rounded-xl bg-white/7 p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">{item.criterion}</p><span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-[#ffd48a]">{Math.max(0, Math.min(4, Math.round(item.rating)))}/4</span></div><p className="mt-3 text-sm leading-6 text-white/60"><strong className="text-white/80">Evidence:</strong> {item.evidence}</p><p className="mt-2 text-sm leading-6 text-white/60"><strong className="text-white/80">Improve:</strong> {item.nextStep}</p></div>)}</div>
+              {feedback.strongestEvidence.length > 0 ? <div className="mt-6"><h4 className="font-semibold">Strongest evidence already present</h4><ul className="mt-3 space-y-2 text-sm leading-6 text-white/65">{feedback.strongestEvidence.map(item => <li key={item} className="rounded-lg bg-emerald-400/10 px-4 py-3">✓ {item}</li>)}</ul></div> : null}
+              <div className="mt-6"><h4 className="font-semibold">Revision priorities</h4><div className="mt-3 space-y-3">{feedback.revisionPriorities.map((item, index) => <div key={`${item.priority}-${index}`} className="rounded-xl border border-[#ffd48a]/15 bg-[#ffd48a]/5 p-4"><p className="text-sm font-semibold text-[#ffd48a]">{index + 1}. {item.priority}</p><p className="mt-2 text-sm leading-6 text-white/60">{item.why}</p><p className="mt-2 text-sm leading-6 text-white/75"><strong>How:</strong> {item.how}</p></div>)}</div></div>
+              {feedback.authenticityCautions.length > 0 ? <div className="mt-6 rounded-xl bg-amber-300/10 p-4"><p className="text-sm font-semibold text-amber-100">Authenticity check</p><ul className="mt-2 space-y-1 text-sm leading-6 text-amber-50/65">{feedback.authenticityCautions.map(item => <li key={item}>• {item}</li>)}</ul></div> : null}
+              <div className="mt-6 border-t border-white/10 pt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Limits of this review</p><ul className="mt-2 space-y-1 text-xs leading-5 text-white/45">{feedback.limitations.map(item => <li key={item}>• {item}</li>)}</ul></div>
+            </> : null}
+          </section> : null}
         </section>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1.35fr]">
