@@ -93,6 +93,116 @@ const ubcSpecialProfiles = ubcSpecialRequirements.map(([id, program, requirement
   ],
 }));
 
+
+type VerifiedSupplementalSeed = {
+  id: string;
+  university: string;
+  program: string;
+  requirement: string;
+  deadline: string;
+  source: string;
+  practiceFocus: string;
+};
+
+const verifiedSupplementalSeeds: VerifiedSupplementalSeed[] = [
+  { id: "sfu-beedie-bba", university: "Simon Fraser University", program: "Beedie School of Business · BBA", requirement: "Mandatory supplemental application", deadline: "February 7, 2027 for fall entry", source: "https://beedie.sfu.ca/tracs/apply", practiceFocus: "leadership, collaboration, initiative, and reflection" },
+  { id: "sfu-contemporary-arts", university: "Simon Fraser University", program: "School for the Contemporary Arts · portfolio/audition programs", requirement: "Program-specific audition, interview, or portfolio", deadline: "February 7, 2027 for fall entry", source: "https://www.sfu.ca/students/admission/apply/dates-deadlines/high-school/fall-term.html", practiceFocus: "artistic intent, process, influences, and portfolio decisions" },
+
+  { id: "waterloo-engineering", university: "University of Waterloo", program: "Engineering · all programs except Architecture", requirement: "Mandatory Admission Information Form and online interview", deadline: "February 1, 2026 historical cycle · confirm current portal", source: "https://uwaterloo.ca/engineering/future-students/applying/admission-requirements", practiceFocus: "technical curiosity, teamwork, initiative, time management, and fit" },
+  { id: "waterloo-mathematics", university: "University of Waterloo", program: "Faculty of Mathematics programs", requirement: "Admission Information Form and Supplementary Information Form", deadline: "February 15, 2026 historical cycle · confirm current portal", source: "https://uwaterloo.ca/future-students/admissions/admission-information-form", practiceFocus: "mathematical engagement, contests, activities, goals, and resilience" },
+  { id: "waterloo-afm", university: "University of Waterloo", program: "Accounting and Financial Management", requirement: "Program-specific supplementary assessment", deadline: "Confirm in Waterloo applicant portal", source: "https://uwaterloo.ca/future-students/admissions/admission-information-form", practiceFocus: "business awareness, communication, collaboration, and ethical judgment" },
+  { id: "waterloo-architecture", university: "University of Waterloo", program: "Architecture", requirement: "Portfolio, précis, and interview process", deadline: "Confirm current Architecture invitation and deadline", source: "https://uwaterloo.ca/architecture/future-undergraduate-students", practiceFocus: "creative process, spatial thinking, observation, and portfolio curation" },
+
+  { id: "uoft-engineering", university: "University of Toronto", program: "Engineering · all programs", requirement: "Mandatory Online Student Profile with written and video components", deadline: "Confirm in Engineering Applicant Portal", source: "https://discover.engineering.utoronto.ca/how-to-apply/student-profile-form/", practiceFocus: "leadership, dedication, problem-solving, activities, and engineering motivation" },
+  { id: "uoft-computer-science", university: "University of Toronto", program: "Computer Science · St. George", requirement: "Computer Science Supplemental Application", deadline: "Confirm in Join U of T", source: "https://future.utoronto.ca/supplemental-applications", practiceFocus: "experiences, goals, problem-solving, and interest in computer science" },
+  { id: "utm-computer-science", university: "University of Toronto", program: "Computer Science · Mississauga", requirement: "Supplementary Application", deadline: "Confirm in Join U of T", source: "https://future.utoronto.ca/supplemental-applications", practiceFocus: "experiences, goals, problem-solving, and program fit" },
+  { id: "utsc-management", university: "University of Toronto", program: "Management and double-degree programs · Scarborough", requirement: "Supplementary Application Form", deadline: "Confirm in Join U of T", source: "https://future.utoronto.ca/supplemental-applications", practiceFocus: "leadership, business interest, teamwork, and community impact" },
+  { id: "utsc-special-programs", university: "University of Toronto", program: "UTSC International Development, Music Industry Technology, or Paramedicine", requirement: "Program-specific Supplementary Application Form", deadline: "Confirm in Join U of T", source: "https://future.utoronto.ca/supplemental-applications", practiceFocus: "program motivation, relevant preparation, judgment, and reflection" },
+  { id: "uoft-architecture", university: "University of Toronto", program: "Architectural Studies or Visual Studies", requirement: "One Idea Supplementary Application", deadline: "February 1, 2026 historical cycle · confirm current cycle", source: "https://future.utoronto.ca/supplemental-applications", practiceFocus: "one clear creative idea, visual communication, process, and reflection" },
+  { id: "uoft-kinesiology", university: "University of Toronto", program: "Kinesiology", requirement: "Statement of Interest", deadline: "Confirm in Join U of T", source: "https://future.utoronto.ca/supplemental-applications", practiceFocus: "motivation, relevant experience, understanding of kinesiology, and goals" },
+  { id: "uoft-music", university: "University of Toronto", program: "Faculty of Music · all programs", requirement: "Music Questionnaire, references, audition, and interview", deadline: "Confirm current Music deadlines", source: "https://music.utoronto.ca/admissions/undergraduate/applying", practiceFocus: "repertoire, musical growth, goals, interpretation, and audition readiness" },
+  { id: "utm-theatre", university: "University of Toronto", program: "Theatre and Drama Studies · Mississauga", requirement: "Audition", deadline: "Confirm current audition instructions", source: "https://future.utoronto.ca/supplemental-applications", practiceFocus: "performance choices, text interpretation, preparation, and artistic goals" },
+
+  { id: "mcmaster-arts-science", university: "McMaster University", program: "Arts & Science", requirement: "Mandatory written supplementary application", deadline: "February 1, 2026 · historical cycle", source: "https://artsci.mcmaster.ca/future-students/supplementary-application/", practiceFocus: "ideas, intellectual curiosity, interdisciplinary thinking, and reflection" },
+  { id: "mcmaster-leadership-civic", university: "McMaster University", program: "Leadership and Civic Studies · Wilson College", requirement: "Mandatory supplementary application", deadline: "February 1, 2026 · historical cycle", source: "https://wilsoncollege.mcmaster.ca/future-students/ready-to-apply/2026-wilson-college-supplementary-application/", practiceFocus: "civic responsibility, leadership, community context, and ethical reasoning" },
+  { id: "mcmaster-commerce", university: "McMaster University", program: "Commerce", requirement: "Optional but highly recommended written supplementary application", deadline: "April 17, 2026 · historical cycle", source: "https://ug.degroote.mcmaster.ca/apply/supplemental-application/", practiceFocus: "activities, strengths, business interest, initiative, and reflection" },
+  { id: "mcmaster-ibh", university: "McMaster University", program: "Integrated Business and Humanities", requirement: "Mandatory supplementary application", deadline: "February 2, 2026 · historical cycle", source: "https://future.mcmaster.ca/supplementary-applications/", practiceFocus: "business, humanities, social impact, collaboration, and personal fit" },
+  { id: "mcmaster-btech", university: "McMaster University", program: "Bachelor of Technology", requirement: "Supplementary application", deadline: "January 29, 2026 · historical cycle", source: "https://future.mcmaster.ca/supplementary-applications/", practiceFocus: "applied problem-solving, technical experience, teamwork, and goals" },
+  { id: "mcmaster-computer-science", university: "McMaster University", program: "Computer Science", requirement: "Kira Talent supplementary application", deadline: "January 29, 2026 · historical cycle", source: "https://www.eng.mcmaster.ca/supplementary-application/", practiceFocus: "problem-solving, collaboration, communication, and computing motivation" },
+  { id: "mcmaster-engineering", university: "McMaster University", program: "Engineering", requirement: "Kira Talent supplementary application", deadline: "January 29, 2026 · historical cycle", source: "https://www.eng.mcmaster.ca/supplementary-application/", practiceFocus: "problem-solving, collaboration, communication, resilience, and engineering motivation" },
+  { id: "mcmaster-ibiomed", university: "McMaster University", program: "Integrated Biomedical Engineering and Health Sciences", requirement: "Kira Talent supplementary application", deadline: "January 29, 2026 · historical cycle", source: "https://www.eng.mcmaster.ca/supplementary-application/", practiceFocus: "health innovation, engineering judgment, teamwork, empathy, and communication" },
+  { id: "mcmaster-health-sciences", university: "McMaster University", program: "Honours Health Sciences", requirement: "Mandatory written supplementary application", deadline: "Early/mid-February 2026 · historical cycle", source: "https://hhsp.healthsci.mcmaster.ca/future-students/supplementary-application/", practiceFocus: "critical thinking, creativity, communication, self-awareness, and perspective" },
+  { id: "mcmaster-midwifery", university: "McMaster University", program: "Midwifery", requirement: "Identity and Admissions Survey", deadline: "February 1, 2026 · historical cycle", source: "https://future.mcmaster.ca/supplementary-applications/", practiceFocus: "motivation, relevant understanding, identity, service, and reflective judgment" },
+  { id: "mcmaster-nursing", university: "McMaster University", program: "Nursing", requirement: "CASPer assessment", deadline: "Book an eligible 2025–26 testing date", source: "https://future.mcmaster.ca/supplementary-applications/", practiceFocus: "ethics, empathy, communication, conflict, professionalism, and judgment" },
+  { id: "mcmaster-iarts", university: "McMaster University", program: "Integrated Arts", requirement: "Electronic creative submission", deadline: "February 2, 2026 · historical cycle", source: "https://future.mcmaster.ca/supplementary-applications/", practiceFocus: "creative process, artistic identity, experimentation, and interdisciplinary goals" },
+  { id: "mcmaster-isci", university: "McMaster University", program: "Honours Integrated Science", requirement: "Mandatory supplementary application", deadline: "February 2, 2026 at noon ET · historical cycle", source: "https://sis.mcmaster.ca/undergraduate/isci/isci-admission-requirements/", practiceFocus: "scientific curiosity, interdisciplinary thinking, research, collaboration, and reflection" },
+
+  { id: "queens-health-sciences", university: "Queen's University", program: "Bachelor of Health Sciences", requirement: "Mandatory Kira Talent written and video supplementary application", deadline: "February 15, 2027", source: "https://www.queensu.ca/admission/applying/supplementary-application", practiceFocus: "initiative, adaptability, teamwork, impact, perspective, and reflection" },
+  { id: "queens-nursing", university: "Queen's University", program: "Nursing", requirement: "Mandatory Kira Talent written and video supplementary application", deadline: "February 15, 2027", source: "https://www.queensu.ca/admission/applying/supplementary-application", practiceFocus: "empathy, teamwork, adaptability, responsibility, communication, and reflection" },
+
+  { id: "western-music", university: "Western University", program: "Music", requirement: "Audition and interview", deadline: "February 1, 2027", source: "https://welcome.uwo.ca/next-steps/apply/submit-forms.html", practiceFocus: "repertoire, interpretation, musical goals, preparation, and performance reflection" },
+  { id: "western-visual-arts", university: "Western University", program: "Visual Arts · Studio", requirement: "Online portfolio and personal statement", deadline: "February 15, 2027", source: "https://welcome.uwo.ca/next-steps/apply/submit-forms.html", practiceFocus: "portfolio selection, creative process, influences, experimentation, and artistic goals" },
+  { id: "western-sasah", university: "Western University", program: "School for Advanced Studies in Arts and Humanities", requirement: "Statement of Interest", deadline: "February 28, 2027", source: "https://welcome.uwo.ca/next-steps/apply/submit-forms.html", practiceFocus: "intellectual curiosity, interdisciplinary interests, community, and program fit" },
+  { id: "western-cam", university: "Western University", program: "Commercial Aviation Management", requirement: "Supplementary Application Form", deadline: "March 1, 2027", source: "https://welcome.uwo.ca/next-steps/apply/submit-forms.html", practiceFocus: "aviation motivation, responsibility, teamwork, safety awareness, and goals" },
+  { id: "western-engineering", university: "Western University", program: "Engineering", requirement: "CASPer assessment", deadline: "Eligible test dates run October 2026–March 2027", source: "https://welcome.uwo.ca/next-steps/apply/submit-forms.html", practiceFocus: "ethics, teamwork, communication, professionalism, empathy, and judgment" },
+  { id: "western-wisc", university: "Western University", program: "Western Integrated Science", requirement: "Supplemental Application", deadline: "April 2027 · exact date to be confirmed", source: "https://welcome.uwo.ca/next-steps/apply/submit-forms.html", practiceFocus: "scientific curiosity, interdisciplinary thinking, teamwork, and research interest" },
+
+  { id: "uvic-music", university: "University of Victoria", program: "Bachelor of Music", requirement: "Audition", deadline: "February 15 · confirm current cycle", source: "https://www.uvic.ca/finearts/music/undergrad/apply/index.php", practiceFocus: "repertoire, interpretation, technique, preparation, and musical goals" },
+  { id: "uvic-music-computer-science", university: "University of Victoria", program: "Music and Computer Science", requirement: "Supplemental application", deadline: "Confirm current program deadline", source: "https://www.uvic.ca/finearts/music/undergrad/apply/index.php", practiceFocus: "music, computing, interdisciplinary goals, projects, and preparation" },
+  { id: "ualberta-music", university: "University of Alberta", program: "Music", requirement: "Audition application and audition or portfolio review", deadline: "Confirm current Music deadline", source: "https://www.ualberta.ca/en/music/admissions/undergraduate-admissions/application-process.html", practiceFocus: "repertoire, musical background, interpretation, goals, and readiness" },
+  { id: "ualberta-art-design", university: "University of Alberta", program: "BFA or BDes", requirement: "Mandatory portfolio application", deadline: "March 1 · confirm current cycle", source: "https://www.ualberta.ca/en/art-design/admissions/undergraduate-application/index.html", practiceFocus: "portfolio curation, creative process, experimentation, context, and goals" },
+  { id: "umanitoba-music", university: "University of Manitoba", program: "Bachelor of Music or Bachelor of Jazz Studies", requirement: "Audition, interview, and musicianship requirements", deadline: "January 15, 2026 · historical cycle", source: "https://umanitoba.ca/explore/undergraduate-admissions/requirements/music", practiceFocus: "repertoire, musicianship, interpretation, goals, and audition readiness" },
+  { id: "umanitoba-fine-arts", university: "University of Manitoba", program: "Fine Arts Studio · BFA or diploma", requirement: "Portfolio and supporting written statement", deadline: "March 1, 2026 · historical cycle", source: "https://umanitoba.ca/explore/undergraduate-admissions/requirements/fine-arts", practiceFocus: "portfolio selection, artistic intent, process, experimentation, and reflection" },
+  { id: "mcgill-global-engineering", university: "McGill University", program: "Bachelor of Global Engineering", requirement: "Personal statement and possible video interview", deadline: "Confirm in McGill Applicant Portal", source: "https://www.mcgill.ca/undergraduate-admissions/apply/submit-documents", practiceFocus: "global motivation, engineering preparation, cross-cultural goals, and fit" },
+  { id: "mcgill-music", university: "McGill University", program: "Schulich School of Music undergraduate programs", requirement: "Program-specific materials and audition requirements", deadline: "Confirm current Music deadline", source: "https://www.mcgill.ca/music/admissions/undergraduate/materials", practiceFocus: "repertoire, interpretation, musical development, goals, and audition preparation" },
+];
+
+const verifiedSupplementalProfiles = verifiedSupplementalSeeds.map((item) => ({
+  id: item.id,
+  university: item.university,
+  program: item.program,
+  deadline: item.deadline,
+  source: item.source,
+  note: `${item.university} lists this requirement for ${item.program}: ${item.requirement}. Requirements can change by admission cycle, applicant type, campus, or stream, so the official source and applicant portal control.`,
+  timerAccuracy:
+    "No timer is claimed unless the university publishes the exact current timing. Use the live portal timing for any assessed response.",
+  practice: {
+    written: {
+      seconds: null,
+      limit: null,
+      questions: [
+        `Portal prompt workspace: paste the exact current question for ${item.program} before drafting.`,
+        `Original practice: Describe one experience that demonstrates ${item.practiceFocus}. Explain your individual actions, evidence of impact, and what you learned.`,
+      ],
+    },
+    video: {
+      prepSeconds: null,
+      responseSeconds: null,
+      questions: [
+        `Original practice: Why does ${item.program} fit your preparation and goals? Use specific evidence rather than general praise.`,
+        `Original practice: Describe a difficult decision or setback related to ${item.practiceFocus}. What did you do and what changed afterward?`,
+      ],
+    },
+  },
+  components: [
+    {
+      title: item.requirement,
+      format: "Verified program-specific requirement",
+      help: "Open the official source and your applicant portal together. Record every prompt, file rule, reference, test, fee, and deadline before beginning.",
+    },
+    {
+      title: "Program-specific evidence bank",
+      format: item.practiceFocus,
+      help: "Prepare several truthful examples with context, your individual decisions, measurable or observable results, and meaningful reflection.",
+    },
+    {
+      title: "Final submission audit",
+      format: "Prompts, files, technology, references, and confirmation",
+      help: "Answer every part of each live prompt, follow file and timing rules exactly, verify references, test equipment, and save proof of submission.",
+    },
+  ],
+}));
+
 export const applicationProfiles = [
   {
     id: "ubc-sauder-bcom", university: "University of British Columbia", program: "Sauder Bachelor of Commerce", deadline: "Confirm in the UBC application", source: "https://www.sauder.ubc.ca/programs/bachelors-degrees/bachelor-commerce/program-admission",
@@ -111,6 +221,7 @@ export const applicationProfiles = [
   },
   ...ubcGeneralProfiles,
   ...ubcSpecialProfiles,
+  ...verifiedSupplementalProfiles,
   {
     id: "queens-commerce", university: "Queen's University", program: "Smith Bachelor of Commerce", deadline: "February 15, 2027", source: "https://smith.queensu.ca/bcom/program-details/supplementary-application.php",
     note: "Queen's Commerce uses Kira Talent. Questions are randomly assigned and are not released in advance.",
