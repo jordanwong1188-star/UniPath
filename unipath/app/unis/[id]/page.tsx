@@ -9,6 +9,7 @@ import {
   FileText,
 } from "lucide-react";
 import schools from "@/data/canadianSchools.json";
+import UniversityLogo from "@/app/components/UniversityLogo";
 
 const admissionsPages: Record<string, string> = {
   ubc: "https://you.ubc.ca/applying-ubc/requirements/",
@@ -139,15 +140,12 @@ export default async function UniversityPage({
 
               <div className="flex items-center gap-5">
 
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[#f1f4f4] p-4">
-
-                  <img
-                    src={`https://www.google.com/s2/favicons?domain=${school.domain}&sz=128`}
-                    alt={`${school.name} logo`}
-                    className="h-12 w-12 object-contain"
-                  />
-
-                </div>
+                <UniversityLogo
+                  domain={school.domain}
+                  name={school.name}
+                  shortName={school.shortName}
+                  size="hero"
+                />
 
                 <div>
 
