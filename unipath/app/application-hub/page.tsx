@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Award, Check, CheckCircle2, Clock3, Copy, ExternalLink, FilePenLine, LoaderCircle, RefreshCw, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Award, Check, CheckCircle2, Clock3, Copy, ExternalLink, FilePenLine, LoaderCircle, LockKeyhole, RefreshCw, Save, Search, Sparkles } from "lucide-react";
 import { getApplicationRubric, rubricScale } from "@/data/applicationRubrics";
+import { useStudent } from "@/app/components/StudentProvider";
 
 type ApplicationFeedback = {
   overallAssessment: string;
@@ -293,6 +294,7 @@ export const applicationProfiles = [
 ] as const;
 
 export function ApplicationHub({ mode, initialApplicationId, showChooser = true }: { mode: "scholarships" | "applications"; initialApplicationId?: string; showChooser?: boolean }) {
+  const { ready, isPremium, saveAttempt } = useStudent();
   const [query, setQuery] = useState("");
   const [focus, setFocus] = useState("All");
   const [prompt, setPrompt] = useState("");
@@ -310,6 +312,8 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const [feedback, setFeedback] = useState<ApplicationFeedback | null>(null);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackError, setFeedbackError] = useState("");
+  const [attemptId, setAttemptId] = useState<string | undefined>();
+  const [savedAt, setSavedAt] = useState("");
 
   const results = useMemo(() => scholarships.filter((item) => {
     const text = `${item.name} ${item.focus} ${item.eligibility} ${item.tag}`.toLowerCase();
@@ -363,6 +367,13 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
         throw new Error(data?.error || "Feedback could not be generated.");
       }
       setFeedback(data.feedback as ApplicationFeedback);
+      const ratings = (data.feedback as ApplicationFeedback).rubric.map(item => item.rating);
+      const averageScore = ratings.length ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length : undefined;
+      if (isPremium) {
+        const saved = saveAttempt({ id: attemptId, applicationId, university: selectedApplication.university, program: selectedApplication.program, mode: practiceMode, question: exactOrPracticePrompt, draft, feedback: data.feedback, score: averageScore ? Number(averageScore.toFixed(1)) : undefined });
+        setAttemptId(saved.id);
+        setSavedAt("Saved with feedback");
+      }
     } catch (error) {
       setFeedbackError(
         error instanceof Error ? error.message : "Feedback could not be generated."
@@ -372,11 +383,21 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
     }
   };
 
+  const saveCurrentDraft = () => {
+    if (!draft.trim() || !isPremium) return;
+    const activeQuestion = prompt.trim() || questions[questionIndex] || "Draft response";
+    const saved = saveAttempt({ id: attemptId, applicationId, university: selectedApplication.university, program: selectedApplication.program, mode: practiceMode, question: activeQuestion, draft, feedback: feedback ?? undefined });
+    setAttemptId(saved.id);
+    setSavedAt("Saved just now");
+  };
+
 
   useEffect(() => {
     setTimerRunning(false);
     setShowFeedback(false);
     setQuestionIndex(0);
+    setAttemptId(undefined);
+    setSavedAt("");
     const firstPhase = practiceMode === "video" ? "prep" : "response";
     setTimerPhase(firstPhase);
     setSecondsLeft((practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds) ?? 0);
@@ -440,7 +461,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start"><div><span className="rounded-full bg-[#f1e6d2] px-3 py-1 text-xs font-semibold">{item.tag}</span><h2 className="mt-4 text-2xl font-semibold">{item.name}</h2><p className="mt-2 text-sm font-semibold text-[#8c4964]">{item.value}</p></div><a href={item.url} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#172126] px-4 py-3 text-sm font-semibold text-white">Official source <ExternalLink className="h-4 w-4" /></a></div>
           <div className="mt-6 grid gap-5 border-t border-black/5 pt-5 sm:grid-cols-3"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Recognizes</p><p className="mt-2 text-sm leading-6 text-gray-600">{item.focus}</p></div><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Eligibility</p><p className="mt-2 text-sm leading-6 text-gray-600">{item.eligibility}</p></div><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Timing</p><p className="mt-2 text-sm leading-6 text-gray-600">{item.deadline}</p></div></div>
         </article>)}</div>
-      </div> : <div className="mt-8">
+      </div> : !ready ? <div className="mt-8 rounded-3xl bg-white p-12 text-center text-gray-500">Opening application tools…</div> : !isPremium ? <section className="mt-8 overflow-hidden rounded-3xl bg-[#172126] text-white"><div className="mx-auto max-w-3xl px-6 py-20 text-center"><span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#d7ff72] text-[#172126]"><LockKeyhole /></span><p className="mt-7 text-xs font-bold uppercase tracking-[.16em] text-[#d7ff72]">Membership feature</p><h2 className="mt-3 text-4xl font-semibold tracking-tight">Your application workspace is private and saved.</h2><p className="mx-auto mt-5 max-w-xl leading-7 text-white/60">Create a profile to practise program-specific supplementals, save every version, keep its feedback, and see how your scores improve.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link href="/pricing" className="rounded-xl bg-[#d7ff72] px-6 py-3.5 font-semibold text-[#172126]">View membership</Link><Link href="/login" className="rounded-xl border border-white/15 px-6 py-3.5 font-semibold">Log in</Link></div></div></section> : <div className="mt-8">
         <section className="overflow-hidden rounded-3xl bg-[#172126] text-white shadow-sm">
           <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
             <div>
@@ -476,7 +497,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
 
           <div className="mt-7 grid gap-5 lg:grid-cols-[1fr_310px]">
             <div className="rounded-2xl bg-[#f7f4ee] p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-[#692f46] px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-white">Practice question {questionIndex + 1}</span><button type="button" onClick={() => { setQuestionIndex(current => (current + 1) % questions.length); setDraft(""); setPrompt(""); resetTimer(); }} className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#692f46]"><RefreshCw className="h-4 w-4" /> New question</button></div>
+              <div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-[#692f46] px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-white">Practice question {questionIndex + 1}</span><div className="flex items-center gap-4"><button type="button" disabled={!draft.trim()} onClick={saveCurrentDraft} className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#692f46] disabled:opacity-40"><Save className="h-4 w-4" /> {savedAt || "Save draft"}</button><button type="button" onClick={() => { setQuestionIndex(current => (current + 1) % questions.length); setDraft(""); setPrompt(""); setAttemptId(undefined); setSavedAt(""); resetTimer(); }} className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#692f46]"><RefreshCw className="h-4 w-4" /> New question</button></div></div>
               <p className="mt-6 text-xl font-semibold leading-8">{questions[questionIndex]}</p>
               {practiceMode === "written" ? <textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); setFeedback(null); }} placeholder="Start writing when you start the timer..." className="mt-6 min-h-64 w-full resize-y rounded-xl border border-black/10 bg-white p-5 leading-7 outline-none focus:border-[#8c4964]" /> : <div className="mt-6 rounded-xl border border-dashed border-[#692f46]/25 bg-white p-5"><p className="font-semibold">Video response plan</p><p className="mt-2 text-sm leading-6 text-gray-500">During preparation, write only a few anchors: situation, your action, result, and reflection. When responding, look at the camera and speak naturally.</p><textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Short preparation notes..." className="mt-4 min-h-24 w-full resize-y rounded-lg border border-black/10 p-3 text-sm outline-none focus:border-[#8c4964]" /><label className="mt-4 block text-sm font-semibold">Response transcript <span className="font-normal text-gray-400">(for feedback)</span><textarea value={draft} onChange={e => { setDraft(e.target.value); setShowFeedback(false); setFeedback(null); }} placeholder="After practising aloud, type or paste what you said so UniPath can review its structure..." className="mt-2 min-h-36 w-full resize-y rounded-lg border border-black/10 p-3 font-normal leading-6 outline-none focus:border-[#8c4964]" /></label></div>}
               {practiceMode === "written" && <div className="mt-3 flex justify-between text-sm font-semibold"><span className="text-gray-500">{wordCount} words{selectedApplication.practice.written.limit ? ` / ${selectedApplication.practice.written.limit} maximum` : ""}</span>{selectedApplication.practice.written.limit && wordCount > selectedApplication.practice.written.limit ? <span className="text-red-600">Over the practice limit</span> : null}</div>}
