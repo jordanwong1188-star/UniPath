@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import schools from "@/data/canadianSchools.json";
 import UniversityLogo from "@/app/components/UniversityLogo";
+import SaveUniversityButton from "@/app/components/SaveUniversityButton";
 
 const admissionsPages: Record<string, string> = {
   ubc: "https://you.ubc.ca/applying-ubc/requirements/",
@@ -175,7 +176,7 @@ export default async function UniversityPage({
             </div>
 
 
-            <a
+            <div className="flex shrink-0 flex-col gap-3"><SaveUniversityButton id={school.id} /><a
               href={`https://${school.domain}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -183,7 +184,7 @@ export default async function UniversityPage({
             >
               Official website
               <ExternalLink className="h-4 w-4" />
-            </a>
+            </a></div>
 
           </div>
 
