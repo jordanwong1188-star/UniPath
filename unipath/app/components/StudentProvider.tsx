@@ -32,7 +32,8 @@ type StudentContextValue = StudentState & {
 };
 
 const STORAGE_KEY = "unipath-student-workspace-v1";
-const initialState: StudentState = { student: null, savedUniversityIds: [], attempts: [] };
+const testingStudent: Student = { name: "Test Student", email: "tester@unipath.local", plan: "preview" };
+const initialState: StudentState = { student: testingStudent, savedUniversityIds: [], attempts: [] };
 const StudentContext = createContext<StudentContextValue | null>(null);
 
 export function StudentProvider({ children }: { children: React.ReactNode }) {
@@ -42,7 +43,10 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored) setState(JSON.parse(stored) as StudentState);
+      if (stored) {
+        const parsed = JSON.parse(stored) as StudentState;
+        setState({ ...parsed, student: parsed.student ?? testingStudent });
+      }
     } catch { /* Ignore malformed preview data. */ }
     setReady(true);
   }, []);
@@ -54,7 +58,8 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<StudentContextValue>(() => ({
     ...state,
     ready,
-    isPremium: state.student?.plan === "premium" || state.student?.plan === "preview",
+    // Testing mode: every feature stays unlocked until production billing is connected.
+    isPremium: true,
     signInPreview: (name, email) => setState(current => ({ ...current, student: { name, email, plan: "preview" } })),
     signOut: () => setState(current => ({ ...current, student: null })),
     toggleUniversity: (id) => setState(current => ({
