@@ -17,7 +17,7 @@ Accuracy rules:
 - Respect authenticity: discourage exaggerated claims, prestige-dropping, clichés, and over-polished generic language.
 - For video transcripts, assess spoken clarity and natural delivery as far as text permits, but state that eye contact, pace, tone, and presence cannot be assessed from a transcript.
 - For portfolios, auditions, CASPer, and creative submissions, evaluate only the written practice material provided and explicitly state what cannot be assessed.
-- Ratings use 0–4: 0 absent, 1 weak, 2 developing, 3 strong, 4 exceptional. Use 4 rarely.
+- Ratings use 1–5: 1 weak, 2 developing, 3 competent, 4 strong, 5 exceptional. Use 5 rarely and only when the response contains compelling evidence that meets the supplied program-specific target.
 - Keep feedback specific, concise, and actionable for a Grade 11 or 12 student.
 `;
 
@@ -124,7 +124,7 @@ Evaluate these core dimensions:
 5. Reflection, self-awareness, and growth
 6. Structure, clarity, and concision
 7. Program-relevant qualities supported by the verified context
-8. Authenticity and natural voice
+8. Authenticity and natural voice\n\nUse the supplied program-specific rubric criteria as the primary rating dimensions. Do not substitute a universal leadership rubric when the selected program prioritizes another quality. Preserve the rubric's evidence-status distinction and do not describe a coaching framework as official.
 `;
 
     const result = await ai.models.generateContent({
