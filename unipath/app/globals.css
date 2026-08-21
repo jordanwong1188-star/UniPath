@@ -20,9 +20,7 @@ html { scroll-behavior: smooth; background: var(--background); }
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 85% -10%, rgba(85, 123, 128, .11), transparent 34rem),
-    linear-gradient(180deg, #0f1722 0%, #111b27 100%);
+  background: radial-gradient(circle at 85% -10%, rgba(85,123,128,.11), transparent 34rem), linear-gradient(180deg,#0f1722 0%,#111b27 100%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
@@ -39,35 +37,16 @@ button, a, input, select, textarea {
 }
 button:not(:disabled), a { cursor: pointer; }
 button:not(:disabled):active, a:active { transform: scale(.985); }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 2px solid rgba(143, 167, 182, .9);
-  outline-offset: 3px;
-}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid rgba(143,167,182,.9); outline-offset: 3px; }
 ::selection { background: #7891a3; color: #0b121b; }
 
-/* Site-wide entrance motion for pages that do not already use Framer Motion. */
-.unipath-reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  filter: blur(2px);
-  transition: opacity .58s cubic-bezier(.2,.8,.2,1), transform .58s cubic-bezier(.2,.8,.2,1), filter .58s ease;
-}
-.unipath-reveal.unipath-visible {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
-}
+.unipath-reveal { opacity: 0; transform: translateY(18px); filter: blur(2px); transition: opacity .58s cubic-bezier(.2,.8,.2,1), transform .58s cubic-bezier(.2,.8,.2,1), filter .58s ease; }
+.unipath-reveal.unipath-visible { opacity: 1; transform: translateY(0); filter: blur(0); }
 
-/* Quiet interaction lift for cards and panels. */
-main article,
-main [class*="rounded-"][class*="shadow"] {
-  transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, border-color 220ms ease;
-}
+main article, main [class*="rounded-"][class*="shadow"] { transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, border-color 220ms ease, background-color 220ms ease; }
 main article:hover { transform: translateY(-3px); }
 
-/* Professional UniPath palette. These compatibility aliases recolour older
-   page utilities so legacy screens follow the same system without bright,
-   playful greens/pinks/purples. */
+/* Compatibility palette for older utilities. */
 .bg-\[\#10191d\], .bg-\[\#172126\] { background-color: #0f1823 !important; }
 .text-\[\#172126\] { color: #182431; }
 .bg-\[\#d7ff72\], .bg-\[\#c8f169\] { background-color: #8fa7b6 !important; }
@@ -81,20 +60,85 @@ main article:hover { transform: translateY(-3px); }
 .text-\[\#ffd8e6\] { color: #c8d3da !important; }
 .bg-\[\#6cc5b4\] { background-color: #557b80 !important; }
 .text-\[\#6cc5b4\] { color: #6f969a !important; }
-
-/* Older light page foundations become sophisticated blue-grey neutrals. */
 .bg-\[\#f1f4ed\] { background-color: #d8dde0 !important; }
 .bg-\[\#f2efe8\] { background-color: #d5dadd !important; }
 .bg-\[\#f5f6f4\] { background-color: #d8dde0 !important; }
 .bg-\[\#dfe9e5\] { background-color: #c7d0d3 !important; }
 .bg-\[\#d7e4e6\] { background-color: #cbd5d9 !important; }
 
+/* Programs — dense research console. Keeps the powerful filtering layout,
+   but turns the old cream/lime implementation into a serious dark catalog. */
+body[data-page="programs"] main { background: #101923 !important; color: #e8edf3 !important; }
+body[data-page="programs"] main .bg-white,
+body[data-page="programs"] main .bg-white\/70,
+body[data-page="programs"] main .bg-white\/60 { background-color: #172536 !important; }
+body[data-page="programs"] main .bg-\[\#f2efe8\] { background-color: #101923 !important; }
+body[data-page="programs"] main .bg-\[\#dfe9e5\] { background-color: #142130 !important; }
+body[data-page="programs"] main .text-\[\#172126\] { color: #e8edf3 !important; }
+body[data-page="programs"] main .text-gray-600,
+body[data-page="programs"] main .text-gray-500 { color: #9ba9b8 !important; }
+body[data-page="programs"] main .text-gray-400 { color: #718394 !important; }
+body[data-page="programs"] main .border-\[\#172126\]\/10,
+body[data-page="programs"] main .border-black\/5,
+body[data-page="programs"] main .border-black\/10 { border-color: rgba(183,199,215,.11) !important; }
+body[data-page="programs"] main select,
+body[data-page="programs"] main input { color: #e8edf3; }
+body[data-page="programs"] main option { color: #e8edf3; background: #111c29; }
+body[data-page="programs"] main article { box-shadow: 0 12px 35px rgba(0,0,0,.12); }
+body[data-page="programs"] main article:hover { border-color: rgba(143,167,182,.28) !important; box-shadow: 0 22px 55px rgba(0,0,0,.2); }
+
+/* Deadlines — timeline dashboard. */
+body[data-page="deadlines"] main { background: #101923 !important; color: #e8edf3 !important; }
+body[data-page="deadlines"] main .bg-white,
+body[data-page="deadlines"] main .bg-white\/90 { background-color: #172536 !important; }
+body[data-page="deadlines"] main .bg-\[\#f5f7f8\] { background-color: #101923 !important; }
+body[data-page="deadlines"] main .bg-\[\#f7f8f8\],
+body[data-page="deadlines"] main .bg-\[\#edf1f1\] { background-color: #0f1823 !important; }
+body[data-page="deadlines"] main .bg-\[\#f3eee4\] { background-color: #17212b !important; }
+body[data-page="deadlines"] main .text-\[\#172126\],
+body[data-page="deadlines"] main .text-\[\#5a5142\],
+body[data-page="deadlines"] main .text-\[\#3c372f\] { color: #e8edf3 !important; }
+body[data-page="deadlines"] main .text-gray-600,
+body[data-page="deadlines"] main .text-gray-500 { color: #9ba9b8 !important; }
+body[data-page="deadlines"] main .text-gray-400 { color: #718394 !important; }
+body[data-page="deadlines"] main .border-black\/5,
+body[data-page="deadlines"] main .border-black\/10,
+body[data-page="deadlines"] main .border-amber-900\/10 { border-color: rgba(183,199,215,.1) !important; }
+body[data-page="deadlines"] main select,
+body[data-page="deadlines"] main input { color: #e8edf3; }
+body[data-page="deadlines"] main option { color: #e8edf3; background: #111c29; }
+body[data-page="deadlines"] main article { box-shadow: 0 12px 34px rgba(0,0,0,.11); }
+body[data-page="deadlines"] main article:hover { border-color: rgba(143,167,182,.28) !important; box-shadow: 0 22px 55px rgba(0,0,0,.2); }
+
+/* Assistant — focused advisor workspace rather than a floating white chat app. */
+body[data-page="ai-assistant"] main { background: #101923 !important; color: #e8edf3 !important; }
+body[data-page="ai-assistant"] main .bg-\[\#f5f7f8\],
+body[data-page="ai-assistant"] main .bg-\[\#f5f7f8\]\/90 { background-color: #101923 !important; }
+body[data-page="ai-assistant"] main .bg-white { background-color: #172536 !important; }
+body[data-page="ai-assistant"] main .bg-\[\#fafbfb\],
+body[data-page="ai-assistant"] main .bg-\[\#f1f4f4\],
+body[data-page="ai-assistant"] main .bg-\[\#edf1f1\],
+body[data-page="ai-assistant"] main .bg-\[\#e3e7e8\] { background-color: #111c29 !important; }
+body[data-page="ai-assistant"] main .text-\[\#172126\],
+body[data-page="ai-assistant"] main .text-\[\#344247\],
+body[data-page="ai-assistant"] main .text-\[\#536267\] { color: #e8edf3 !important; }
+body[data-page="ai-assistant"] main .text-gray-900,
+body[data-page="ai-assistant"] main .text-gray-700,
+body[data-page="ai-assistant"] main .text-gray-600,
+body[data-page="ai-assistant"] main .text-gray-500 { color: #9ba9b8 !important; }
+body[data-page="ai-assistant"] main .text-gray-400 { color: #718394 !important; }
+body[data-page="ai-assistant"] main .border-black\/5,
+body[data-page="ai-assistant"] main .border-black\/10,
+body[data-page="ai-assistant"] main .border-black\/20 { border-color: rgba(183,199,215,.1) !important; }
+body[data-page="ai-assistant"] main textarea { color: #e8edf3; }
+
+/* Remove playful legacy accent families anywhere they still appear. */
+.bg-\[\#eadde2\], .bg-\[\#f1e6d2\], .bg-\[\#e6f0ec\], .bg-\[\#edf1ee\] { background-color: #1a2a38 !important; }
+.text-\[\#692f46\], .text-\[\#8c4964\], .text-\[\#765928\], .text-\[\#2f6d62\], .text-\[\#315c54\] { color: #8fa7b6 !important; }
+.bg-\[\#ffd48a\] { background-color: #9fb2bd !important; }
+.text-\[\#ffd48a\] { color: #a8bac5 !important; }
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
-  }
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .unipath-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
 }
