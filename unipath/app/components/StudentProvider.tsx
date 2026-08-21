@@ -24,31 +24,54 @@ type StudentState = {
 
 type StudentContextValue = StudentState & {
   ready: boolean;
+  isFounder: boolean;
   isPremium: boolean;
   signInPreview: (name: string, email: string) => void;
+  signInFounder: (accessKey: string) => Promise<void>;
+  signOutFounder: () => Promise<void>;
   signOut: () => void;
   toggleUniversity: (id: string) => void;
   saveAttempt: (attempt: Omit<SavedAttempt, "id" | "updatedAt"> & { id?: string }) => SavedAttempt;
 };
 
 const STORAGE_KEY = "unipath-student-workspace-v1";
-const testingStudent: Student = { name: "Test Student", email: "tester@unipath.local", plan: "preview" };
-const initialState: StudentState = { student: testingStudent, savedUniversityIds: [], attempts: [] };
+const initialState: StudentState = { student: null, savedUniversityIds: [], attempts: [] };
 const StudentContext = createContext<StudentContextValue | null>(null);
 
 export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StudentState>(initialState);
   const [ready, setReady] = useState(false);
+  const [isFounder, setIsFounder] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as StudentState;
-        setState({ ...parsed, student: parsed.student ?? testingStudent });
+    let active = true;
+
+    async function hydrate() {
+      try {
+        const stored = window.localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as StudentState;
+          if (active) setState({ ...parsed, student: parsed.student ?? null });
+        }
+      } catch {
+        // Ignore malformed local preview data.
       }
-    } catch { /* Ignore malformed preview data. */ }
-    setReady(true);
+
+      try {
+        const response = await fetch("/api/founder-access", { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json();
+          if (active) setIsFounder(Boolean(data?.isFounder));
+        }
+      } catch {
+        // Founder access stays false if the entitlement endpoint is unavailable.
+      }
+
+      if (active) setReady(true);
+    }
+
+    void hydrate();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -58,9 +81,22 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<StudentContextValue>(() => ({
     ...state,
     ready,
-    // Testing mode: every feature stays unlocked until production billing is connected.
-    isPremium: true,
+    isFounder,
+    isPremium: isFounder || state.student?.plan === "premium",
     signInPreview: (name, email) => setState(current => ({ ...current, student: { name, email, plan: "preview" } })),
+    signInFounder: async (accessKey) => {
+      const response = await fetch("/api/founder-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessKey }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "Unable to enable founder access.");
+      setIsFounder(true);
+    },
+    signOutFounder: async () => {
+      try { await fetch("/api/founder-access", { method: "DELETE" }); } finally { setIsFounder(false); }
+    },
     signOut: () => setState(current => ({ ...current, student: null })),
     toggleUniversity: (id) => setState(current => ({
       ...current,
@@ -76,7 +112,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       }));
       return saved;
     },
-  }), [ready, state]);
+  }), [isFounder, ready, state]);
 
   return <StudentContext.Provider value={value}>{children}</StudentContext.Provider>;
 }
