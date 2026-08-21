@@ -40,8 +40,21 @@ button:not(:disabled):active, a:active { transform: scale(.985); }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid rgba(143,167,182,.9); outline-offset: 3px; }
 ::selection { background: #7891a3; color: #0b121b; }
 
-.unipath-reveal { opacity: 0; transform: translateY(18px); filter: blur(2px); transition: opacity .58s cubic-bezier(.2,.8,.2,1), transform .58s cubic-bezier(.2,.8,.2,1), filter .58s ease; }
-.unipath-reveal.unipath-visible { opacity: 1; transform: translateY(0); filter: blur(0); }
+/* Safe reveal treatment: content is always visible. MotionEffects may add these
+   classes, but they no longer hide sections while waiting for an observer. */
+.unipath-reveal,
+.unipath-reveal.unipath-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+.unipath-reveal.unipath-visible {
+  animation: unipath-enter .48s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes unipath-enter {
+  from { opacity: .72; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 main article, main [class*="rounded-"][class*="shadow"] { transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, border-color 220ms ease, background-color 220ms ease; }
 main article:hover { transform: translateY(-3px); }
@@ -140,5 +153,5 @@ body[data-page="ai-assistant"] main textarea { color: #e8edf3; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-  .unipath-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .unipath-reveal { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; }
 }
