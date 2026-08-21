@@ -1,36 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f6f4;
-  --foreground: #102536;
-  --brand-navy: #102536;
-  --brand-teal: #315d67;
-  --brand-brass: #b89a61;
-  --brand-ivory: #f5f6f4;
-  --brand-mist: #dce7e8;
+  --background: #0f1722;
+  --foreground: #e8edf3;
+  --brand-ink: #0b121b;
+  --brand-navy: #111c29;
+  --brand-slate: #172536;
+  --brand-slate-2: #1d2d3f;
+  --brand-steel: #7891a3;
+  --brand-teal: #557b80;
+  --brand-accent: #8fa7b6;
+  --brand-text: #e8edf3;
+  --brand-muted: #9ba9b8;
+  --brand-line: rgba(183, 199, 215, 0.12);
 }
+
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
+html { scroll-behavior: smooth; background: var(--background); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 85% -10%, rgba(85, 123, 128, .11), transparent 34rem),
+    linear-gradient(180deg, #0f1722 0%, #111b27 100%);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
 a { text-decoration: none; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-::selection { background: #172126; color: white; }
+button, a, input, select, textarea {
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform, filter;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(.2,.8,.2,1);
+}
+button:not(:disabled), a { cursor: pointer; }
+button:not(:disabled):active, a:active { transform: scale(.985); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid rgba(143, 167, 182, .9);
+  outline-offset: 3px;
+}
+::selection { background: #7891a3; color: #0b121b; }
 
-/* UniPath testing brand palette. These replace the early concept's bright
-   promotional colours with quieter academic and counselling tones. */
-.bg-\[\#10191d\] { background-color: #102536 !important; }
-.bg-\[\#172126\] { background-color: #102536 !important; }
-.text-\[\#172126\] { color: #102536 !important; }
-.bg-\[\#d7ff72\] { background-color: #b89a61 !important; }
-.text-\[\#d7ff72\] { color: #d5bd89 !important; }
-.border-\[\#d7ff72\] { border-color: #b89a61 !important; }
-.bg-\[\#6e5268\] { background-color: #315d67 !important; }
-.text-\[\#6e5268\] { color: #315d67 !important; }
-.border-\[\#6e5268\] { border-color: #315d67 !important; }
-.hover\:bg-\[\#85637e\]:hover { background-color: #3d6b74 !important; }
-.bg-\[\#ffd8e6\] { background-color: #dce7e8 !important; }
-.text-\[\#ffd8e6\] { color: #dce7e8 !important; }
-.bg-\[\#cce8ff\] { background-color: #d7e4e6 !important; }
-.bg-\[\#f1f4ed\] { background-color: #f5f6f4 !important; }
+/* Site-wide entrance motion for pages that do not already use Framer Motion. */
+.unipath-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(2px);
+  transition: opacity .58s cubic-bezier(.2,.8,.2,1), transform .58s cubic-bezier(.2,.8,.2,1), filter .58s ease;
+}
+.unipath-reveal.unipath-visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Quiet interaction lift for cards and panels. */
+main article,
+main [class*="rounded-"][class*="shadow"] {
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, border-color 220ms ease;
+}
+main article:hover { transform: translateY(-3px); }
+
+/* Professional UniPath palette. These compatibility aliases recolour older
+   page utilities so legacy screens follow the same system without bright,
+   playful greens/pinks/purples. */
+.bg-\[\#10191d\], .bg-\[\#172126\] { background-color: #0f1823 !important; }
+.text-\[\#172126\] { color: #182431; }
+.bg-\[\#d7ff72\], .bg-\[\#c8f169\] { background-color: #8fa7b6 !important; }
+.text-\[\#d7ff72\], .text-\[\#c8f169\] { color: #a8bac5 !important; }
+.border-\[\#d7ff72\], .border-\[\#c8f169\] { border-color: #7891a3 !important; }
+.bg-\[\#6e5268\] { background-color: #405f69 !important; }
+.text-\[\#6e5268\] { color: #557b80 !important; }
+.border-\[\#6e5268\] { border-color: #557b80 !important; }
+.hover\:bg-\[\#85637e\]:hover { background-color: #4d7079 !important; }
+.bg-\[\#ffd8e6\], .bg-\[\#cce8ff\] { background-color: #c8d3da !important; }
+.text-\[\#ffd8e6\] { color: #c8d3da !important; }
+.bg-\[\#6cc5b4\] { background-color: #557b80 !important; }
+.text-\[\#6cc5b4\] { color: #6f969a !important; }
+
+/* Older light page foundations become sophisticated blue-grey neutrals. */
+.bg-\[\#f1f4ed\] { background-color: #d8dde0 !important; }
+.bg-\[\#f2efe8\] { background-color: #d5dadd !important; }
+.bg-\[\#f5f6f4\] { background-color: #d8dde0 !important; }
+.bg-\[\#dfe9e5\] { background-color: #c7d0d3 !important; }
+.bg-\[\#d7e4e6\] { background-color: #cbd5d9 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .unipath-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+}
