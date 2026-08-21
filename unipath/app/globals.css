@@ -145,6 +145,104 @@ body[data-page="ai-assistant"] main .border-black\/10,
 body[data-page="ai-assistant"] main .border-black\/20 { border-color: rgba(183,199,215,.1) !important; }
 body[data-page="ai-assistant"] main textarea { color: #e8edf3; }
 
+/* Application workspaces — one cohesive dark studio across every application tab.
+   The response editors intentionally remain light for comfortable long-form writing. */
+body[data-page="applications"] main,
+body[data-page="application-hub"] main {
+  background: #101923 !important;
+  color: #e8edf3 !important;
+}
+body[data-page="applications"] main .bg-white,
+body[data-page="application-hub"] main .bg-white {
+  background-color: #172536 !important;
+}
+body[data-page="applications"] main .bg-\[\#f4f1ea\],
+body[data-page="application-hub"] main .bg-\[\#f4f1ea\],
+body[data-page="applications"] main .bg-\[\#f7f4ee\],
+body[data-page="application-hub"] main .bg-\[\#f7f4ee\],
+body[data-page="applications"] main .bg-\[\#f7f3ec\],
+body[data-page="application-hub"] main .bg-\[\#f7f3ec\],
+body[data-page="applications"] main .bg-\[\#faf9f6\],
+body[data-page="application-hub"] main .bg-\[\#faf9f6\],
+body[data-page="applications"] main .bg-\[\#fafafa\],
+body[data-page="application-hub"] main .bg-\[\#fafafa\],
+body[data-page="applications"] main .bg-\[\#fffaf5\],
+body[data-page="application-hub"] main .bg-\[\#fffaf5\],
+body[data-page="applications"] main .bg-\[\#eef2f1\],
+body[data-page="application-hub"] main .bg-\[\#eef2f1\],
+body[data-page="applications"] main .bg-\[\#f7edf1\],
+body[data-page="application-hub"] main .bg-\[\#f7edf1\] {
+  background-color: #111c29 !important;
+}
+body[data-page="applications"] main .text-\[\#172126\],
+body[data-page="application-hub"] main .text-\[\#172126\],
+body[data-page="applications"] main .text-gray-700,
+body[data-page="application-hub"] main .text-gray-700 {
+  color: #e8edf3 !important;
+}
+body[data-page="applications"] main .text-gray-600,
+body[data-page="application-hub"] main .text-gray-600,
+body[data-page="applications"] main .text-gray-500,
+body[data-page="application-hub"] main .text-gray-500 {
+  color: #9ba9b8 !important;
+}
+body[data-page="applications"] main .text-gray-400,
+body[data-page="application-hub"] main .text-gray-400 {
+  color: #718394 !important;
+}
+body[data-page="applications"] main .border-black\/5,
+body[data-page="application-hub"] main .border-black\/5,
+body[data-page="applications"] main .border-black\/10,
+body[data-page="application-hub"] main .border-black\/10,
+body[data-page="applications"] main .border-\[\#692f46\]\/10,
+body[data-page="application-hub"] main .border-\[\#692f46\]\/10,
+body[data-page="applications"] main .border-\[\#692f46\]\/25,
+body[data-page="application-hub"] main .border-\[\#692f46\]\/25 {
+  border-color: rgba(183,199,215,.12) !important;
+}
+body[data-page="applications"] main .bg-\[\#692f46\],
+body[data-page="application-hub"] main .bg-\[\#692f46\] {
+  background-color: #557b80 !important;
+}
+body[data-page="applications"] main .text-\[\#692f46\],
+body[data-page="application-hub"] main .text-\[\#692f46\],
+body[data-page="applications"] main .text-\[\#8c4964\],
+body[data-page="application-hub"] main .text-\[\#8c4964\] {
+  color: #9fb2bd !important;
+}
+body[data-page="applications"] main select,
+body[data-page="application-hub"] main select,
+body[data-page="applications"] main input,
+body[data-page="application-hub"] main input {
+  color: #e8edf3;
+}
+body[data-page="applications"] main option,
+body[data-page="application-hub"] main option {
+  color: #e8edf3;
+  background: #111c29;
+}
+
+/* Writing surfaces are intentionally paper-like: white, black text, strong caret,
+   and readable placeholders even inside the otherwise dark application studio. */
+body[data-page="applications"] main textarea,
+body[data-page="application-hub"] main textarea {
+  background: #ffffff !important;
+  color: #111827 !important;
+  caret-color: #111827 !important;
+  border-color: rgba(15,24,35,.18) !important;
+  box-shadow: inset 0 1px 2px rgba(15,24,35,.04);
+}
+body[data-page="applications"] main textarea::placeholder,
+body[data-page="application-hub"] main textarea::placeholder {
+  color: #7b8794 !important;
+  opacity: 1;
+}
+body[data-page="applications"] main textarea:focus,
+body[data-page="application-hub"] main textarea:focus {
+  border-color: #7891a3 !important;
+  box-shadow: 0 0 0 3px rgba(120,145,163,.16), inset 0 1px 2px rgba(15,24,35,.04);
+}
+
 /* Remove playful legacy accent families anywhere they still appear. */
 .bg-\[\#eadde2\], .bg-\[\#f1e6d2\], .bg-\[\#e6f0ec\], .bg-\[\#edf1ee\] { background-color: #1a2a38 !important; }
 .text-\[\#692f46\], .text-\[\#8c4964\], .text-\[\#765928\], .text-\[\#2f6d62\], .text-\[\#315c54\] { color: #8fa7b6 !important; }
