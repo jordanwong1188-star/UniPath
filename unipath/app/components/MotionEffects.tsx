@@ -7,8 +7,10 @@ export default function MotionEffects() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // The landing page already uses Framer Motion for its own choreography.
-    if (pathname === "/") return;
+    const pageName = pathname === "/" ? "home" : pathname.split("/").filter(Boolean)[0] || "home";
+    document.body.dataset.page = pageName;
+
+    if (pathname === "/") return () => { delete document.body.dataset.page; };
 
     const selector = "main section, main article, main aside, main footer";
     const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
@@ -32,7 +34,10 @@ export default function MotionEffects() {
 
     elements.forEach((element) => observer.observe(element));
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      delete document.body.dataset.page;
+    };
   }, [pathname]);
 
   return null;
