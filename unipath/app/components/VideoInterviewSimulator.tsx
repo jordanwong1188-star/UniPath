@@ -1,7 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CircleStop, LoaderCircle, Mic, Play, RefreshCw, ShieldCheck, Sparkles, Video } from "lucide-react";
+import {
+  Camera,
+  CirclePause,
+  CirclePlay,
+  CircleStop,
+  ExternalLink,
+  LoaderCircle,
+  Mic,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Timer,
+  Video,
+} from "lucide-react";
 
 type Feedback = {
   overallAssessment: string;
@@ -34,91 +47,179 @@ type InterviewFormat = {
   context: string;
 };
 
+type InterviewQuestion = {
+  prompt: string;
+  evidence: string;
+  source?: string;
+};
+
 const verifiedFormats: Record<string, InterviewFormat> = {
   "waterloo-engineering": {
     prepSeconds: null,
     responseSeconds: 90,
     formatLabel: "Recorded video · 90-second response",
     evidenceLabel: "Official response limit · Waterloo Engineering",
-    context: "Waterloo Engineering publicly specifies a prerecorded online Engineering interview with a 90-second video response. The public page confirms preparation time is provided but does not currently state a universal number of preparation seconds, so UniPath does not invent one.",
+    context: "Waterloo Engineering publicly specifies a prerecorded online Engineering interview with a 90-second recorded response. Public materials confirm preparation is provided but do not consistently publish one universal preparation countdown, so UniPath does not claim one as official.",
   },
   "uoft-engineering": {
     prepSeconds: 120,
     responseSeconds: 120,
     formatLabel: "2 min preparation · 2 min recording",
     evidenceLabel: "Official timing · U of T Engineering",
-    context: "U of T Engineering publicly states that the Personal Profile includes a video response with 2 minutes to prepare and 2 minutes to record. Assessment should emphasize reasoning and communication rather than a single correct answer.",
+    context: "U of T Engineering publicly states that the Personal Profile includes a video response with 2 minutes to prepare and 2 minutes to record. Assessment should emphasize reasoning, communication, problem-solving and self-awareness rather than a single correct answer.",
   },
   "queens-commerce": {
     prepSeconds: 120,
     responseSeconds: 120,
     formatLabel: "2 min preparation · 2 min recording",
     evidenceLabel: "Official timing and rubric · Queen's",
-    context: "Queen's Commerce uses Kira Talent. The current public format is one timed written response followed by one video response, with 2 minutes to prepare and 2 minutes to record. Queen's publishes a 1–5 video rubric emphasizing a specific authentic example, perspective-taking, ownership and impact, adaptability/composure, and meaningful reflection.",
+    context: "Queen's Commerce uses Kira Talent. The public format is one timed written response and one video response, with 2 minutes to prepare and 2 minutes to record. Queen's publishes a 1–5 video rubric emphasizing authentic examples, perspective-taking, ownership and impact, adaptability/composure and meaningful reflection.",
   },
   "queens-health-sciences": {
     prepSeconds: 120,
     responseSeconds: 120,
     formatLabel: "2 min preparation · 2 min recording",
     evidenceLabel: "Official timing · Queen's",
-    context: "Queen's Health Sciences uses the same Kira Talent supplementary-application delivery format published by Queen's: one written response and one video response, with 2 minutes to prepare and 2 minutes to record. Use the program-specific rubric supplied by UniPath for content scoring.",
+    context: "Queen's Health Sciences uses Kira Talent with a timed written and recorded video response. UniPath practice emphasizes initiative, adaptability, teamwork, impact, perspective and reflection while following the current published timing.",
   },
   "queens-nursing": {
     prepSeconds: 120,
     responseSeconds: 120,
     formatLabel: "2 min preparation · 2 min recording",
     evidenceLabel: "Official timing · Queen's",
-    context: "Queen's Nursing uses the same Kira Talent supplementary-application delivery format published by Queen's: one written response and one video response, with 2 minutes to prepare and 2 minutes to record. Use the program-specific rubric supplied by UniPath for content scoring.",
+    context: "Queen's Nursing uses the Queen's Kira supplementary-application format. Practice should emphasize empathy, responsibility, teamwork, adaptability, communication and reflection.",
   },
   "rotman-commerce": {
     prepSeconds: 60,
     responseSeconds: 90,
-    formatLabel: "Practice simulation · portal timing can change",
-    evidenceLabel: "Kira format verified · exact timing portal-only",
-    context: "Rotman Commerce publicly confirms a Kira Talent supplemental application with brief written and video questions and unlimited practice sessions. Exact current timed instructions are shown in Join U of T rather than guaranteed on the public page. The 60-second preparation and 90-second response used here are clearly a UniPath practice simulation, not claimed as official timing.",
+    formatLabel: "Practice simulation · current Kira timing may vary",
+    evidenceLabel: "Kira format verified · practice timing",
+    context: "Rotman Commerce publicly confirms a Kira Talent supplemental application with brief written and video questions and practice opportunities. Applicant reports consistently describe business/current-issue, judgment, problem-solving and reflection-style prompts. UniPath labels these questions as practice or applicant-reported themes rather than official future questions.",
   },
   "schulich-bba": {
     prepSeconds: 60,
     responseSeconds: 90,
-    formatLabel: "Practice simulation · Kira timing portal-only",
-    evidenceLabel: "Video component verified · timing simulated",
-    context: "Schulich publicly confirms that applicants upload the Leadership Profile before completing video interviews and a timed writing exercise in Kira Talent. Public 2027 instructions do not state universal per-question video timing, so UniPath labels these countdowns as practice settings rather than official limits. Feedback should emphasize initiative, collaboration, impact, resilience, empathy, and personal growth.",
+    formatLabel: "Practice simulation · current Kira timing may vary",
+    evidenceLabel: "Video component verified · practice timing",
+    context: "Schulich requires a Leadership Profile followed by Kira video interviews and a timed written exercise. Recent applicant reports describe ethical judgment, collaboration, academic problem-solving and leadership scenarios. UniPath uses those themes without claiming reported questions will repeat.",
   },
   "western-ivey-aeo": {
-    prepSeconds: null,
-    responseSeconds: null,
-    formatLabel: "Five-question Kira simulation · portal timing",
-    evidenceLabel: "Question count verified · timing portal-only",
-    context: "Ivey AEO publicly confirms a five-question Kira video assessment completed in one sitting with preparation time and timed responses, while exact per-question public timing is not fixed on the public page. Do not invent exact official seconds. Feedback should prioritize leadership through action, initiative, integrity, resilience, influence, results, and reflection.",
+    prepSeconds: 60,
+    responseSeconds: 90,
+    formatLabel: "Five-question Kira practice · applicant-reported timing",
+    evidenceLabel: "Five-question format verified · timing reported",
+    context: "Ivey AEO publicly confirms a five-question Kira video assessment completed in one sitting. Recent applicants commonly report leadership, development, resilience, difficult-situation and reflection themes. UniPath uses 60 seconds preparation and 90 seconds response as an applicant-reported practice setting, not a guaranteed official future timer.",
   },
   "ubc-sauder-bcom": {
-    prepSeconds: null,
-    responseSeconds: null,
-    formatLabel: "Recorded-response practice · live portal timing",
-    evidenceLabel: "Video component verified · timing portal-only",
-    context: "UBC Sauder includes recorded video responses in the Commerce Personal Profile. Current public instructions do not provide one reliable universal countdown for all applicants, so UniPath does not represent a fixed timer as official. Feedback should emphasize specific evidence, individual action, impact, reflection, adaptability, and authentic communication.",
+    prepSeconds: 30,
+    responseSeconds: 90,
+    formatLabel: "30 sec preparation · 90 sec response practice",
+    evidenceLabel: "Recent applicant-reported timing",
+    context: "UBC Sauder includes recorded video responses in the Commerce Personal Profile. Recent applicants report approximately 30 seconds of preparation and up to 90 seconds to answer, with questions drawn from a broad bank involving teamwork, leadership, values, communication, judgment and personal interests. UniPath marks these as applicant-reported practice settings rather than guaranteed future instructions.",
   },
   "ubc-bdes": {
-    prepSeconds: null,
-    responseSeconds: null,
-    formatLabel: "Program interview practice · live instructions",
-    evidenceLabel: "Interview requirement verified",
-    context: "UBC Bachelor of Design lists a video interview among its supplemental requirements. Follow the applicant portal for current prompt and timing. UniPath should assess the content of the student's response without claiming unpublished timing or questions are official.",
+    prepSeconds: 60,
+    responseSeconds: 120,
+    formatLabel: "Design interview practice · simulated timing",
+    evidenceLabel: "Interview requirement verified · timing simulated",
+    context: "UBC Bachelor of Design lists a video interview among its supplemental requirements. Practice questions focus on creative process, observation, collaboration, design decisions and reflection. Exact live timing and prompts must still be confirmed in the applicant portal.",
   },
   "ubc-pharmaceutical-sciences": {
-    prepSeconds: null,
-    responseSeconds: null,
+    prepSeconds: 60,
+    responseSeconds: 120,
     formatLabel: "Prerecorded virtual interview practice",
-    evidenceLabel: "Interview requirement verified",
-    context: "UBC Pharmaceutical Sciences lists a prerecorded virtual interview as an additional requirement. Exact live timing and prompts should be taken from the applicant portal; UniPath does not invent them.",
+    evidenceLabel: "Interview requirement verified · timing simulated",
+    context: "UBC Pharmaceutical Sciences lists a prerecorded virtual interview. UniPath practice focuses on communication, ethical judgment, health/science motivation, teamwork and reflection. Exact portal timing and questions can change.",
   },
   "ubc-pharmd": {
-    prepSeconds: null,
-    responseSeconds: null,
+    prepSeconds: 60,
+    responseSeconds: 120,
     formatLabel: "Prerecorded interview practice",
-    evidenceLabel: "Interview requirement verified",
-    context: "UBC Entry-to-Practice PharmD lists a prerecorded interview as an application component. Exact live timing and prompts should be taken from current official instructions; UniPath does not invent them.",
+    evidenceLabel: "Interview requirement verified · timing simulated",
+    context: "UBC Entry-to-Practice PharmD lists a prerecorded interview as an application component. Practice focuses on professionalism, ethics, patient-centred thinking, teamwork, communication and resilience. Exact portal timing and questions remain authoritative.",
   },
+};
+
+const researchedQuestionBanks: Record<string, InterviewQuestion[]> = {
+  "ubc-sauder-bcom": [
+    { prompt: "Describe a time you helped someone who needed support. What did you do, and what impact did you have?", evidence: "Applicant-reported past Sauder theme", source: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/" },
+    { prompt: "Describe a time you misunderstood a task or project. How did you recognize the problem and what did you do next?", evidence: "Applicant-reported past Sauder theme", source: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/" },
+    { prompt: "What makes someone an effective team leader, and how is that different from being an effective team member?", evidence: "Applicant-reported past Sauder theme", source: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/" },
+    { prompt: "Tell us about an experience or topic you could talk about for hours. Why does it matter to you?", evidence: "Applicant-reported past Sauder theme", source: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/" },
+    { prompt: "Tell us about a time your actions unintentionally hurt someone. How did you respond and what did you learn?", evidence: "Applicant-reported past Sauder theme", source: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/" },
+    { prompt: "Which matters more: completing acceptable work on time or taking extra time to produce stronger work? Explain how you would decide.", evidence: "Applicant-reported judgment theme", source: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/" },
+  ],
+  "rotman-commerce": [
+    { prompt: "Tell us about a deadline you were at risk of missing. What did you do, and what would you change next time?", evidence: "Recent applicant-reported practice theme", source: "https://www.reddit.com/r/RotmanCommerce/comments/1ovbdi8/rotman_commerce_supplemental_application_question/" },
+    { prompt: "Choose a current business or social issue that interests you. What trade-offs should decision-makers consider?", evidence: "Rotman-style current-issue practice based on applicant reports", source: "https://www.reddit.com/r/RotmanCommerce/comments/zn4zne/questions_asked_on_supplemental_application/" },
+    { prompt: "Describe a time you used evidence rather than instinct to make a difficult decision.", evidence: "UniPath Rotman-style practice · decision-making theme" },
+    { prompt: "Tell us about a setback that forced you to change your approach. What did you learn?", evidence: "UniPath Rotman-style practice · problem-solving theme" },
+    { prompt: "What perspective or experience would you bring to a collaborative business classroom?", evidence: "Applicant-reported Rotman theme", source: "https://www.reddit.com/r/RotmanCommerce/comments/kspnz3/hey_everyone/" },
+  ],
+  "schulich-bba": [
+    { prompt: "You discover that a friend cheated on an exam they might otherwise have failed. What would you do, and why?", evidence: "Recent applicant-reported Schulich scenario", source: "https://www.reddit.com/r/Schulich/comments/1pqfnkf/how_important_is_kira_assessment_in_admissions/" },
+    { prompt: "You are struggling in a required class close to final evaluations and have received very little feedback. How would you determine your next steps?", evidence: "Recent applicant-reported Schulich scenario", source: "https://www.reddit.com/r/Schulich/comments/1pqfnkf/how_important_is_kira_assessment_in_admissions/" },
+    { prompt: "Describe a time collaboration changed the outcome of a project. What did you personally contribute?", evidence: "UniPath Schulich-style practice · collaboration theme" },
+    { prompt: "Tell us about a leadership experience that changed how you work with other people.", evidence: "UniPath Schulich-style practice · Leadership Profile theme" },
+    { prompt: "A teammate is not contributing and a deadline is approaching. How would you address the situation while still protecting the team's result?", evidence: "Applicant-reported Schulich collaboration theme", source: "https://www.reddit.com/r/Schulich/comments/1pqfnkf/how_important_is_kira_assessment_in_admissions/" },
+  ],
+  "western-ivey-aeo": [
+    { prompt: "Tell us about a time you led without formal authority. How did you influence the outcome?", evidence: "Ivey-style practice · leadership theme" },
+    { prompt: "Describe a difficult situation where you had to pivot after realizing your first approach was not working.", evidence: "Recent applicant-reported Ivey theme", source: "https://www.reddit.com/r/OntarioGrade12s/comments/1q3gwo0/ivey_aeo_video_interview_2026/" },
+    { prompt: "Tell us about a commitment that tested your integrity. What decision did you make?", evidence: "Ivey-style practice · integrity theme" },
+    { prompt: "Describe a setback that changed how you lead or work with others.", evidence: "Recent applicant-reported Ivey development theme", source: "https://www.reddit.com/r/OntarioGrade12s/comments/1q3gwo0/ivey_aeo_video_interview_2026/" },
+    { prompt: "What contribution are you most proud of, and how do you know it mattered?", evidence: "Ivey-style practice · impact/reflection theme" },
+  ],
+  "queens-commerce": [
+    { prompt: "Describe a time a team faced a setback. How did you respond to the people around you and what was the outcome?", evidence: "Queen's-style practice based on published rubric and applicant-reported themes", source: "https://www.reddit.com/r/OntarioGrade12s/comments/1r41mi3/smith_commerce/" },
+    { prompt: "Tell us about a time you changed your approach after hearing a perspective different from your own.", evidence: "Queen's-style practice · perspective/adaptability rubric" },
+    { prompt: "Describe a situation where you took responsibility for an outcome that did not go as planned.", evidence: "Queen's-style practice · ownership/reflection rubric" },
+    { prompt: "Tell us about a time you had to remain composed while adapting quickly to a change.", evidence: "Queen's-style practice · adaptability/composure rubric" },
+  ],
+  "queens-health-sciences": [
+    { prompt: "Describe a time you had to understand a perspective very different from your own before deciding how to act.", evidence: "Queen's Health Sciences-style practice · perspective/reflection" },
+    { prompt: "Tell us about a time you took initiative to improve something for a group or community. What changed?", evidence: "Queen's Health Sciences-style practice · initiative/impact" },
+    { prompt: "Describe a setback that required you to adapt while working with others.", evidence: "Queen's Health Sciences-style practice · teamwork/adaptability" },
+    { prompt: "Tell us about a time new evidence caused you to reconsider an assumption.", evidence: "Queen's Health Sciences-style practice · evidence/reflection" },
+  ],
+  "queens-nursing": [
+    { prompt: "Describe a time someone was relying on you during a stressful situation. How did you respond?", evidence: "Queen's Nursing-style practice · responsibility/empathy" },
+    { prompt: "Tell us about a conflict in a team. How did you listen to the other person and move the group forward?", evidence: "Queen's Nursing-style practice · communication/teamwork" },
+    { prompt: "Describe a time you made a mistake that affected someone else. How did you take responsibility?", evidence: "Queen's Nursing-style practice · accountability/reflection" },
+    { prompt: "Tell us about a situation where you had to stay calm while priorities changed quickly.", evidence: "Queen's Nursing-style practice · adaptability/composure" },
+  ],
+  "waterloo-engineering": [
+    { prompt: "Describe a technical or practical problem that genuinely interested you. How did you investigate or solve it?", evidence: "Waterloo Engineering-style practice · technical curiosity/problem-solving" },
+    { prompt: "Tell us about a time a team project was not progressing as planned. What did you personally do?", evidence: "Waterloo Engineering-style practice · teamwork/initiative" },
+    { prompt: "Describe a situation where you had too many priorities at once. How did you decide what to do first?", evidence: "Waterloo Engineering-style practice · time management" },
+    { prompt: "What attracts you to engineering beyond being good at math and science?", evidence: "Waterloo Engineering-style practice · motivation/fit" },
+    { prompt: "Tell us about a failure or design setback that improved your next attempt.", evidence: "Waterloo Engineering-style practice · iteration/resilience" },
+  ],
+  "uoft-engineering": [
+    { prompt: "Describe a problem you faced where there was no obvious correct answer. How did you reason through it?", evidence: "U of T Engineering-style practice · reasoning/problem-solving" },
+    { prompt: "Tell us about a time you had to work with someone whose approach differed strongly from yours.", evidence: "U of T Engineering-style practice · collaboration" },
+    { prompt: "Describe a project or activity that strengthened your interest in engineering. What specifically did you learn?", evidence: "U of T Engineering-style practice · motivation/preparation" },
+    { prompt: "Tell us about a decision you made under time pressure. What information did you prioritize?", evidence: "U of T Engineering-style practice · judgment/communication" },
+    { prompt: "Describe a time feedback caused you to redesign or rethink something you had built or proposed.", evidence: "U of T Engineering-style practice · iteration/self-awareness" },
+  ],
+  "ubc-bdes": [
+    { prompt: "Choose one project from your creative work and explain the most important design decision you made.", evidence: "UBC BDes-style practice · creative process" },
+    { prompt: "Describe something in the built environment you think could work better. How would you begin investigating it?", evidence: "UBC BDes-style practice · observation/design thinking" },
+    { prompt: "Tell us about a time critique changed the direction of something you were making.", evidence: "UBC BDes-style practice · critique/reflection" },
+    { prompt: "Describe a collaborative creative project where your first idea was not the idea the group ultimately used.", evidence: "UBC BDes-style practice · collaboration/adaptability" },
+  ],
+  "ubc-pharmaceutical-sciences": [
+    { prompt: "Why are pharmaceutical sciences interesting to you beyond a general interest in health or science?", evidence: "UBC Pharmaceutical Sciences-style practice · motivation" },
+    { prompt: "Describe a time you had to communicate a technical idea to someone without your background.", evidence: "UBC Pharmaceutical Sciences-style practice · communication" },
+    { prompt: "You notice a teammate has made an error that could affect the quality of a shared result. What do you do?", evidence: "UBC Pharmaceutical Sciences-style practice · ethics/teamwork" },
+    { prompt: "Tell us about a scientific or health-related question that made you curious enough to investigate further.", evidence: "UBC Pharmaceutical Sciences-style practice · curiosity/reflection" },
+  ],
+  "ubc-pharmd": [
+    { prompt: "Describe a time you had to earn someone's trust before you could help them.", evidence: "UBC PharmD-style practice · communication/empathy" },
+    { prompt: "You realize you made an error while working on something that affects another person. What do you do next?", evidence: "UBC PharmD-style practice · professionalism/accountability" },
+    { prompt: "Tell us about a conflict where listening carefully changed how you responded.", evidence: "UBC PharmD-style practice · patient-centred communication" },
+    { prompt: "Describe a stressful situation where you had to remain accurate and responsible despite pressure.", evidence: "UBC PharmD-style practice · resilience/professionalism" },
+  ],
 };
 
 function formatTime(seconds: number) {
@@ -131,13 +232,15 @@ export function supportsVideoInterview(id: string) {
 
 export default function VideoInterviewSimulator({ profile }: { profile: Profile }) {
   const format = verifiedFormats[profile.id];
-  const questions = profile.practice.video.questions;
+  const questions = researchedQuestionBanks[profile.id] ?? profile.practice.video.questions.map(prompt => ({ prompt, evidence: "UniPath practice question" }));
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [phase, setPhase] = useState<"setup" | "prep" | "recording" | "review">("setup");
+  const [phase, setPhase] = useState<"setup" | "prep" | "ready" | "recording" | "review">("setup");
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [recordingUrl, setRecordingUrl] = useState("");
   const [transcript, setTranscript] = useState("");
+  const [interimTranscript, setInterimTranscript] = useState("");
   const [permissionError, setPermissionError] = useState("");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [feedbackError, setFeedbackError] = useState("");
@@ -147,10 +250,13 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const recognitionRef = useRef<any>(null);
+  const finalTranscriptRef = useRef("");
 
-  const prompt = questions[questionIndex] ?? "Practice interview question";
-  const hasOfficialOrSimulatedPrep = format?.prepSeconds !== null && format?.prepSeconds !== undefined;
+  const activeQuestion = questions[questionIndex] ?? { prompt: "Practice interview question", evidence: "UniPath practice question" };
+  const prompt = activeQuestion.prompt;
+  const hasPrep = format?.prepSeconds !== null && format?.prepSeconds !== undefined;
   const hasResponseLimit = format?.responseSeconds !== null && format?.responseSeconds !== undefined;
+  const liveTranscript = [transcript, interimTranscript].filter(Boolean).join(" ").trim();
 
   const score = useMemo(() => {
     if (!feedback?.rubric?.length) return null;
@@ -164,18 +270,18 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
   }, [stream]);
 
   useEffect(() => {
-    if ((phase !== "prep" && phase !== "recording") || secondsLeft <= 0) return;
+    if (!timerRunning || secondsLeft <= 0) return;
     const timer = window.setTimeout(() => setSecondsLeft(value => Math.max(0, value - 1)), 1000);
     return () => window.clearTimeout(timer);
-  }, [phase, secondsLeft]);
+  }, [timerRunning, secondsLeft]);
 
   useEffect(() => {
-    if (secondsLeft !== 0) return;
-    if (phase === "prep") void beginRecording();
+    if (secondsLeft !== 0 || !timerRunning) return;
+    setTimerRunning(false);
+    if (phase === "prep") setPhase("ready");
     if (phase === "recording" && hasResponseLimit) stopRecording();
-    // beginRecording/stopRecording intentionally transition the phase.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secondsLeft, phase, hasResponseLimit]);
+  }, [secondsLeft, timerRunning, phase, hasResponseLimit]);
 
   useEffect(() => () => {
     stream?.getTracks().forEach(track => track.stop());
@@ -189,7 +295,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
       const next = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       setStream(next);
     } catch {
-      setPermissionError("Camera and microphone access is required for realistic interview practice. Check the browser permission for this site and try again.");
+      setPermissionError("Camera and microphone access is required. Check the browser permission for this site and try again.");
     }
   }
 
@@ -200,17 +306,52 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
       setSpeechSupported(false);
       return null;
     }
+
     const recognition = new Recognition();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-CA";
+
     recognition.onresult = (event: any) => {
-      let text = "";
-      for (let i = 0; i < event.results.length; i += 1) text += `${event.results[i][0].transcript} `;
-      setTranscript(text.trim());
+      let finalText = finalTranscriptRef.current;
+      let interimText = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const phrase = event.results[i][0]?.transcript?.trim();
+        if (!phrase) continue;
+        if (event.results[i].isFinal) {
+          finalText = `${finalText} ${phrase}`.trim();
+        } else {
+          interimText = `${interimText} ${phrase}`.trim();
+        }
+      }
+
+      finalTranscriptRef.current = finalText;
+      setTranscript(finalText);
+      setInterimTranscript(interimText);
     };
-    recognition.onerror = () => {};
+
+    recognition.onerror = (event: any) => {
+      if (event?.error === "not-allowed" || event?.error === "service-not-allowed") setSpeechSupported(false);
+    };
+
+    recognition.onend = () => {
+      if (recorderRef.current?.state === "recording") {
+        try { recognition.start(); } catch {}
+      }
+    };
+
     return recognition;
+  }
+
+  function resetResponseState() {
+    if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+    setRecordingUrl("");
+    setTranscript("");
+    setInterimTranscript("");
+    finalTranscriptRef.current = "";
+    setFeedback(null);
+    setFeedbackError("");
   }
 
   async function beginRecording() {
@@ -226,19 +367,25 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
       }
     }
 
-    if (recordingUrl) URL.revokeObjectURL(recordingUrl);
-    setRecordingUrl("");
-    setTranscript("");
-    setFeedback(null);
-    setFeedbackError("");
+    resetResponseState();
     chunksRef.current = [];
 
-    const recorder = new MediaRecorder(activeStream);
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(activeStream);
+    } catch {
+      setPermissionError("This browser could not start video recording. Try the latest Chrome or Edge.");
+      return;
+    }
+
     recorderRef.current = recorder;
     recorder.ondataavailable = event => { if (event.data.size > 0) chunksRef.current.push(event.data); };
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
       setRecordingUrl(URL.createObjectURL(blob));
+      setTimerRunning(false);
+      setInterimTranscript("");
+      setTranscript(finalTranscriptRef.current.trim());
       setPhase("review");
     };
     recorder.start(250);
@@ -248,40 +395,58 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
     try { recognition?.start(); } catch {}
 
     setPhase("recording");
-    setSecondsLeft(format.responseSeconds ?? 0);
+    if (hasResponseLimit) {
+      setSecondsLeft(format.responseSeconds ?? 0);
+      setTimerRunning(true);
+    } else {
+      setSecondsLeft(0);
+      setTimerRunning(false);
+    }
   }
 
   function stopRecording() {
     try { recognitionRef.current?.stop?.(); } catch {}
     recognitionRef.current = null;
+    setTimerRunning(false);
     const recorder = recorderRef.current;
     if (recorder && recorder.state !== "inactive") recorder.stop();
   }
 
-  function startAttempt() {
-    setFeedback(null);
-    setFeedbackError("");
-    setTranscript("");
-    if (hasOfficialOrSimulatedPrep) {
+  function startPrep() {
+    resetResponseState();
+    if (hasPrep) {
       setPhase("prep");
       setSecondsLeft(format.prepSeconds ?? 0);
+      setTimerRunning(true);
     } else {
-      void beginRecording();
+      setPhase("ready");
+      setSecondsLeft(0);
     }
   }
 
+  function toggleTimer() {
+    if (secondsLeft <= 0) return;
+    setTimerRunning(value => !value);
+  }
+
+  function resetTimer() {
+    setTimerRunning(false);
+    if (phase === "prep") setSecondsLeft(format.prepSeconds ?? 0);
+    if (phase === "recording") setSecondsLeft(format.responseSeconds ?? 0);
+  }
+
   function nextQuestion() {
+    if (phase === "recording") stopRecording();
     setQuestionIndex(current => (current + 1) % questions.length);
     setPhase("setup");
-    setTranscript("");
-    setFeedback(null);
-    setFeedbackError("");
-    if (recordingUrl) URL.revokeObjectURL(recordingUrl);
-    setRecordingUrl("");
+    setTimerRunning(false);
+    setSecondsLeft(0);
+    resetResponseState();
   }
 
   async function gradeAttempt() {
-    if (!transcript.trim() || grading) return;
+    const responseText = liveTranscript || transcript;
+    if (!responseText.trim() || grading) return;
     setGrading(true);
     setFeedbackError("");
     try {
@@ -293,8 +458,8 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
           program: profile.program,
           mode: "video",
           prompt,
-          response: transcript,
-          context: `${format.context}\nThis is a transcript captured from a recorded practice answer. Grade content and spoken-answer structure. Do not claim to assess eye contact, facial expression, vocal tone, or confidence unless a future multimodal evaluator is explicitly provided.`,
+          response: responseText,
+          context: `${format.context}\nQUESTION EVIDENCE: ${activeQuestion.evidence}.\nThis is a transcript captured from a recorded practice answer. Grade content and spoken-answer structure. Do not claim to assess eye contact, facial expression, vocal tone, attractiveness, accent or personality from text alone.`,
         }),
       });
       const data = await response.json();
@@ -314,43 +479,69 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
       <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#111c29] text-white shadow-[0_24px_80px_rgba(0,0,0,.24)]">
         <div className="flex flex-col justify-between gap-5 border-b border-white/10 px-6 py-6 sm:px-8 lg:flex-row lg:items-center">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.16em] text-[#9fb2bd]"><Video className="h-4 w-4" /> Realistic video interview simulator</div>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.16em] text-[#9fb2bd]"><Video className="h-4 w-4" /> Program-specific video interview simulator</div>
             <h2 className="mt-3 text-2xl font-semibold">{profile.program}</h2>
             <p className="mt-2 text-sm text-white/55">{format.formatLabel}</p>
           </div>
           <div className="rounded-full border border-[#8fa7b6]/20 bg-[#8fa7b6]/10 px-4 py-2 text-xs font-semibold text-[#b6c5ce]">{format.evidenceLabel}</div>
         </div>
 
-        <div className="grid lg:grid-cols-[1.15fr_.85fr]">
-          <div className="border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r">
-            <div className="flex items-center justify-between gap-4"><span className="text-xs font-semibold uppercase tracking-[.14em] text-white/40">Question {questionIndex + 1} of {questions.length}</span><button type="button" onClick={nextQuestion} className="inline-flex items-center gap-2 text-xs font-semibold text-[#a8bac5]"><RefreshCw className="h-3.5 w-3.5" /> New question</button></div>
+        <div className="grid lg:grid-cols-[1.1fr_.9fr]">
+          <div className="border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r lg:border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs font-semibold uppercase tracking-[.14em] text-white/40">Question {questionIndex + 1} of {questions.length}</span>
+              <button type="button" onClick={nextQuestion} className="inline-flex items-center gap-2 text-xs font-semibold text-[#a8bac5]"><RefreshCw className="h-3.5 w-3.5" /> New question</button>
+            </div>
+
             <p className="mt-5 text-xl font-semibold leading-8">{prompt}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/45">
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5">{activeQuestion.evidence}</span>
+              {activeQuestion.source ? <a href={activeQuestion.source} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#a8bac5] hover:underline">Public discussion source <ExternalLink className="h-3 w-3" /></a> : null}
+            </div>
 
             <div className="relative mt-6 aspect-video overflow-hidden rounded-2xl border border-white/10 bg-[#090f16]">
-              {stream ? <video ref={previewRef} autoPlay muted playsInline className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center p-6 text-center"><div><Camera className="mx-auto h-8 w-8 text-white/30" /><p className="mt-3 text-sm font-semibold">Camera preview</p><p className="mt-1 text-xs text-white/40">Your browser will ask for camera and microphone permission.</p></div></div>}
+              {stream ? <video ref={previewRef} autoPlay muted playsInline className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center p-6 text-center"><div><Camera className="mx-auto h-8 w-8 text-white/30" /><p className="mt-3 text-sm font-semibold">Camera preview</p><p className="mt-1 text-xs text-white/40">Enable your camera and microphone before beginning.</p></div></div>}
               {phase === "recording" ? <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-red-600 px-3 py-1.5 text-xs font-bold"><span className="h-2 w-2 animate-pulse rounded-full bg-white" /> REC</div> : null}
-              {(phase === "prep" || (phase === "recording" && hasResponseLimit)) ? <div className="absolute right-4 top-4 rounded-xl bg-black/60 px-3 py-2 font-mono text-lg font-semibold backdrop-blur">{formatTime(secondsLeft)}</div> : null}
+              {(phase === "prep" || (phase === "recording" && hasResponseLimit)) ? <div className="absolute right-4 top-4 rounded-xl bg-black/65 px-3 py-2 font-mono text-lg font-semibold backdrop-blur">{formatTime(secondsLeft)}</div> : null}
             </div>
 
             {permissionError ? <p className="mt-3 text-sm text-red-300">{permissionError}</p> : null}
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              {!stream ? <button type="button" onClick={enableCamera} className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#111c29]"><Camera className="h-4 w-4" /> Enable camera & mic</button> : null}
-              {stream && (phase === "setup" || phase === "review") ? <button type="button" onClick={startAttempt} className="inline-flex items-center gap-2 rounded-xl bg-[#9fb2bd] px-5 py-3 text-sm font-semibold text-[#0b121b]"><Mic className="h-4 w-4" /> {phase === "review" ? "Record another attempt" : "Start interview"}</button> : null}
-              {phase === "recording" ? <button type="button" onClick={stopRecording} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold"><CircleStop className="h-4 w-4" /> Stop recording</button> : null}
+            <div className="mt-5 rounded-2xl border border-white/10 bg-[#0d1722] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div><p className="text-sm font-semibold">Practice controls</p><p className="mt-1 text-xs text-white/40">Real application platforms may not allow pausing. These controls are for practice.</p></div>
+                {(phase === "prep" || phase === "recording") && secondsLeft > 0 ? <div className="flex items-center gap-2 text-xs font-semibold text-white/55"><Timer className="h-4 w-4" /> {timerRunning ? "Timer running" : "Timer paused"}</div> : null}
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {!stream ? <button type="button" onClick={enableCamera} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#111c29]"><Camera className="h-4 w-4" /> Enable camera & mic</button> : null}
+                {stream && (phase === "setup" || phase === "review") ? <button type="button" onClick={startPrep} className="inline-flex items-center gap-2 rounded-xl bg-[#9fb2bd] px-4 py-2.5 text-sm font-semibold text-[#0b121b]"><CirclePlay className="h-4 w-4" /> Start prep timer</button> : null}
+                {phase === "prep" && secondsLeft > 0 ? <button type="button" onClick={toggleTimer} className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold">{timerRunning ? <CirclePause className="h-4 w-4" /> : <CirclePlay className="h-4 w-4" />}{timerRunning ? "Pause timer" : "Resume timer"}</button> : null}
+                {phase === "prep" ? <button type="button" onClick={resetTimer} className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold">Reset timer</button> : null}
+                {stream && (phase === "ready" || phase === "prep") ? <button type="button" onClick={() => void beginRecording()} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold"><Mic className="h-4 w-4" /> Start video response</button> : null}
+                {phase === "recording" ? <button type="button" onClick={stopRecording} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold"><CircleStop className="h-4 w-4" /> Stop video response</button> : null}
+                {phase === "recording" && hasResponseLimit && secondsLeft > 0 ? <button type="button" onClick={toggleTimer} className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold">{timerRunning ? <CirclePause className="h-4 w-4" /> : <CirclePlay className="h-4 w-4" />}{timerRunning ? "Pause timer" : "Resume timer"}</button> : null}
+              </div>
             </div>
 
-            {phase === "prep" ? <div className="mt-5 rounded-xl border border-[#8fa7b6]/15 bg-[#8fa7b6]/8 p-4"><p className="text-sm font-semibold">Preparation time</p><p className="mt-1 text-xs leading-5 text-white/50">Think in anchors, not a script: situation → your decision/action → result → reflection. Recording begins automatically when the countdown reaches zero.</p></div> : null}
+            {phase === "prep" || phase === "ready" ? <div className="mt-4 rounded-xl border border-[#8fa7b6]/15 bg-[#8fa7b6]/8 p-4"><p className="text-sm font-semibold">Preparation</p><p className="mt-1 text-xs leading-5 text-white/50">Build only a few anchors: context → your action/decision → result → reflection. Start the recording when you are ready; if this program has a verified or simulated response limit, the response timer begins with the video.</p></div> : null}
           </div>
 
           <aside className="p-6 sm:p-8">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.14em] text-white/40"><ShieldCheck className="h-4 w-4" /> Attempt review</div>
-            {recordingUrl ? <div className="mt-5"><p className="text-sm font-semibold">Replay your response</p><video src={recordingUrl} controls playsInline className="mt-3 w-full rounded-xl border border-white/10 bg-black" /></div> : <div className="mt-5 rounded-xl bg-white/5 p-5 text-sm leading-6 text-white/50">Your recording, transcript, and program-specific coaching will appear here after the attempt.</div>}
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.14em] text-white/40"><ShieldCheck className="h-4 w-4" /> Live transcript & review</div>
+
+            <div className="mt-5">
+              <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">Live transcription</p>{phase === "recording" ? <span className="flex items-center gap-1.5 text-xs font-semibold text-red-300"><span className="h-2 w-2 animate-pulse rounded-full bg-red-400" /> listening</span> : null}</div>
+              <div aria-live="polite" className="mt-3 min-h-40 max-h-64 overflow-y-auto rounded-xl border border-slate-300 bg-white p-4 text-sm leading-6 text-[#111827] shadow-inner">
+                {liveTranscript ? <>{transcript}{interimTranscript ? <span className="text-slate-400"> {interimTranscript}</span> : null}</> : <span className="text-slate-400">{speechSupported ? (phase === "recording" ? "Listening… your words will appear here as you speak." : "Your live transcript will appear here once recording begins.") : "Live browser transcription is not available here. Try current Chrome or Edge for speech recognition."}</span>}
+              </div>
+              <p className="mt-2 text-[11px] leading-5 text-white/35">Speech recognition can make mistakes. The transcript is used for coaching, while the video remains available for your own replay.</p>
+            </div>
+
+            {recordingUrl ? <div className="mt-6"><p className="text-sm font-semibold">Replay your response</p><video src={recordingUrl} controls playsInline className="mt-3 w-full rounded-xl border border-white/10 bg-black" /></div> : null}
 
             {phase === "review" ? <div className="mt-5">
-              <p className="text-sm font-semibold">Automatic transcript</p>
-              {transcript ? <p className="mt-2 max-h-40 overflow-y-auto rounded-xl bg-white/5 p-4 text-sm leading-6 text-white/65">{transcript}</p> : <p className="mt-2 rounded-xl border border-amber-300/15 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100/70">{speechSupported ? "No speech was captured clearly enough to transcribe. You can replay the recording and try another attempt." : "This browser does not provide live speech recognition. Video recording still works, but automatic transcript grading currently needs Chrome/Edge speech recognition support."}</p>}
-              <button type="button" disabled={!transcript.trim() || grading} onClick={gradeAttempt} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#9fb2bd] px-5 py-3 text-sm font-semibold text-[#0b121b] disabled:cursor-not-allowed disabled:opacity-40">{grading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{grading ? "Grading interview…" : "Grade this recorded answer"}</button>
+              <button type="button" disabled={!transcript.trim() || grading} onClick={gradeAttempt} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#9fb2bd] px-5 py-3 text-sm font-semibold text-[#0b121b] disabled:cursor-not-allowed disabled:opacity-40">{grading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{grading ? "Grading interview…" : "Grade this recorded answer"}</button>
               {feedbackError ? <p className="mt-3 text-sm text-red-300">{feedbackError}</p> : null}
             </div> : null}
 
@@ -358,7 +549,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
               <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.12em] text-[#a8bac5]">Coaching score</p><h3 className="mt-2 text-xl font-semibold">{feedback.readinessLabel}</h3></div>{score ? <div className="text-4xl font-semibold text-[#b8c7cf]">{score}<span className="text-sm text-white/35">/5</span></div> : null}</div>
               <p className="mt-4 text-sm leading-6 text-white/60">{feedback.overallAssessment}</p>
               <div className="mt-5 space-y-3">{feedback.rubric.slice(0, 5).map(item => <div key={item.criterion} className="rounded-xl bg-white/5 p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">{item.criterion}</p><span className="text-sm font-bold text-[#a8bac5]">{item.rating}/5</span></div><p className="mt-2 text-xs leading-5 text-white/50">{item.nextStep}</p></div>)}</div>
-              {feedback.limitations?.length ? <p className="mt-4 text-[11px] leading-5 text-white/35">This score evaluates the captured transcript and program criteria. It does not claim to measure facial expression, accent, attractiveness, or personality, and it is not an admission prediction.</p> : null}
+              <p className="mt-4 text-[11px] leading-5 text-white/35">This coaching score evaluates the captured transcript and program criteria. It is not an admission prediction and does not score accent, attractiveness or personality.</p>
             </div> : null}
           </aside>
         </div>
