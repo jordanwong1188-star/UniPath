@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useStudent } from "./StudentProvider";
 
-const links = [["Universities", "/universities"], ["Programs", "/programs"], ["Deadlines", "/deadlines"], ["Scholarships", "/scholarships"], ["Applications", "/applications"], ["Match", "/match"]];
+const links = [["Universities", "/universities"], ["Programs", "/programs"], ["Deadlines", "/deadlines"], ["Scholarships", "/scholarships"], ["Applications", "/applications"], ["Admissions Fit", "/admissions-fit"]];
 
 export default function SiteHeader({ dark = false }: { dark?: boolean }) {
   const [open, setOpen] = useState(false);
