@@ -8,12 +8,15 @@ import SiteHeader from "@/app/components/SiteHeader";
 const supplementalRoutes: Record<string, string> = {
   "ubc-sauder-bcom": "ubc-sauder-bcom",
   "western-ivey-aeo": "western-ivey-aeo",
+  "western-ivey": "western-ivey-aeo",
   "queens-commerce": "queens-commerce",
   "rotman-commerce": "rotman-commerce",
+  "uoft-rotman-commerce": "rotman-commerce",
   "schulich-bba": "schulich-bba",
   "waterloo-engineering": "waterloo-engineering",
   "waterloo-mathematics": "waterloo-mathematics",
   "waterloo-afm": "waterloo-afm",
+  "mcmaster-commerce": "mcmaster-commerce",
   "mcmaster-engineering": "mcmaster-engineering",
   "mcmaster-computer-science": "mcmaster-computer-science",
   "sfu-beedie-bba": "sfu-beedie-bba",
@@ -27,7 +30,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
   const program = programDetails.find(item => item.id === programId && item.universityId === id);
   const school = schools.find(item => item.id === id);
   if (!program || !school) notFound();
-  const isIvey = program.id === "western-ivey-aeo";
+  const isIvey = program.id === "western-ivey-aeo" || program.id === "western-ivey";
   const supplementalId = supplementalRoutes[program.id];
 
   return <main className="min-h-screen bg-[#f4f1ea] text-[#172126]">
