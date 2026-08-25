@@ -69,7 +69,7 @@ export default function TransfersPage() {
   const targetPrograms = useMemo(() => targetSchoolObject ? programDetails.filter(program => program.universityId === targetSchoolObject.id) : [], [targetSchoolObject]);
   const hub = transferHubs.find(item => item.school === targetSchool);
   const selectedProgram = targetPrograms.find(program => program.name === targetProgram);
-  const hasProfile = Boolean(targetSchool || targetProgram || gpa || courses.trim());
+  const hasProfile = Boolean(targetSchool || targetProgram || gpa || completedCredits || courses.trim());
   const fundingMatches = useMemo(() => targetSchool ? scholarships.filter(item => item.applicantTypes.includes("Transfer student") && (item.schools.includes(targetSchool) || item.schools.some(value => value.startsWith("Any ")))) : scholarships.filter(item => item.applicantTypes.includes("Transfer student")), [targetSchool]);
   const requirement = transferRequirements[targetSchool];
   const numericGpa = Number.parseFloat(gpa.replace(/[^0-9.]/g, ""));
@@ -114,7 +114,7 @@ export default function TransfersPage() {
         <div className="mt-4 grid grid-cols-3 gap-3"><label className="text-sm font-semibold">Year<select value={year} onChange={e => setYear(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b121b] px-3 py-3 text-sm text-white"><option value="1">1</option><option value="2">2</option><option value="3">3+</option></select></label><label className="text-sm font-semibold">GPA<input value={gpa} onChange={e => setGpa(e.target.value)} placeholder="3.6" inputMode="decimal" className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b121b] px-3 py-3 text-sm text-white outline-none placeholder:text-white/25" /></label><label className="text-sm font-semibold">Credits<input value={completedCredits} onChange={e => setCompletedCredits(e.target.value)} placeholder="24" inputMode="numeric" className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b121b] px-3 py-3 text-sm text-white outline-none placeholder:text-white/25" /></label></div>
 
         <div className="mt-6 border-t border-white/10 pt-6">
-          <label className="block text-sm font-semibold">Target university<select value={targetSchool} onChange={e => { setTargetSchool(e.target.value); setTargetProgram(""); }} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b121b] px-4 py-3 text-sm text-white"><option value="">Choose a school</option>{universityNames.map(name => <option key={name}>{name}</option>)}</select></label>
+          <label className="block text-sm font-semibold">Target university<select value={targetSchool} onChange={e => { setTargetSchool(e.target.value); setTargetProgram(""); setCheckedSteps([]); }} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b121b] px-4 py-3 text-sm text-white"><option value="">Choose a school</option>{universityNames.map(name => <option key={name}>{name}</option>)}</select></label>
           <label className="mt-4 block text-sm font-semibold">Target program<input list="target-transfer-programs" value={targetProgram} onChange={e => setTargetProgram(e.target.value)} placeholder="e.g. Commerce" className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b121b] px-4 py-3 text-sm text-white outline-none placeholder:text-white/25" /></label>
           <datalist id="target-transfer-programs">{targetPrograms.map(program => <option key={program.id} value={program.name} />)}</datalist>
         </div>
