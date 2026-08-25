@@ -22,7 +22,7 @@ body {
   min-height: 100vh;
   background: radial-gradient(circle at 85% -10%, rgba(85,123,128,.11), transparent 34rem), linear-gradient(180deg,#0f1722 0%,#111b27 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui), "Helvetica Neue", Arial, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -287,7 +287,7 @@ body {
 }
 
 h1, h2, h3 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-editorial), "Iowan Old Style", Georgia, serif;
   font-weight: 500 !important;
   text-wrap: balance;
 }
@@ -336,3 +336,20 @@ main section[class*="border"] { border-color: rgba(242,237,226,.13); }
 @media (max-width: 767px) {
   h1 { letter-spacing: -.035em !important; }
 }
+
+
+/* Typography and layout grammar */
+.font-serif { font-family: var(--font-editorial), "Iowan Old Style", Georgia, serif !important; }
+.font-sans { font-family: var(--font-ui), "Helvetica Neue", Arial, sans-serif !important; }
+h1 { font-variation-settings: "opsz" 60; }
+h2, h3 { font-variation-settings: "opsz" 36; }
+p, li, input, select, textarea, button, a { font-family: var(--font-ui), "Helvetica Neue", Arial, sans-serif; }
+
+/* The site reads as a reference publication, not a stack of floating widgets. */
+main article,
+main aside,
+main section { background-image: none !important; }
+main article:hover { transform: none !important; }
+main article,
+main [class*="rounded-"][class*="shadow"] { transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease; }
+main [class*="rounded-full"]:not(.rounded-full) { border-radius: .45rem !important; }
