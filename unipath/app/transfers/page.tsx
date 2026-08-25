@@ -6,6 +6,14 @@ import { ArrowRight, BookOpenCheck, Building2, CheckCircle2, ExternalLink, Gradu
 import SiteHeader from "@/app/components/SiteHeader";
 import schools from "@/data/canadianSchools.json";
 import { programDetails } from "@/data/programDetails";
+import { scholarships } from "@/data/scholarships";
+
+const transferTools = [
+  { name: "BC Transfer Guide", region: "British Columbia", url: "https://www.bctransferguide.ca/", note: "Search course equivalencies, block transfers and pathways." },
+  { name: "ONTransfer", region: "Ontario", url: "https://ontransfer.ca/", note: "Explore Ontario college and university transfer pathways." },
+  { name: "Transfer Alberta", region: "Alberta", url: "https://transferalberta.alberta.ca/", note: "Search Alberta admission pathways and transfer agreements." },
+  { name: "Canada transfer practices", region: "Across Canada", url: "https://www.cicic.ca/1376/Detailed_Information_on_pan-Canadian%2C_provincial%2C_and_territorial_transfer_practices.canada", note: "Find provincial and territorial transfer resources." },
+];
 
 const transferHubs = [
   { school: "University of British Columbia", key: "ubc", url: "https://you.ubc.ca/applying-ubc/requirements/university-college-transfer/", note: "Transfer admission requirements, transferable credit and applicant guidance." },
@@ -29,12 +37,14 @@ export default function TransfersPage() {
   const [targetProgram, setTargetProgram] = useState("");
   const [courses, setCourses] = useState("");
 
+  const institutionNames = useMemo(() => schools.map(school => school.name).sort(), []);
   const universityNames = useMemo(() => schools.filter(school => school.type === "University").map(school => school.name).sort(), []);
   const targetSchoolObject = useMemo(() => schools.find(school => school.name === targetSchool), [targetSchool]);
   const targetPrograms = useMemo(() => targetSchoolObject ? programDetails.filter(program => program.universityId === targetSchoolObject.id) : [], [targetSchoolObject]);
   const hub = transferHubs.find(item => item.school === targetSchool);
   const selectedProgram = targetPrograms.find(program => program.name === targetProgram);
   const hasProfile = Boolean(targetSchool || targetProgram || gpa || courses.trim());
+  const fundingMatches = useMemo(() => targetSchool ? scholarships.filter(item => item.applicantTypes.includes("Transfer student") && (item.schools.includes(targetSchool) || item.schools.some(value => value.startsWith("Any ")))) : scholarships.filter(item => item.applicantTypes.includes("Transfer student")), [targetSchool]);
 
   return <main className="min-h-screen bg-[#0f1722] text-[#e8edf3]">
     <SiteHeader dark />
@@ -55,7 +65,9 @@ export default function TransfersPage() {
       </div>
     </section>
 
-    <section className="mx-auto grid max-w-7xl gap-7 px-6 py-10 lg:grid-cols-[390px_1fr] lg:px-10">
+    <section className="mx-auto max-w-7xl px-6 pt-8 lg:px-10"><div className="grid gap-3 md:grid-cols-4">{[["1","Choose a destination","Confirm the program accepts transfers."],["2","Protect your credits","Check equivalencies and residency rules."],["3","Build the application","Track prerequisites, transcripts and dates."],["4","Fund the move","Search transfer, bursary and in-course awards."]].map(([step,title,body]) => <div key={step} className="rounded-2xl border border-white/10 bg-[#111c29] p-5"><span className="text-xs font-bold text-[#9fb2bd]">STEP {step}</span><h2 className="mt-2 font-semibold">{title}</h2><p className="mt-1 text-xs leading-5 text-white/45">{body}</p></div>)}</div></section>
+
+    <section className="mx-auto grid max-w-7xl gap-7 px-6 py-8 lg:grid-cols-[390px_1fr] lg:px-10">
       <aside className="h-fit rounded-[1.75rem] border border-white/10 bg-[#111c29] p-6 lg:sticky lg:top-6">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.14em] text-[#9fb2bd]"><GraduationCap className="h-4 w-4" /> Transfer profile</div>
         <h2 className="mt-3 text-2xl font-semibold">Where are you moving from and to?</h2>
@@ -71,7 +83,7 @@ export default function TransfersPage() {
         </div>
 
         <label className="mt-6 block text-sm font-semibold">Completed / in-progress courses<textarea value={courses} onChange={e => setCourses(e.target.value)} placeholder="One line is enough: ECON 201, MATH 157, ENGL 112..." className="mt-2 min-h-28 w-full resize-y rounded-xl border border-white/10 bg-white p-4 text-sm leading-6 text-[#111827] outline-none placeholder:text-gray-400" /></label>
-        <datalist id="transfer-school-list">{universityNames.map(name => <option key={name} value={name} />)}</datalist>
+        <datalist id="transfer-school-list">{institutionNames.map(name => <option key={name} value={name} />)}</datalist>
       </aside>
 
       <div className="space-y-6">
@@ -103,7 +115,9 @@ export default function TransfersPage() {
           <section className="rounded-2xl border border-white/10 bg-[#0f1823] p-5 text-sm leading-6 text-white/45"><div className="flex gap-3"><Info className="mt-0.5 h-5 w-5 shrink-0 text-[#7891a3]" /><p><strong className="text-white/70">Important:</strong> UniPath can organize transfer planning, but only the receiving university can make the final admission and transfer-credit decision. Course equivalency, year standing and graduation timing must be confirmed through official assessment.</p></div></section>
         </>}
 
-        <section className="rounded-[1.75rem] border border-white/10 bg-[#111c29] p-7"><div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.14em] text-[#8fa7b6]"><ShieldCheck className="h-4 w-4" /> Funding after transfer</div><h3 className="mt-3 text-2xl font-semibold">Transfer students often miss scholarships built for them.</h3><p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">The Scholarship Explorer now includes transfer, continuing-student and external funding filters instead of assuming every user is entering directly from high school.</p><Link href="/scholarships" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#9fb2bd] px-4 py-3 text-sm font-semibold text-[#0b121b]">Explore transfer scholarships <ArrowRight className="h-4 w-4" /></Link></section>
+        <section className="rounded-[1.75rem] border border-white/10 bg-[#111c29] p-7"><div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.14em] text-[#8fa7b6]"><ShieldCheck className="h-4 w-4" /> Funding after transfer</div><div className="mt-3 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><h3 className="text-2xl font-semibold">{fundingMatches.length} transfer-friendly funding starting points{targetSchool ? ` for ${targetSchool}` : ""}.</h3><p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">Check funding before admission, after accepting, and again after your first year at the receiving school. Many transfer students become eligible for in-course awards only after completing credits there.</p></div><Link href="/scholarships" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#9fb2bd] px-4 py-3 text-sm font-semibold text-[#0b121b]">View transfer funding <ArrowRight className="h-4 w-4" /></Link></div></section>
+
+        <section className="rounded-[1.75rem] border border-white/10 bg-[#111c29] p-7"><p className="text-xs font-semibold uppercase tracking-[.14em] text-[#8fa7b6]">Official credit-transfer tools</p><h3 className="mt-3 text-2xl font-semibold">Check agreements before guessing course equivalencies.</h3><div className="mt-5 grid gap-3 sm:grid-cols-2">{transferTools.map(tool => <a key={tool.name} href={tool.url} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-white/10 bg-white/[.04] p-4 transition hover:border-[#9fb2bd]/35"><div className="flex items-center justify-between gap-3"><p className="font-semibold">{tool.name}</p><ExternalLink className="h-4 w-4 text-[#9fb2bd]" /></div><p className="mt-1 text-xs text-[#8fa7b6]">{tool.region}</p><p className="mt-3 text-sm leading-6 text-white/45">{tool.note}</p></a>)}</div></section>
       </div>
     </section>
   </main>;
