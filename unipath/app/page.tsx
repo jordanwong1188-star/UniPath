@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpenCheck, CalendarCheck, Check, FilePenLine, GraduationCap, Search, Sparkles } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpenCheck, CalendarCheck, Check, FilePenLine, GraduationCap, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import SiteHeader from "./components/SiteHeader";
 
@@ -31,14 +31,14 @@ export default function Home() {
         <div className="pointer-events-none absolute -right-40 top-6 h-[520px] w-[520px] rounded-full bg-[#557b80]/12 blur-3xl" />
         <div className="pointer-events-none absolute -left-52 bottom-0 h-96 w-96 rounded-full bg-[#7891a3]/8 blur-3xl" />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7 }} className="relative max-w-4xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[.16em] text-[#a8bac5]"><Sparkles className="h-4 w-4" /> Built for Canadian applicants</span>
-          <h1 className="mt-8 text-6xl font-semibold tracking-[-.065em] sm:text-7xl lg:text-[92px] lg:leading-[.95]">University applications,<br /><span className="font-serif italic font-normal text-[#9eb3c0]">finally in focus.</span></h1>
-          <p className="mt-8 max-w-2xl text-lg leading-8 text-[#9ba9b8] sm:text-xl">Research schools, organize deadlines, practise supplemental applications, and track every improvement from one intelligent workspace.</p>
+          <span className="inline-flex border-l-2 border-[#d4865f] pl-3 text-[11px] font-bold uppercase tracking-[.2em] text-[#e0a17f]">Edition 2026–27 · Canada</span>
+          <h1 className="mt-8 text-6xl font-semibold tracking-[-.065em] sm:text-7xl lg:text-[92px] lg:leading-[.95]">Your Canadian university<br /><span className="font-serif italic font-normal text-[#e0a17f]">field guide.</span></h1>
+          <p className="mt-8 max-w-2xl text-lg leading-8 text-[#9ba9b8] sm:text-xl">Research programs, protect every deadline, practise written supplementals and interviews, and keep one clear record of what comes next.</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Link href="/programs" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#8fa7b6] px-6 py-4 font-semibold text-[#0b121b] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-[#a1b5c1]">Explore your options <ArrowRight className="h-4 w-4" /></Link><Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/[0.025] px-6 py-4 font-semibold text-white/85 transition hover:bg-white/[0.07]">See membership</Link></div>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .3, duration: .8 }} className="relative mt-16 grid gap-3 rounded-[2rem] border border-white/10 bg-white/[0.035] p-3 shadow-2xl shadow-black/15 backdrop-blur-xl sm:grid-cols-[1fr_auto]">
-          <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-[#172536] px-5 text-white"><Search className="h-5 w-5 text-[#7891a3]" /><span className="py-5 text-sm text-[#9ba9b8]">Search a university, program, scholarship, or question…</span></div>
-          <Link href="/programs" className="grid place-items-center rounded-2xl bg-[#405f69] px-7 py-5 font-semibold text-white transition hover:bg-[#4d7079]">Start exploring</Link>
+        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .3, duration: .8 }} className="relative mt-16 grid gap-px border-y border-white/14 bg-white/10 sm:grid-cols-[1fr_auto]">
+          <div className="flex items-center gap-3 bg-[#172536] px-5 text-white"><Search className="h-5 w-5 text-[#7891a3]" /><span className="py-5 text-sm text-[#9ba9b8]">Search a university, program, scholarship, or question…</span></div>
+          <Link href="/programs" className="grid place-items-center bg-[#d4865f] px-7 py-5 text-[#132c29] font-semibold text-white transition hover:bg-[#4d7079]">Start exploring</Link>
         </motion.div>
       </section>
     </div>
