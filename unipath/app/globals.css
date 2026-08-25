@@ -253,3 +253,86 @@ body[data-page="application-hub"] main textarea:focus {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .unipath-reveal { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; }
 }
+
+
+/* UniPath Field Guide
+   A restrained editorial system: library green, paper, rust and ruled detail.
+   This intentionally avoids the glass-card / neon-gradient vocabulary common
+   to template-generated product sites. */
+:root {
+  --background: #132c29;
+  --foreground: #f2ede2;
+  --brand-ink: #102724;
+  --brand-navy: #16332f;
+  --brand-slate: #1d3d38;
+  --brand-slate-2: #264942;
+  --brand-steel: #b7a98d;
+  --brand-teal: #597a6e;
+  --brand-accent: #d4865f;
+  --brand-text: #f2ede2;
+  --brand-muted: #b9c3bb;
+  --brand-line: rgba(242, 237, 226, .14);
+  --paper: #f2ede2;
+  --paper-deep: #e4dccd;
+  --rust: #d4865f;
+}
+
+body {
+  background:
+    linear-gradient(rgba(242,237,226,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242,237,226,.018) 1px, transparent 1px),
+    #132c29;
+  background-size: 32px 32px;
+  color: var(--foreground);
+}
+
+h1, h2, h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500 !important;
+  text-wrap: balance;
+}
+
+main .blur-3xl { display: none !important; }
+main .lucide-sparkles, main .lucide-wand-sparkles, main .lucide-bot { display: none !important; }
+main [class*="shadow-2xl"], main [class*="shadow-xl"], main [class*="shadow-lg"] {
+  box-shadow: 0 1px 0 rgba(242,237,226,.08) !important;
+}
+main [class*="backdrop-blur"] { backdrop-filter: none !important; }
+
+/* Smaller, deliberate geometry. Circles stay circular; large template cards do not. */
+main .rounded-\[2\.25rem\],
+main .rounded-\[2rem\],
+main .rounded-\[1\.75rem\],
+main .rounded-\[1\.5rem\],
+main .rounded-3xl { border-radius: .8rem !important; }
+main .rounded-2xl { border-radius: .65rem !important; }
+main .rounded-xl { border-radius: .45rem !important; }
+
+/* Harmonize legacy dark utilities into the Field Guide palette. */
+.bg-\[\#0f1722\], .bg-\[\#0d1620\], .bg-\[\#0f1823\], .bg-\[\#101923\],
+.bg-\[\#111a25\], .bg-\[\#111b27\], .bg-\[\#10191d\], .bg-\[\#172126\] {
+  background-color: #132c29 !important;
+}
+.bg-\[\#111c29\], .bg-\[\#172536\], .bg-\[\#152331\], .bg-\[\#142130\] {
+  background-color: #1d3d38 !important;
+}
+.bg-\[\#1a2a3b\], .bg-\[\#1a2a38\], .bg-\[\#1d2d3f\], .bg-\[\#24384b\],
+.bg-\[\#274047\], .bg-\[\#303b49\] {
+  background-color: #264942 !important;
+}
+.bg-\[\#7891a3\], .bg-\[\#8fa7b6\], .bg-\[\#9fb2bd\], .bg-\[\#405f69\],
+.bg-\[\#557b80\] { background-color: #d4865f !important; }
+.text-\[\#7891a3\], .text-\[\#8fa7b6\], .text-\[\#9fb2bd\],
+.text-\[\#9fb6c2\], .text-\[\#a8bac5\], .text-\[\#92aebb\],
+.text-\[\#9cb2bf\], .text-\[\#9eb3c0\] { color: #e0a17f !important; }
+.text-\[\#9ba9b8\] { color: #b9c3bb !important; }
+
+main article:hover { transform: translateY(-1px); }
+main [class*="bg-gradient"] { background-image: none !important; }
+
+/* A subtle editorial rule used by page sections and cards. */
+main section[class*="border"] { border-color: rgba(242,237,226,.13); }
+
+@media (max-width: 767px) {
+  h1 { letter-spacing: -.035em !important; }
+}
