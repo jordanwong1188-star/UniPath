@@ -40,7 +40,8 @@ export default function SiteHeader({ dark = false }: { dark?: boolean }) {
         </div>
       </nav>
 
-      <div className="hidden items-center gap-3 lg:flex">
+      <div className="hidden items-center gap-2 lg:flex">
+        <Link href="/pricing" className="bg-[#d4865f] px-4 py-2.5 text-xs font-bold uppercase tracking-[.08em] text-[#132c29] hover:bg-[#e0a17f]">Plans</Link>
         <Link href={student ? "/dashboard" : "/login"} className="border border-[#d4865f]/45 px-4 py-2.5 text-xs font-bold uppercase tracking-[.08em] text-[#f2ede2] hover:bg-[#d4865f] hover:text-[#132c29]">{student ? "My file" : "Log in"}</Link>
       </div>
 
@@ -53,7 +54,7 @@ export default function SiteHeader({ dark = false }: { dark?: boolean }) {
       </div>
       <p className="mb-2 mt-5 text-[9px] font-bold uppercase tracking-[.18em] text-[#e0a17f]">Plan and funding</p>
       {planning.map(([label, href, note]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="flex items-center justify-between border-t border-white/8 py-3"><span className="font-semibold">{label}</span><span className="text-[10px] text-white/35">{note}</span></Link>)}
-      <Link href={student ? "/dashboard" : "/login"} onClick={() => setOpen(false)} className="mt-4 block bg-[#d4865f] px-4 py-3 text-center text-sm font-bold text-[#132c29]">{student ? "Open my file" : "Log in"}</Link>
+      <div className="mt-4 grid grid-cols-2 gap-2"><Link href="/pricing" onClick={() => setOpen(false)} className="bg-[#d4865f] px-4 py-3 text-center text-sm font-bold text-[#132c29]">Plans</Link><Link href={student ? "/dashboard" : "/login"} onClick={() => setOpen(false)} className="border border-[#d4865f]/45 px-4 py-3 text-center text-sm font-bold text-[#f2ede2]">{student ? "My file" : "Log in"}</Link></div>
     </nav> : null}
   </header>;
 }
