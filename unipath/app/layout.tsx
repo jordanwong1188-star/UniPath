@@ -3,6 +3,7 @@ import { Manrope, Newsreader } from "next/font/google";
 import "./globals.css";
 import { StudentProvider } from "./components/StudentProvider";
 import MotionEffects from "./components/MotionEffects";
+import AdmissionsDisclaimer from "./components/AdmissionsDisclaimer";
 
 const uiFont = Manrope({
   subsets: ["latin"],
@@ -25,5 +26,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={`${uiFont.variable} ${editorialFont.variable}`}><StudentProvider><MotionEffects />{children}</StudentProvider></body></html>;
+  return <html lang="en"><body className={`${uiFont.variable} ${editorialFont.variable}`}><StudentProvider><MotionEffects /><AdmissionsDisclaimer />{children}</StudentProvider></body></html>;
 }
