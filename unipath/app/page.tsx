@@ -9,14 +9,14 @@ const questions = [
   { question: "Which universities fit my goals?", answer: "Start with the kind of program you want, where you could realistically live, your preferred learning environment, and the opportunities you care about—such as co-op, research, campus size, or professional pathways. A strong list usually includes ambitious, realistic, and safer choices rather than one ranking.", next: "Compare schools by location, institution type, and program pathway.", href: "/universities", label: "Explore schools" },
   { question: "What does this program require?", answer: "Separate the requirements into four parts: prerequisite courses, academic range, application deadline, and any supplemental component. Also check whether you apply directly to the program or choose the specialization after first year.", next: "Open the program catalogue to keep those details together.", href: "/programs", label: "Check programs" },
   { question: "When is everything due?", answer: "The main application deadline is only one date. Scholarships, transcripts, supplemental forms, portfolios, references, and document uploads can all have separate deadlines. Build the timeline backward so nothing depends on a last-minute submission.", next: "Review official dates in one deadline view.", href: "/deadlines", label: "View deadlines" },
-  { question: "How do I improve my supplemental?", answer: "Answer the exact prompt, use one specific experience, explain what you personally decided or did, show the result, and reflect on what changed afterward. Strong responses sound like the applicant—not a collection of impressive phrases.", next: "Practise with the format and feedback criteria used for your program.", href: "/applications", label: "Open practice" },
+  { question: "How do I improve my supplemental?", answer: "Answer the exact prompt, use one specific experience, explain what you personally decided or did, show the result, and reflect on what changed afterward. Strong responses sound like the applicant—not a collection of impressive phrases.", next: "Practice with the format and feedback criteria used for your program.", href: "/applications", label: "Open practice" },
   { question: "Where did I save my last draft?", answer: "A draft is most useful when it stays connected to its exact prompt, program, previous feedback, and revision history. That makes it easier to see what improved instead of searching through differently named documents.", next: "Your saved application work is organized in your personal file.", href: "/dashboard", label: "Open my file" },
 ] as const;
 
 const desk = [
   { index: "01", title: "Research", text: "Schools, programs and pathways across Canada.", href: "/programs", action: "Open the catalogue" },
   { index: "02", title: "Plan", text: "Deadlines, scholarships and transfer requirements.", href: "/deadlines", action: "Build the timeline" },
-  { index: "03", title: "Practise", text: "Written supplementals and recorded interviews.", href: "/applications", action: "Enter the studio" },
+  { index: "03", title: "Practice", text: "Written supplementals and recorded interviews.", href: "/applications", action: "Enter the studio" },
 ];
 
 const proof = [
@@ -95,7 +95,7 @@ export default function Home() {
         <div className="px-6 py-16 lg:px-10 lg:py-20">
           <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#9b5637]">Application practice file</p>
           <h2 className="mt-5 max-w-2xl text-4xl leading-[1.03] sm:text-5xl">Write it. Say it. Understand why it works.</h2>
-          <p className="mt-6 max-w-2xl text-base leading-8 text-[#465651]">Practise the written and interview portions required by your program. Feedback is tied to the prompt, your actual evidence, reflection, structure, and the published priorities that can be verified.</p>
+          <p className="mt-6 max-w-2xl text-base leading-8 text-[#465651]">Practice the written and interview portions required by your program. Feedback is tied to the prompt, your actual evidence, reflection, structure, and the published priorities that can be verified.</p>
           <Link href="/applications" className="mt-8 inline-flex items-center gap-2 border-b-2 border-[#132c29] pb-1 text-sm font-semibold">Find your application format <ArrowRight className="h-4 w-4" /></Link>
         </div>
         <div className="border-t border-[#132c29]/15 bg-[#e4dccd] p-6 lg:border-l lg:border-t-0 lg:p-8">
