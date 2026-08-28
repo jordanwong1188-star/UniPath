@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, Newsreader } from "next/font/google";
+import { Manrope, Newsreader } from "next/font/google";
 import "./globals.css";
 import { StudentProvider } from "./components/StudentProvider";
 import MotionEffects from "./components/MotionEffects";
 
-const uiFont = IBM_Plex_Sans({
+const uiFont = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-ui",
   display: "swap",
 });
 
 const editorialFont = Newsreader({
   subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
   variable: "--font-editorial",
   display: "swap",
 });

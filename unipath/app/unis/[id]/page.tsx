@@ -359,7 +359,7 @@ export default async function UniversityPage({
           <div>
             <div className="font-semibold">UniPath</div>
             <p className="mt-1 text-xs text-gray-500">
-              Your university journey, organized.
+              Requirements, programs, and deadlines—organized.
             </p>
           </div>
 

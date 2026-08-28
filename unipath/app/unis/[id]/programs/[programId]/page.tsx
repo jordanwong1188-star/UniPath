@@ -192,7 +192,7 @@ export default async function ProgramDetailPage({
           ) : null}
         </div>
 
-        <aside className="h-fit space-y-5 lg:sticky lg:top-6">
+        <aside className="h-fit space-y-5 lg:sticky lg:top-20 lg:pt-20">
           <section className="rounded-[1.75rem] bg-[#172126] p-6 text-white">
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-5 w-5 text-[#c8f169]" />

@@ -4,15 +4,15 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-  Bot,
   Send,
   User,
-  Sparkles,
   Trash2,
   GraduationCap,
   BookOpen,
   CalendarDays,
+  Compass,
 } from "lucide-react";
+import SiteHeader from "../components/SiteHeader";
 
 type Message = {
   role: "user" | "assistant";
@@ -33,7 +33,7 @@ const starterQuestions = [
     text: "When should I start applying to university?",
   },
   {
-    icon: Sparkles,
+    icon: Compass,
     text: "I'm not sure what university is right for me. Can you help?",
   },
 ];
@@ -41,7 +41,7 @@ const starterQuestions = [
 const initialMessage: Message = {
   role: "assistant",
   content:
-    "Hey! I'm the UniPath Assistant. Tell me what you're trying to figure out and I'll help you work through it. You can ask me about universities, programs, admissions, requirements, deadlines, costs, co-op, or comparing schools.",
+    "Tell me what university decision you are working through. Ask about programs, requirements, deadlines, costs, co-op, or how two options compare.",
 };
 
 export default function AIAssistantPage() {
@@ -124,62 +124,7 @@ export default function AIAssistantPage() {
 
   return (
     <main className="min-h-screen bg-[#f5f7f8] text-[#172126]">
-      <header className="sticky top-0 z-50 border-b border-black/5 bg-[#f5f7f8]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#172126] text-white">
-              <span className="text-lg font-bold">U</span>
-            </div>
-
-            <div>
-              <div className="text-xl font-bold tracking-tight">
-                UniPath
-              </div>
-
-              <div className="hidden text-[10px] uppercase tracking-[0.18em] text-gray-500 sm:block">
-                Your university journey
-              </div>
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-7 md:flex">
-            <Link
-              href="/universities"
-              className="text-sm font-medium text-gray-600 transition hover:text-black"
-            >
-              Universities
-            </Link>
-
-            <Link
-              href="/programs"
-              className="text-sm font-medium text-gray-600 transition hover:text-black"
-            >
-              Programs
-            </Link>
-
-            <Link
-              href="/deadlines"
-              className="text-sm font-medium text-gray-600 transition hover:text-black"
-            >
-              Deadlines
-            </Link>
-
-            <Link
-              href="/ai-assistant"
-              className="rounded-full bg-[#172126] px-4 py-2 text-sm font-semibold text-white"
-            >
-              Assistant
-            </Link>
-          </nav>
-
-          <Link
-            href="/universities"
-            className="hidden rounded-full bg-[#172126] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#29383e] sm:block"
-          >
-            Explore schools
-          </Link>
-        </div>
-      </header>
+      <SiteHeader dark />
 
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -right-48 -top-48 h-[600px] w-[600px] rounded-full bg-[#dfe8e8] blur-3xl" />
@@ -188,7 +133,7 @@ export default function AIAssistantPage() {
         <div className="relative mx-auto max-w-6xl px-6 py-12 lg:px-10 lg:py-16">
           <div className="mb-10 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#172126] text-white shadow-lg">
-              <Bot className="h-7 w-7" />
+              <BookOpen className="h-7 w-7" />
             </div>
 
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
@@ -214,7 +159,7 @@ export default function AIAssistantPage() {
               <div className="flex items-center justify-between border-b border-black/5 px-5 py-4 sm:px-7">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#172126] text-white">
-                    <Bot className="h-4 w-4" />
+                    <BookOpen className="h-4 w-4" />
                   </div>
 
                   <div>
@@ -255,7 +200,7 @@ export default function AIAssistantPage() {
                       >
                         {!isUser && (
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#172126] text-white">
-                            <Bot className="h-4 w-4" />
+                            <BookOpen className="h-4 w-4" />
                           </div>
                         )}
 
@@ -283,7 +228,7 @@ export default function AIAssistantPage() {
                   {loading && (
                     <div className="flex gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#172126] text-white">
-                        <Bot className="h-4 w-4" />
+                        <BookOpen className="h-4 w-4" />
                       </div>
 
                       <div className="rounded-2xl rounded-bl-md bg-[#f1f4f4] px-5 py-4">

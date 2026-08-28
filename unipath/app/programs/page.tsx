@@ -135,7 +135,7 @@ export default function ProgramsPage() {
               <Compass className="h-4 w-4" /> Canadian program explorer
             </div>
             <h1 className="mt-7 text-5xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-6xl lg:text-7xl">
-              Don&apos;t just pick a school.<br /><span className="text-[#c8f169]">Find your direction.</span>
+              Compare the work.<br /><span className="text-[#e3a63a]">Not just the university name.</span>
             </h1>
             <p className="mt-7 max-w-2xl text-base leading-7 text-white/60 sm:text-lg sm:leading-8">
               Explore what you will study, how you enter, and where each path can take you—across Canadian universities and colleges.

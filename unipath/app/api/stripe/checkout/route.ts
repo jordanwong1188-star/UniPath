@@ -18,10 +18,14 @@ export async function POST(request: NextRequest) {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) return NextResponse.json({ error: "Subscriptions are temporarily unavailable." }, { status: 503 });
 
-    const body = await request.json();
-    if (!isPaidPlan(body?.plan)) return NextResponse.json({ error: "Choose either Pro or Max." }, { status: 400 });
+    const body: unknown = await request.json();
+    const requestedPlan =
+      typeof body === "object" && body !== null && "plan" in body
+        ? (body as { plan?: unknown }).plan
+        : undefined;
+    if (!isPaidPlan(requestedPlan)) return NextResponse.json({ error: "Choose either Pro or Max." }, { status: 400 });
 
-    const priceId = process.env[priceEnvironmentKeys[body.plan]];
+    const priceId = process.env[priceEnvironmentKeys[requestedPlan]];
     if (!priceId) return NextResponse.json({ error: "This plan is temporarily unavailable." }, { status: 503 });
 
     const origin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || request.nextUrl.origin;
@@ -33,8 +37,8 @@ export async function POST(request: NextRequest) {
       cancel_url: `${origin}/pricing`,
       allow_promotion_codes: "true",
       billing_address_collection: "auto",
-      "metadata[plan]": body.plan,
-      "subscription_data[metadata][plan]": body.plan,
+      "metadata[plan]": requestedPlan,
+      "subscription_data[metadata][plan]": requestedPlan,
     });
 
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {

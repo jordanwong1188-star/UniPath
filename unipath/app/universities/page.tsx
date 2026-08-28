@@ -30,8 +30,8 @@ export default function UniversitiesPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-4 py-2 text-xs font-semibold uppercase tracking-[.18em] text-[#a8bac5]">
             <Building2 className="h-4 w-4" /> Canadian university directory
           </div>
-          <h1 className="mt-7 text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl lg:text-7xl">Find a campus that<br /><span className="text-[#9cb2bf]">fits your next chapter.</span></h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-[#9ba9b8]">Search Canadian universities and colleges by location and institution type, then open a school profile to explore programs and pathways.</p>
+          <h1 className="mt-7 text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl lg:text-7xl">Compare the place.<br /><span className="text-[#e3a63a]">Then compare the program.</span></h1>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-[#b9c3bb]">Search Canadian institutions by location and type, then examine the programs, entry paths, and requirements behind each school name.</p>
         </div>
         <div className="self-end rounded-[1.75rem] border border-white/10 bg-white/[.045] p-6 backdrop-blur-xl">
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-white/45">Directory coverage</p>
