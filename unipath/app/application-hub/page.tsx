@@ -170,7 +170,9 @@ const verifiedSupplementalSeeds: VerifiedSupplementalSeed[] = [
   { id: "mcgill-music", university: "McGill University", program: "Schulich School of Music undergraduate programs", requirement: "Program-specific materials and audition requirements", deadline: "Confirm current Music deadline", source: "https://www.mcgill.ca/music/admissions/undergraduate/materials", practiceFocus: "repertoire, interpretation, musical development, goals, and audition preparation" },
 ];
 
-const verifiedSupplementalProfiles = verifiedSupplementalSeeds.map((item) => ({
+const exactFormatProfileIds = new Set(["queens-health-sciences", "queens-nursing", "waterloo-engineering"]);
+
+const verifiedSupplementalProfiles = verifiedSupplementalSeeds.filter((item) => !exactFormatProfileIds.has(item.id)).map((item) => ({
   id: item.id,
   university: item.university,
   program: item.program,
@@ -238,6 +240,7 @@ export const applicationProfiles = [
   {
     id: "queens-commerce", university: "Queen's University", program: "Smith Bachelor of Commerce", deadline: "February 15, 2027", source: "https://smith.queensu.ca/bcom/program-details/supplementary-application.php",
     note: "Queen's Commerce uses Kira Talent. Questions are randomly assigned and are not released in advance.",
+    verification: "Official Queen's and Smith format verified August 28, 2026",
     timerAccuracy: "Matches Queen's published format: 10-minute written response (335-word maximum), then 2-minute preparation and 2-minute video response.",
     practice: {
       written: { seconds: 600, limit: 335, questions: ["Describe a significant challenge you faced. How did you respond, and how has the experience shaped what you do now?", "Tell us about a difficult obstacle that required you to adapt. What actions did you take and what did you learn?"] },
@@ -247,6 +250,58 @@ export const applicationProfiles = [
       { title: "Timed written response", format: "10 minutes to write and submit", help: "Practice quickly choosing one relevant example, answering the question directly, explaining your decisions, and ending with meaningful learning." },
       { title: "Timed video response", format: "2 minutes preparation · 2 minutes recording", help: "Practice speaking naturally under time pressure. Show initiative, adaptability, respect for others, ownership, impact, and reflection." },
       { title: "Technical and practice check", format: "Kira Talent practice required", help: "Use the official practice environment, check camera and microphone access, choose a quiet location, and keep your Queen's ID ready." },
+    ],
+  },
+  ...[
+    { id: "queens-health-sciences", program: "Bachelor of Health Sciences", focus: "initiative, adaptability, persistence, problem-solving, reflection, teamwork, and respect for others" },
+    { id: "queens-nursing", program: "Bachelor of Nursing Science · four-year program", focus: "initiative, adaptability, persistence, problem-solving, reflection, teamwork, and respect for others" },
+  ].map((item) => ({
+    id: item.id,
+    university: "Queen's University",
+    program: item.program,
+    deadline: "February 15, 2027",
+    source: "https://www.queensu.ca/admission/applying/supplementary-application",
+    note: "Queen's requires one randomly assigned written response and one randomly assigned video response. The questions are not released in advance.",
+    verification: "Official Queen's format verified August 28, 2026",
+    timerAccuracy: "Matches Queen's published format: 10-minute written response (335-word maximum), followed by 2 minutes of preparation and a 2-minute video response.",
+    practice: {
+      written: { seconds: 600, limit: 335, questions: [`Original Queen's-style practice: Describe a significant challenge that required ${item.focus}. Explain what you did, what you learned, and how it changed your approach.`, "Original Queen's-style practice: Tell us about an obstacle that required initiative or adaptability. What decisions did you make and what did you learn?"] },
+      video: { prepSeconds: 120, responseSeconds: 120, questions: ["Original Queen's-style practice: Describe a time a team encountered a setback. What was your contribution, how did you consider other perspectives, and what did you learn?", "Original Queen's-style practice: Tell us about a complex situation that required composure and self-direction. What did you do and what changed afterward?"] },
+    },
+    components: [
+      { title: "Timed written response", format: "10 minutes · 335-word maximum", help: "Choose one specific challenge, explain your decisions and problem-solving, then reflect on how the experience shaped you." },
+      { title: "Timed video response", format: "2 minutes preparation · 2 minutes recording", help: "Answer the assigned question directly and naturally. Show ownership, awareness of others, impact, and meaningful reflection." },
+      { title: "Kira check-in and practice", format: "Official practice is part of check-in", help: "Test your camera and microphone in Kira. Queen's says its practice questions can be completed repeatedly and are not assessed." },
+    ],
+  })),
+  {
+    id: "waterloo-engineering", university: "University of Waterloo", program: "Engineering · all programs except Architecture", deadline: "February 1, 2027 · 11:59 p.m. ET", source: "https://uwaterloo.ca/engineering/future-students/applying/online-interviews",
+    note: "Waterloo Engineering requires the Admission Information Form and a recorded online interview. The current interview question is published by Waterloo.",
+    verification: "Official Waterloo format verified August 28, 2026",
+    timerAccuracy: "Waterloo publishes a 90-second response limit for the Engineering motivation video. No preparation countdown is stated on the public page, so practice begins with the response timer.",
+    practice: {
+      written: { seconds: null, limit: null, questions: ["Portal prompt workspace: paste each current Admission Information Form question here and follow the limit shown in your applicant portal."] },
+      video: { prepSeconds: null, responseSeconds: 90, questions: ["Official current question: What experience(s) inside or outside the classroom motivated you to apply to your chosen engineering program?"] },
+    },
+    components: [
+      { title: "Admission Information Form", format: "Required written form", help: "Complete the current AIF questions in your Waterloo applicant portal and follow each published character limit." },
+      { title: "Engineering online interview", format: "One published question · 90-second video response", help: "Connect specific experiences to your chosen engineering program. Focus on your own motivation and evidence rather than general praise." },
+      { title: "Scholarship questions", format: "Two non-graded yes/no questions", help: "Waterloo also asks about FIRST Robotics and demonstrated interest in entrepreneurship for scholarship purposes." },
+    ],
+  },
+  {
+    id: "waterloo-software-engineering", university: "University of Waterloo", program: "Software Engineering", deadline: "February 1, 2027 · 11:59 p.m. ET", source: "https://uwaterloo.ca/engineering/future-students/applying/online-interviews",
+    note: "Software Engineering applicants complete the Engineering AIF and video interview plus a separate published written programming-experience response.",
+    verification: "Official Waterloo format verified August 28, 2026",
+    timerAccuracy: "Matches Waterloo's published Software Engineering response: 5 minutes and a 150-word maximum. The general Engineering video has a 90-second response limit.",
+    practice: {
+      written: { seconds: 300, limit: 150, questions: ["Official current question: For every programming language in which you have experience, list the language, number of months you have used it, and the capacity in which you used it (for example, courses, work experience, or self-education)."] },
+      video: { prepSeconds: null, responseSeconds: 90, questions: ["Official current Engineering question: What experience(s) inside or outside the classroom motivated you to apply to your chosen engineering program?"] },
+    },
+    components: [
+      { title: "Admission Information Form", format: "Required written form", help: "Complete every current AIF question and follow the limits shown in your Waterloo applicant portal." },
+      { title: "Engineering video interview", format: "One published question · 90-second response", help: "Explain the experiences that specifically motivated Software Engineering and what you learned from them." },
+      { title: "Programming-experience response", format: "5 minutes · 150-word maximum", help: "Prepare an accurate inventory of languages, months of actual use, and context. Waterloo asks for experience using each language, not how long you have known it." },
     ],
   },
   {
@@ -325,7 +380,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const selectedRubric = getApplicationRubric(selectedApplication);
   const practice = selectedApplication.practice[practiceMode];
   const questions = practice.questions;
-  const configuredSeconds = practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds;
+  const configuredSeconds = practiceMode === "video" ? (selectedApplication.practice.video.prepSeconds ?? selectedApplication.practice.video.responseSeconds) : selectedApplication.practice.written.seconds;
   const hasTimer = configuredSeconds !== null;
   const requestFeedback = async () => {
     if (!draft.trim() || feedbackLoading) return;
@@ -398,16 +453,16 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
     setQuestionIndex(0);
     setAttemptId(undefined);
     setSavedAt("");
-    const firstPhase = practiceMode === "video" ? "prep" : "response";
+    const firstPhase = practiceMode === "video" && selectedApplication.practice.video.prepSeconds !== null ? "prep" : "response";
     setTimerPhase(firstPhase);
-    setSecondsLeft((practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds) ?? 0);
+    setSecondsLeft((practiceMode === "video" ? (selectedApplication.practice.video.prepSeconds ?? selectedApplication.practice.video.responseSeconds) : selectedApplication.practice.written.seconds) ?? 0);
   }, [applicationId, practiceMode, selectedApplication]);
 
   useEffect(() => {
     if (!timerRunning) return;
     const timer = window.setInterval(() => setSecondsLeft(current => {
       if (current > 1) return current - 1;
-      if (practiceMode === "video" && timerPhase === "prep") {
+      if (practiceMode === "video" && timerPhase === "prep" && selectedApplication.practice.video.prepSeconds !== null) {
         setTimerPhase("response");
         return selectedApplication.practice.video.responseSeconds ?? 0;
       }
@@ -420,9 +475,9 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
   const resetTimer = () => {
     setTimerRunning(false);
     setShowFeedback(false);
-    const firstPhase = practiceMode === "video" ? "prep" : "response";
+    const firstPhase = practiceMode === "video" && selectedApplication.practice.video.prepSeconds !== null ? "prep" : "response";
     setTimerPhase(firstPhase);
-    setSecondsLeft((practiceMode === "video" ? selectedApplication.practice.video.prepSeconds : selectedApplication.practice.written.seconds) ?? 0);
+    setSecondsLeft((practiceMode === "video" ? (selectedApplication.practice.video.prepSeconds ?? selectedApplication.practice.video.responseSeconds) : selectedApplication.practice.written.seconds) ?? 0);
   };
 
   const timerText = `${Math.floor(secondsLeft / 60).toString().padStart(2, "0")}:${(secondsLeft % 60).toString().padStart(2, "0")}`;
@@ -474,6 +529,7 @@ export function ApplicationHub({ mode, initialApplicationId, showChooser = true 
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Deadline</p>
                 <p className="mt-1 font-semibold text-[#ffd48a]">{selectedApplication.deadline}</p>
                 <p className="mt-3 text-sm leading-6 text-white/65">{selectedApplication.note}</p>
+                {"verification" in selectedApplication ? <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-300/10 px-3 py-1.5 text-xs font-semibold text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" />{selectedApplication.verification}</p> : <p className="mt-3 rounded-lg border border-amber-200/15 bg-amber-200/5 px-3 py-2 text-xs leading-5 text-amber-100/75">Program requirement verified; exact prompts or timing may only be available in the applicant portal.</p>}
                 <a href={selectedApplication.source} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white underline decoration-white/30 underline-offset-4 hover:decoration-white">View official requirements <ExternalLink className="h-4 w-4" /></a>
                 {"communitySource" in selectedApplication ? <a href={selectedApplication.communitySource} target="_blank" rel="noreferrer" className="mt-3 flex items-center gap-2 text-xs font-semibold text-white/60 underline decoration-white/20 underline-offset-4">View applicant-reported question source <ExternalLink className="h-3.5 w-3.5" /></a> : null}
               </div>
