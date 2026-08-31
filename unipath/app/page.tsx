@@ -126,7 +126,7 @@ export default function Home() {
     </div> : null}
 
     <footer className="border-t border-white/12 px-6 py-8">
-      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-xs text-white/38 sm:flex-row"><p>© 2026 UniPath · Independent Canadian admissions reference</p><div className="flex flex-wrap gap-5"><Link href="/transfers" className="hover:text-white">Transfer</Link><Link href="/scholarships" className="hover:text-white">Funding</Link><Link href="/dashboard" className="hover:text-white">My file</Link><Link href="/disclaimer" className="hover:text-white">Disclaimer</Link></div></div>
+      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-xs text-white/38 sm:flex-row"><p>© 2026 UniPath · Independent Canadian admissions reference</p><div className="flex flex-wrap gap-5"><Link href="/transfers" className="hover:text-white">Transfer</Link><Link href="/scholarships" className="hover:text-white">Funding</Link><Link href="/dashboard" className="hover:text-white">My file</Link><Link href="/disclaimer" className="hover:text-white">Disclaimer</Link><Link href="/contact" className="hover:text-white">Contact &amp; Help</Link></div></div>
     </footer>
   </main>;
 }
