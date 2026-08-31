@@ -1,5 +1,7 @@
 "use client";
 
+import { AI_AVAILABLE, AI_PAUSED_MESSAGE } from "@/data/aiAvailability";
+import { getApplicationRubric, getRubricScale } from "@/data/applicationRubrics";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Camera,
@@ -15,6 +17,17 @@ import {
   Timer,
   Video,
 } from "lucide-react";
+
+
+type SpeechResultEvent = { resultIndex: number; results: { length: number; [index: number]: { isFinal: boolean; [index: number]: { transcript: string } } } };
+type BrowserRecognition = {
+  continuous: boolean; interimResults: boolean; lang: string;
+  onresult: ((event: SpeechResultEvent) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start(): void; stop(): void; abort(): void;
+};
+type RecognitionConstructor = new () => BrowserRecognition;
 
 type Feedback = {
   overallAssessment: string;
@@ -140,6 +153,18 @@ const verifiedFormats: Record<string, InterviewFormat> = {
   },
 };
 
+
+const mcmasterFormat: InterviewFormat = {
+  prepSeconds: null, responseSeconds: 120,
+  formatLabel: "Three video responses · 2 minutes each · preparation timing needs portal confirmation",
+  evidenceLabel: "Official page conflicts: 10 sec vs 1 min preparation",
+  context: "McMaster confirms three videos and one 10-minute written response. Its overview lists 10 seconds of video preparation, while its FAQ lists 1 minute. No preparation countdown is imposed here; confirm your Kira invitation.",
+};
+verifiedFormats["waterloo-software-engineering"] = verifiedFormats["waterloo-engineering"];
+for (const id of ["mcmaster-engineering", "mcmaster-computer-science", "mcmaster-ibiomed", "mcmaster-btech"]) {
+  verifiedFormats[id] = mcmasterFormat;
+}
+
 const researchedQuestionBanks: Record<string, InterviewQuestion[]> = {
   "ubc-sauder-bcom": [
     { prompt: "Describe a time you helped someone who needed support. What did you do, and what impact did you have?", evidence: "Applicant-reported past Sauder theme", source: "https://www.reddit.com/r/ubcsauder/comments/1h3zii1/sauder_interview_questions/" },
@@ -222,6 +247,16 @@ const researchedQuestionBanks: Record<string, InterviewQuestion[]> = {
   ],
 };
 
+
+researchedQuestionBanks["waterloo-software-engineering"] = researchedQuestionBanks["waterloo-engineering"];
+for (const id of ["mcmaster-engineering", "mcmaster-computer-science", "mcmaster-ibiomed", "mcmaster-btech"]) {
+  researchedQuestionBanks[id] = [
+    { prompt: "Describe a commitment outside school and explain your contribution and learning.", evidence: "Original practice · engagement", source: "https://www.eng.mcmaster.ca/supplementary-application/" },
+    { prompt: "Describe a team setback. What did you do to help the group move forward?", evidence: "Original practice · collaboration and resilience", source: "https://www.eng.mcmaster.ca/supplementary-application/" },
+    { prompt: "Describe an idea you tested. How did you choose your approach and learn from the result?", evidence: "Original practice · innovation and creativity", source: "https://www.eng.mcmaster.ca/supplementary-application/" },
+  ];
+}
+
 function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
 }
@@ -232,6 +267,7 @@ export function supportsVideoInterview(id: string) {
 
 export default function VideoInterviewSimulator({ profile }: { profile: Profile }) {
   const format = verifiedFormats[profile.id];
+  const rubric = getApplicationRubric(profile, "video");
   const questions = researchedQuestionBanks[profile.id] ?? profile.practice.video.questions.map(prompt => ({ prompt, evidence: "UniPath practice question" }));
   const [questionIndex, setQuestionIndex] = useState(0);
   const [phase, setPhase] = useState<"setup" | "prep" | "ready" | "recording" | "review">("setup");
@@ -246,10 +282,12 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
   const [feedbackError, setFeedbackError] = useState("");
   const [grading, setGrading] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
+  const [captionsEnabled, setCaptionsEnabled] = useState(false);
+  const sessionRef = useRef(0);
   const previewRef = useRef<HTMLVideoElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<BrowserRecognition | null>(null);
   const finalTranscriptRef = useRef("");
 
   const activeQuestion = questions[questionIndex] ?? { prompt: "Practice interview question", evidence: "UniPath practice question" };
@@ -271,23 +309,35 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
 
   useEffect(() => {
     if (!timerRunning || secondsLeft <= 0) return;
-    const timer = window.setTimeout(() => setSecondsLeft(value => Math.max(0, value - 1)), 1000);
+    const timer = window.setTimeout(() => {
+      setSecondsLeft(value => Math.max(0, value - 1));
+      if (secondsLeft === 1) {
+        setTimerRunning(false);
+        if (phase === "prep") setPhase("ready");
+        if (phase === "recording" && hasResponseLimit) {
+          const recorder = recorderRef.current;
+          if (recorder && recorder.state !== "inactive") recorder.stop();
+          try { recognitionRef.current?.stop(); } catch {}
+        }
+      }
+    }, 1000);
     return () => window.clearTimeout(timer);
-  }, [timerRunning, secondsLeft]);
-
-  useEffect(() => {
-    if (secondsLeft !== 0 || !timerRunning) return;
-    setTimerRunning(false);
-    if (phase === "prep") setPhase("ready");
-    if (phase === "recording" && hasResponseLimit) stopRecording();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secondsLeft, timerRunning, phase, hasResponseLimit]);
+  }, [timerRunning, secondsLeft, phase, hasResponseLimit]);
 
   useEffect(() => () => {
     stream?.getTracks().forEach(track => track.stop());
+  }, [stream]);
+
+  useEffect(() => () => {
     if (recordingUrl) URL.revokeObjectURL(recordingUrl);
-    try { recognitionRef.current?.stop?.(); } catch {}
-  }, [stream, recordingUrl]);
+  }, [recordingUrl]);
+
+  useEffect(() => () => {
+    sessionRef.current += 1;
+    try { recognitionRef.current?.abort?.(); } catch {}
+    const recorder = recorderRef.current;
+    if (recorder?.state === "recording") recorder.stop();
+  }, []);
 
   async function enableCamera() {
     setPermissionError("");
@@ -300,7 +350,9 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
   }
 
   function createRecognition() {
-    const browserWindow = window as any;
+    if (!captionsEnabled) return null;
+    const session = sessionRef.current;
+    const browserWindow = window as typeof window & { SpeechRecognition?: RecognitionConstructor; webkitSpeechRecognition?: RecognitionConstructor };
     const Recognition = browserWindow.SpeechRecognition || browserWindow.webkitSpeechRecognition;
     if (!Recognition) {
       setSpeechSupported(false);
@@ -312,7 +364,8 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
     recognition.interimResults = true;
     recognition.lang = "en-CA";
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechResultEvent) => {
+      if (session !== sessionRef.current) return;
       let finalText = finalTranscriptRef.current;
       let interimText = "";
 
@@ -331,12 +384,12 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
       setInterimTranscript(interimText);
     };
 
-    recognition.onerror = (event: any) => {
-      if (event?.error === "not-allowed" || event?.error === "service-not-allowed") setSpeechSupported(false);
+    recognition.onerror = (event: { error: string }) => {
+      if (event?.error !== "aborted") setSpeechSupported(false);
     };
 
     recognition.onend = () => {
-      if (recorderRef.current?.state === "recording") {
+      if (session === sessionRef.current && recorderRef.current?.state === "recording") {
         try { recognition.start(); } catch {}
       }
     };
@@ -345,7 +398,9 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
   }
 
   function resetResponseState() {
-    if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+    sessionRef.current += 1;
+    try { recognitionRef.current?.abort?.(); } catch {}
+    recognitionRef.current = null;
     setRecordingUrl("");
     setTranscript("");
     setInterimTranscript("");
@@ -356,7 +411,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
 
   async function beginRecording() {
     let activeStream = stream;
-    if (!activeStream) {
+    if (!activeStream || activeStream.getTracks().some(track => track.readyState === "ended")) {
       try {
         activeStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         setStream(activeStream);
@@ -369,6 +424,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
 
     resetResponseState();
     chunksRef.current = [];
+    const session = sessionRef.current;
 
     let recorder: MediaRecorder;
     try {
@@ -381,11 +437,11 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
     recorderRef.current = recorder;
     recorder.ondataavailable = event => { if (event.data.size > 0) chunksRef.current.push(event.data); };
     recorder.onstop = () => {
+      if (session !== sessionRef.current) return;
       const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
       setRecordingUrl(URL.createObjectURL(blob));
       setTimerRunning(false);
-      setInterimTranscript("");
-      setTranscript(finalTranscriptRef.current.trim());
+      // Preserve interim text until the final speech result or a manual correction.
       setPhase("review");
     };
     recorder.start(250);
@@ -405,11 +461,10 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
   }
 
   function stopRecording() {
-    try { recognitionRef.current?.stop?.(); } catch {}
-    recognitionRef.current = null;
     setTimerRunning(false);
     const recorder = recorderRef.current;
     if (recorder && recorder.state !== "inactive") recorder.stop();
+    try { recognitionRef.current?.stop?.(); } catch {}
   }
 
   function startPrep() {
@@ -446,7 +501,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
 
   async function gradeAttempt() {
     const responseText = liveTranscript || transcript;
-    if (!responseText.trim() || grading) return;
+    if (!AI_AVAILABLE || !responseText.trim() || grading) return;
     setGrading(true);
     setFeedbackError("");
     try {
@@ -481,7 +536,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[.16em] text-[#9fb2bd]"><Video className="h-4 w-4" /> Program-specific video interview simulator</div>
             <h2 className="mt-3 text-2xl font-semibold">{profile.program}</h2>
-            <p className="mt-2 text-sm text-white/55">{format.formatLabel}</p>
+            <p className="mt-2 text-sm text-white/55">{format.formatLabel}</p><p className="mt-2 max-w-2xl text-xs leading-5 text-white/60">{format.context}</p>
           </div>
           <div className="rounded-full border border-[#8fa7b6]/20 bg-[#8fa7b6]/10 px-4 py-2 text-xs font-semibold text-[#b6c5ce]">{format.evidenceLabel}</div>
         </div>
@@ -496,7 +551,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
             <p className="mt-5 text-xl font-semibold leading-8">{prompt}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/45">
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5">{activeQuestion.evidence}</span>
-              {activeQuestion.source ? <a href={activeQuestion.source} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#a8bac5] hover:underline">Public discussion source <ExternalLink className="h-3 w-3" /></a> : null}
+              {activeQuestion.source ? <a href={activeQuestion.source} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#a8bac5] hover:underline">Question source <ExternalLink className="h-3 w-3" /></a> : null}
             </div>
 
             <div className="relative mt-6 aspect-video overflow-hidden rounded-2xl border border-white/10 bg-[#090f16]">
@@ -505,6 +560,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
               {(phase === "prep" || (phase === "recording" && hasResponseLimit)) ? <div className="absolute right-4 top-4 rounded-xl bg-black/65 px-3 py-2 font-mono text-lg font-semibold backdrop-blur">{formatTime(secondsLeft)}</div> : null}
             </div>
 
+            <label className="mt-4 flex items-start gap-2 text-xs leading-5 text-white/65"><input type="checkbox" checked={captionsEnabled} disabled={phase === "recording"} onChange={e => setCaptionsEnabled(e.target.checked)} />Enable optional browser captions. Your browser may send audio to its speech service. Leave off to record locally and type a transcript; no UniPath AI credits are used.</label>
             {permissionError ? <p className="mt-3 text-sm text-red-300">{permissionError}</p> : null}
 
             <div className="mt-5 rounded-2xl border border-white/10 bg-[#0d1722] p-4">
@@ -515,7 +571,7 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {!stream ? <button type="button" onClick={enableCamera} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#111c29]"><Camera className="h-4 w-4" /> Enable camera & mic</button> : null}
-                {stream && (phase === "setup" || phase === "review") ? <button type="button" onClick={startPrep} className="inline-flex items-center gap-2 rounded-xl bg-[#9fb2bd] px-4 py-2.5 text-sm font-semibold text-[#0b121b]"><CirclePlay className="h-4 w-4" /> Start prep timer</button> : null}
+                {stream && (phase === "setup" || phase === "review") ? <button type="button" onClick={startPrep} className="inline-flex items-center gap-2 rounded-xl bg-[#9fb2bd] px-4 py-2.5 text-sm font-semibold text-[#0b121b]"><CirclePlay className="h-4 w-4" /> {hasPrep ? "Start prep timer" : "Prepare response"}</button> : null}
                 {phase === "prep" && secondsLeft > 0 ? <button type="button" onClick={toggleTimer} className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold">{timerRunning ? <CirclePause className="h-4 w-4" /> : <CirclePlay className="h-4 w-4" />}{timerRunning ? "Pause timer" : "Resume timer"}</button> : null}
                 {phase === "prep" ? <button type="button" onClick={resetTimer} className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold">Reset timer</button> : null}
                 {stream && (phase === "ready" || phase === "prep") ? <button type="button" onClick={() => void beginRecording()} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold"><Mic className="h-4 w-4" /> Start video response</button> : null}
@@ -532,16 +588,26 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
 
             <div className="mt-5">
               <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">Live transcription</p>{phase === "recording" ? <span className="flex items-center gap-1.5 text-xs font-semibold text-red-300"><span className="h-2 w-2 animate-pulse rounded-full bg-red-400" /> listening</span> : null}</div>
-              <div aria-live="polite" className="mt-3 min-h-40 max-h-64 overflow-y-auto rounded-xl border border-slate-300 bg-white p-4 text-sm leading-6 text-[#111827] shadow-inner">
-                {liveTranscript ? <>{transcript}{interimTranscript ? <span className="text-slate-400"> {interimTranscript}</span> : null}</> : <span className="text-slate-400">{speechSupported ? (phase === "recording" ? "Listening… your words will appear here as you speak." : "Your live transcript will appear here once recording begins.") : "Live browser transcription is not available here. Try current Chrome or Edge for speech recognition."}</span>}
+              <div aria-live="polite" className="mt-3 min-h-20 max-h-64 overflow-y-auto rounded-xl border border-slate-300 bg-white p-4 text-sm leading-6 text-[#111827] shadow-inner">
+                {liveTranscript ? <>{transcript}{interimTranscript ? <span className="text-slate-400"> {interimTranscript}</span> : null}</> : <span className="text-slate-400">{speechSupported ? (phase === "recording" ? "Listening… your words will appear here as you speak." : "Your live transcript will appear here once recording begins.") : "Live browser transcription is not available here. Type or paste a transcript below instead."}</span>}
               </div>
-              <p className="mt-2 text-[11px] leading-5 text-white/35">Speech recognition can make mistakes. The transcript is used for coaching, while the video remains available for your own replay.</p>
+              <label className="mt-4 block text-sm font-semibold">Editable response transcript
+                <textarea aria-label="Editable response transcript" disabled={phase === "recording"} value={liveTranscript} onChange={e => {
+                  if (recognitionRef.current) recognitionRef.current.onresult = null;
+                  finalTranscriptRef.current = e.target.value;
+                  setTranscript(e.target.value); setInterimTranscript(""); setFeedback(null);
+                }} placeholder="Type or paste your answer here. No camera or speech recognition required." className="mt-2 min-h-40 w-full rounded-lg bg-white p-3 font-normal text-[#111827] disabled:opacity-60" />
+              </label>
+              <p className="mt-2 text-xs leading-5 text-white/60">Correct any caption errors before reviewing. Video and transcript are not uploaded or synced. Copy your transcript and download the recording before leaving.</p>
+              <button type="button" disabled={!liveTranscript.trim() || phase === "recording"} onClick={async () => { try { await navigator.clipboard.writeText(liveTranscript); } catch { setPermissionError("Select and copy the transcript manually; clipboard access was blocked."); } }} className="mt-3 rounded-lg border border-white/20 px-3 py-2 text-sm disabled:opacity-40">Copy transcript</button>
+              <p className="mt-4 text-sm leading-6 text-white/70">{AI_PAUSED_MESSAGE}</p>
+              <div className="mt-5 border-t border-white/15 pt-4"><h3 className="font-semibold">{rubric.title}</h3><p className="mt-2 text-xs leading-5 text-white/60">{rubric.note}</p><ul className="mt-3 space-y-3">{rubric.criteria.map(item => <li key={item.name}><p className="text-sm font-semibold">{item.name}</p><p className="text-xs leading-5 text-white/65">{item.description}</p></li>)}</ul><p className="mt-3 text-xs text-white/60">{getRubricScale(profile).map(level => level.score + " " + level.label).join(" · ")}</p><a className="mt-3 inline-block text-sm underline" href={rubric.source} target="_blank" rel="noreferrer">Read the official source</a></div>
             </div>
 
-            {recordingUrl ? <div className="mt-6"><p className="text-sm font-semibold">Replay your response</p><video src={recordingUrl} controls playsInline className="mt-3 w-full rounded-xl border border-white/10 bg-black" /></div> : null}
+            {recordingUrl ? <div className="mt-6"><p className="text-sm font-semibold">Replay your response</p><a href={recordingUrl} download="unipath-practice.webm" className="mt-2 inline-block text-sm underline">Download recording</a><video src={recordingUrl} controls playsInline className="mt-3 w-full rounded-xl border border-white/10 bg-black" /></div> : null}
 
             {phase === "review" ? <div className="mt-5">
-              <button type="button" disabled={!transcript.trim() || grading} onClick={gradeAttempt} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#9fb2bd] px-5 py-3 text-sm font-semibold text-[#0b121b] disabled:cursor-not-allowed disabled:opacity-40">{grading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{grading ? "Grading interview…" : "Grade this recorded answer"}</button>
+              <button type="button" disabled={!AI_AVAILABLE || !transcript.trim() || grading} onClick={gradeAttempt} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#9fb2bd] px-5 py-3 text-sm font-semibold text-[#0b121b] disabled:cursor-not-allowed disabled:opacity-40">{grading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{grading ? "Grading interview…" : "AI feedback paused"}</button>
               {feedbackError ? <p className="mt-3 text-sm text-red-300">{feedbackError}</p> : null}
             </div> : null}
 

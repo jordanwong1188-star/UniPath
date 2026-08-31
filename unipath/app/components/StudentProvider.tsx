@@ -24,6 +24,7 @@ type StudentState = {
 
 type StudentContextValue = StudentState & {
   ready: boolean;
+  storageError: string;
   isFounder: boolean;
   isPremium: boolean;
   signInPreview: (name: string, email: string) => void;
@@ -40,6 +41,7 @@ const StudentContext = createContext<StudentContextValue | null>(null);
 
 export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StudentState>(initialState);
+  const [storageError, setStorageError] = useState("");
   const [ready, setReady] = useState(false);
   const [isFounder, setIsFounder] = useState(false);
 
@@ -51,7 +53,11 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         const stored = window.localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored) as StudentState;
-          if (active) setState({ ...parsed, student: parsed.student ?? null });
+          if (active) setState({
+            student: parsed.student && typeof parsed.student.name === "string" ? parsed.student : null,
+            savedUniversityIds: Array.isArray(parsed.savedUniversityIds) ? parsed.savedUniversityIds.filter(id => typeof id === "string") : [],
+            attempts: Array.isArray(parsed.attempts) ? parsed.attempts.filter(item => item && typeof item.id === "string" && typeof item.draft === "string" && typeof item.applicationId === "string").slice(0, 200) : [],
+          });
         }
       } catch {
         // Ignore malformed local preview data.
@@ -75,14 +81,24 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (ready) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (ready) {
+      // This effect synchronizes storage; the status reports the external write result.
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setStorageError("");
+      } catch {
+        setStorageError("Browser storage is unavailable or full. Copy your draft before leaving; changes have not been saved persistently.");
+      }
+    }
   }, [ready, state]);
 
   const value = useMemo<StudentContextValue>(() => ({
     ...state,
     ready,
+    storageError,
     isFounder,
-    isPremium: isFounder || state.student?.plan === "premium",
+    isPremium: isFounder,
     signInPreview: (name, email) => setState(current => ({ ...current, student: { name, email, plan: "preview" } })),
     signInFounder: async (accessKey) => {
       const response = await fetch("/api/founder-access", {
@@ -112,7 +128,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       }));
       return saved;
     },
-  }), [isFounder, ready, state]);
+  }), [isFounder, ready, state, storageError]);
 
   return <StudentContext.Provider value={value}>{children}</StudentContext.Provider>;
 }

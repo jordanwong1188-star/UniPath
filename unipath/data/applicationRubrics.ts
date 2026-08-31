@@ -43,9 +43,9 @@ const officialRubrics: Record<string, Omit<ApplicationRubric, "source">> = {
     ],
   },
   queens: {
-    title: "Queen’s Supplementary Application rubric",
-    evidence: "Official published rubric",
-    note: "Queen’s publishes its 1–5 criteria. The exact emphasis differs between the written and video prompt, so students must still answer the live question directly.",
+    title: "Queen’s video response · practice interpretation",
+    evidence: "Official criteria converted to practice scale",
+    note: "Based on the public video rubric. These practice dimensions are paraphrased, not an official marking sheet or weighted admission score. Read the original rubric for complete score-level descriptors.",
     criteria: [
       criterion("Specific and relevant example", "How clearly the response addresses the assigned question through a thoughtful example.", "Shares a thoughtful, specific example that directly answers every part of the prompt."),
       criterion("Initiative and adaptability", "Evidence of initiative, persistence, adaptability, and meaningful problem-solving.", "Shows strong initiative and adaptability through clear decisions, obstacles, adjustments, and reasoning."),
@@ -79,15 +79,14 @@ const officialRubrics: Record<string, Omit<ApplicationRubric, "source">> = {
     ],
   },
   mcmasterEngineering: {
-    title: "McMaster Engineering supplementary practice rubric",
+    title: "McMaster Engineering · public competencies",
     evidence: "Official criteria converted to practice scale",
-    note: "McMaster explicitly does not release its internal rubric. These 1–5 criteria convert the qualities McMaster publicly says trained reviewers assess.",
+    note: "The four public competencies inform this coaching checklist; these are not internal scores or weights.",
     criteria: [
-      criterion("Thoughtful self-reflection", "Depth of understanding about the applicant’s decisions, assumptions, learning, and growth.", "Moves beyond describing events to examine reasoning, limitations, learning, and how later behaviour changed."),
-      criterion("Problem-solving and critical thinking", "How the applicant defines a challenge, considers information or constraints, and selects an approach.", "Explains a credible decision process, alternatives or constraints, adaptation, and what the result reveals about the approach."),
-      criterion("Collaboration", "How the applicant communicates and works with people whose needs or views may differ.", "Shows listening, constructive contribution, conflict navigation, shared ownership, and awareness of personal impact on others."),
-      criterion("Communication", "Directness, organization, relevance, and clarity under the assessment format.", "Answers the prompt immediately, develops one coherent example, uses precise language, and finishes within the verified limit."),
-      criterion("Personal growth", "Evidence that reflection resulted in a meaningful change.", "Identifies a non-obvious lesson and demonstrates a concrete later change in behaviour, judgment, or approach."),
+      criterion("Engagement", "Describe meaningful commitments beyond coursework.", "Explain your contribution and why it mattered."),
+      criterion("Collaboration", "Show how you worked constructively with others.", "Use an example of listening, inclusion and a shared result."),
+      criterion("Innovation and creativity", "Explain how you explored or tested a solution.", "Describe your reasoning, experiment and learning."),
+      criterion("Resilience", "Explain how you responded to a setback.", "Show an adjustment and what you carried forward."),
     ],
   },
   rotman: {
@@ -200,7 +199,29 @@ function categoryRubric(profile: ProfileSummary): ApplicationRubric {
   };
 }
 
-export function getApplicationRubric(profile: ProfileSummary): ApplicationRubric {
+
+const queensWrittenRubric: Omit<ApplicationRubric, "source"> = {
+  title: "Queen’s written response · practice interpretation",
+  evidence: "Official criteria converted to practice scale",
+  note: "Based on the public written rubric, not the video rubric. These paraphrased practice dimensions have no official weights and do not predict admission. Consult the original score-level descriptors.",
+  criteria: [
+    criterion("Challenge and relevance", "Describe a challenge that directly addresses the question.", "Give an authentic, detailed account with clear personal stakes."),
+    criterion("Initiative, adaptability and persistence", "Explain what you did when facing obstacles.", "Show sustained effort and purposeful adjustments through concrete actions."),
+    criterion("Problem-solving", "Explain your reasoning and approach.", "Show deliberate planning or creative thinking appropriate to the problem."),
+    criterion("Reflection and growth", "Explain what changed in your thinking or behaviour.", "Connect your learning to specific future choices rather than a generic lesson."),
+  ],
+};
+
+export function getRubricScale(profile: ProfileSummary) {
+  if (!profile.id.startsWith("queens-")) return rubricScale;
+  const labels = ["Developing", "Basic", "Competent", "Strong", "Exceptional"];
+  return labels.map((label, index) => ({
+    score: index + 1, label,
+    description: "Queen’s published level label. See the source for the complete mode-specific criteria.",
+  }));
+}
+
+export function getApplicationRubric(profile: ProfileSummary, mode: "written" | "video" = "written"): ApplicationRubric {
   const id = profile.id.toLowerCase();
 
   if (id.startsWith("ubc-")) {
@@ -208,14 +229,14 @@ export function getApplicationRubric(profile: ProfileSummary): ApplicationRubric
   }
   if (id.startsWith("queens-")) {
     return {
-      ...officialRubrics.queens,
+      ...(mode === "written" ? queensWrittenRubric : officialRubrics.queens),
       source: "https://www.queensu.ca/admission/applying/supplementary-application-rubric",
     };
   }
   if (id === "western-ivey-aeo") {
     return { ...officialRubrics.ivey, source: profile.source };
   }
-  if (id === "waterloo-engineering") {
+  if (id === "waterloo-engineering" || id === "waterloo-software-engineering") {
     return { ...officialRubrics.waterlooEngineering, source: profile.source };
   }
   if (id === "rotman-commerce") {

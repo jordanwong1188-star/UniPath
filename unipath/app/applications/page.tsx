@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { applicationProfiles } from "../application-hub/page";
+import { applicationProfiles } from "@/data/applicationProfiles";
 import SiteHeader from "@/app/components/SiteHeader";
 
 export default function ApplicationsPage() {

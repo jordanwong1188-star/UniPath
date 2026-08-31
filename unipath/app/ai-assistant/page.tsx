@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AI_AVAILABLE, AI_PAUSED_MESSAGE } from "@/data/aiAvailability";
 import {
   ArrowRight,
   Send,
@@ -41,7 +42,7 @@ const starterQuestions = [
 const initialMessage: Message = {
   role: "assistant",
   content:
-    "Tell me what university decision you are working through. Ask about programs, requirements, deadlines, costs, co-op, or how two options compare.",
+    AI_PAUSED_MESSAGE,
 };
 
 export default function AIAssistantPage() {
@@ -64,7 +65,7 @@ export default function AIAssistantPage() {
   async function sendMessage(messageOverride?: string) {
     const question = (messageOverride ?? input).trim();
 
-    if (!question || loading) return;
+    if (!AI_AVAILABLE || !question || loading) return;
 
     const userMessage: Message = {
       role: "user",
@@ -149,7 +150,7 @@ export default function AIAssistantPage() {
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-500">
               Ask questions the way you would ask a university advisor.
-              You don't need to know the terminology or phrase your question
+              You do not need to know the terminology or phrase your question
               perfectly.
             </p>
           </div>
@@ -298,7 +299,7 @@ export default function AIAssistantPage() {
 
                     <button
                       type="submit"
-                      disabled={!input.trim() || loading}
+                      disabled={!AI_AVAILABLE || !input.trim() || loading}
                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#172126] text-white transition hover:bg-[#29383e] disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <Send className="h-4 w-4" />

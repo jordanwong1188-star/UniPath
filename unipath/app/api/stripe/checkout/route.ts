@@ -1,3 +1,4 @@
+import { AI_AVAILABLE } from "@/data/aiAvailability";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -14,6 +15,7 @@ function isPaidPlan(value: unknown): value is PaidPlan {
 }
 
 export async function POST(request: NextRequest) {
+  if (!AI_AVAILABLE) return NextResponse.json({ error: "Paid plans are paused during free testing." }, { status: 503 });
   try {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) return NextResponse.json({ error: "Subscriptions are temporarily unavailable." }, { status: 503 });
