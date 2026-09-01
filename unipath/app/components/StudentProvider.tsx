@@ -15,7 +15,7 @@ export type SavedAttempt = {
   score?: number;
 };
 
-type Student = { name: string; email: string; plan: "preview" | "premium" };
+type Student = { name: string; email: string; plan: "free" | "pro" | "max"; credits: number };
 type StudentState = {
   student: Student | null;
   savedUniversityIds: string[];
@@ -27,7 +27,7 @@ type StudentContextValue = StudentState & {
   storageError: string;
   isFounder: boolean;
   isPremium: boolean;
-  signInPreview: (name: string, email: string) => void;
+  refreshAccount: () => Promise<void>;
   signInFounder: (accessKey: string) => Promise<void>;
   signOutFounder: () => Promise<void>;
   signOut: () => void;
@@ -61,6 +61,21 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         }
       } catch {
         // Ignore malformed local preview data.
+      }
+
+      try {
+        const accountResponse = await fetch("/api/auth", { cache: "no-store" });
+        if (accountResponse.ok) {
+          const account = await accountResponse.json();
+          if (active && account?.user) setState(current => ({ ...current, student: {
+            name: account.user.name || "Student",
+            email: account.user.email || "",
+            plan: account.subscription?.plan || "free",
+            credits: Number(account.subscription?.credits_remaining) || 0,
+          } }));
+        }
+      } catch {
+        // The local workspace remains available if account refresh fails.
       }
 
       try {
@@ -98,8 +113,17 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     ready,
     storageError,
     isFounder,
-    isPremium: isFounder,
-    signInPreview: (name, email) => setState(current => ({ ...current, student: { name, email, plan: "preview" } })),
+    isPremium: isFounder || state.student?.plan === "pro" || state.student?.plan === "max",
+    refreshAccount: async () => {
+      const response = await fetch("/api/auth", { cache: "no-store" });
+      const account = await response.json();
+      setState(current => ({ ...current, student: account?.user ? {
+        name: account.user.name || "Student",
+        email: account.user.email || "",
+        plan: account.subscription?.plan || "free",
+        credits: Number(account.subscription?.credits_remaining) || 0,
+      } : null }));
+    },
     signInFounder: async (accessKey) => {
       const response = await fetch("/api/founder-access", {
         method: "POST",
@@ -113,7 +137,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     signOutFounder: async () => {
       try { await fetch("/api/founder-access", { method: "DELETE" }); } finally { setIsFounder(false); }
     },
-    signOut: () => setState(current => ({ ...current, student: null })),
+    signOut: () => { void fetch("/api/auth", { method: "DELETE" }); setState(current => ({ ...current, student: null })); },
     toggleUniversity: (id) => setState(current => ({
       ...current,
       savedUniversityIds: current.savedUniversityIds.includes(id)

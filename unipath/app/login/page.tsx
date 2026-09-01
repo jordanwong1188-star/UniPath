@@ -5,18 +5,28 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 import SiteHeader from "../components/SiteHeader";
-import { useStudent } from "../components/StudentProvider";
 
 export default function LoginPage() {
-  const { signInPreview } = useStudent();
   const router = useRouter();
+  const [mode, setMode] = useState<"signup" | "login">("signup");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    signInPreview(name.trim() || "Student", email.trim());
-    router.push("/dashboard");
+    setLoading(true); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: mode, fullName: name, email, password }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "Unable to access your account.");
+      if (data?.requiresConfirmation) { setNotice("Check your email and confirm your UniPath account, then return here to sign in."); setMode("login"); return; }
+      router.push("/dashboard"); router.refresh();
+    } catch (submitError) { setError(submitError instanceof Error ? submitError.message : "Unable to access your account."); }
+    finally { setLoading(false); }
   };
 
   return <main className="min-h-screen bg-[#132c29] text-[#f2ede2]">
@@ -33,12 +43,16 @@ export default function LoginPage() {
 
       <form onSubmit={submit} className="border border-white/12 bg-[#1d3d38] p-7 sm:p-9">
         <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#e0a17f]">Your account</p>
-        <h2 className="mt-3 text-3xl">Create your profile</h2>
-        <p className="mt-3 text-sm leading-6 text-white/45">Start with UniPath’s free research and planning workspace. You can choose a feedback plan whenever you need application practice.</p>
-        <label className="mt-8 block text-sm font-semibold">Your name<input required value={name} onChange={e => setName(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="Your full name" /></label>
+        <h2 className="mt-3 text-3xl">{mode === "signup" ? "Create your account" : "Welcome back"}</h2>
+        <p className="mt-3 text-sm leading-6 text-white/45">{mode === "signup" ? "Start with UniPath’s free research and planning workspace. You can choose a feedback plan whenever you need application practice." : "Sign in to open your saved account and membership."}</p>
+        {mode === "signup" ? <label className="mt-8 block text-sm font-semibold">Your name<input required value={name} onChange={e => setName(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="Your full name" /></label> : null}
         <label className="mt-5 block text-sm font-semibold">Email address<input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="you@email.com" /></label>
-        <button className="mt-7 flex w-full items-center justify-center gap-2 bg-[#d4865f] px-5 py-4 font-semibold text-[#132c29] transition hover:bg-[#e0a17f]">Enter your workspace <ArrowRight className="h-4 w-4" /></button>
-        <p className="mt-5 text-center text-xs leading-5 text-white/30">Your selected schools, drafts, and planning progress stay together in your workspace.</p>
+        <label className="mt-5 block text-sm font-semibold">Password<input required minLength={8} type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={e => setPassword(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="At least 8 characters" /></label>
+        {error ? <p role="alert" className="mt-4 text-sm text-[#f0aa88]">{error}</p> : null}
+        {notice ? <p role="status" className="mt-4 border border-[#e0a17f]/30 bg-[#e0a17f]/10 p-3 text-sm leading-6 text-[#f2d3bf]">{notice}</p> : null}
+        <button disabled={loading} className="mt-7 flex w-full items-center justify-center gap-2 bg-[#d4865f] px-5 py-4 font-semibold text-[#132c29] transition hover:bg-[#e0a17f] disabled:opacity-60">{loading ? "Please wait…" : mode === "signup" ? "Create free account" : "Sign in"} <ArrowRight className="h-4 w-4" /></button>
+        <button type="button" onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setError(""); setNotice(""); }} className="mt-5 w-full text-center text-sm font-semibold text-[#e0a17f] hover:text-white">{mode === "signup" ? "Already have an account? Sign in" : "New to UniPath? Create an account"}</button>
+        <p className="mt-5 text-center text-xs leading-5 text-white/30">Your membership is secured through your verified UniPath account.</p>
         <Link href="/pricing" className="mt-5 block text-center text-sm font-semibold text-[#e0a17f] hover:text-white">Compare membership plans</Link>
       </form>
     </div>

@@ -1,4 +1,5 @@
 import { AI_AVAILABLE } from "@/data/aiAvailability";
+import { currentUser } from "@/lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -27,6 +28,9 @@ export async function POST(request: NextRequest) {
         : undefined;
     if (!isPaidPlan(requestedPlan)) return NextResponse.json({ error: "Choose either Pro or Max." }, { status: 400 });
 
+    const account = await currentUser();
+    if (!account?.user.email) return NextResponse.json({ error: "Sign in before choosing a paid plan." }, { status: 401 });
+
     const priceId = process.env[priceEnvironmentKeys[requestedPlan]];
     if (!priceId) return NextResponse.json({ error: "This plan is temporarily unavailable." }, { status: 503 });
 
@@ -40,7 +44,11 @@ export async function POST(request: NextRequest) {
       allow_promotion_codes: "true",
       billing_address_collection: "auto",
       "metadata[plan]": requestedPlan,
+      "metadata[user_id]": account.user.id,
       "subscription_data[metadata][plan]": requestedPlan,
+      "subscription_data[metadata][user_id]": account.user.id,
+      customer_email: account.user.email,
+      client_reference_id: account.user.id,
     });
 
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
