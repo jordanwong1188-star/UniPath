@@ -7,6 +7,7 @@ const REFRESH_COOKIE = "unipath-refresh-token";
 type SupabaseUser = {
   id: string;
   email?: string;
+  email_confirmed_at?: string;
   user_metadata?: { full_name?: string };
 };
 

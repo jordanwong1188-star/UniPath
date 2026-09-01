@@ -1,5 +1,5 @@
-import { AI_AVAILABLE } from "@/data/aiAvailability";
-import { currentUser } from "@/lib/supabase-server";
+import { CHECKOUT_AVAILABLE, CHECKOUT_PAUSED_MESSAGE } from "@/data/billingAvailability";
+import { currentUser, subscriptionFor } from "@/lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -16,7 +16,7 @@ function isPaidPlan(value: unknown): value is PaidPlan {
 }
 
 export async function POST(request: NextRequest) {
-  if (!AI_AVAILABLE) return NextResponse.json({ error: "Paid plans are paused during free testing." }, { status: 503 });
+  if (!CHECKOUT_AVAILABLE) return NextResponse.json({ error: CHECKOUT_PAUSED_MESSAGE }, { status: 503 });
   try {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) return NextResponse.json({ error: "Subscriptions are temporarily unavailable." }, { status: 503 });
@@ -30,6 +30,12 @@ export async function POST(request: NextRequest) {
 
     const account = await currentUser();
     if (!account?.user.email) return NextResponse.json({ error: "Sign in before choosing a paid plan." }, { status: 401 });
+    if (!account.user.email_confirmed_at) return NextResponse.json({ error: "Confirm your email before choosing a paid plan." }, { status: 403 });
+    const existing = await subscriptionFor(account.accessToken, account.user.id);
+    if (!existing) return NextResponse.json({ error: "Unable to verify your membership. Please contact support." }, { status: 503 });
+    if (!["inactive", "canceled"].includes(existing.status)) {
+      return NextResponse.json({ error: "You already have a subscription. Use Manage subscription to change it." }, { status: 409 });
+    }
 
     const priceId = process.env[priceEnvironmentKeys[requestedPlan]];
     if (!priceId) return NextResponse.json({ error: "This plan is temporarily unavailable." }, { status: 503 });

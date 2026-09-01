@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export type SavedAttempt = {
   id: string;
@@ -15,7 +15,7 @@ export type SavedAttempt = {
   score?: number;
 };
 
-type Student = { name: string; email: string; plan: "free" | "pro" | "max"; credits: number };
+type Student = { name: string; email: string; plan: "free" | "pro" | "max"; credits: number; status: string };
 type StudentState = {
   student: Student | null;
   savedUniversityIds: string[];
@@ -39,11 +39,35 @@ const STORAGE_KEY = "unipath-student-workspace-v1";
 const initialState: StudentState = { student: null, savedUniversityIds: [], attempts: [] };
 const StudentContext = createContext<StudentContextValue | null>(null);
 
+type AccountPayload = { user?: { name?: string; email?: string }; subscription?: { plan?: string; status?: string; credits_remaining?: number; current_period_end?: string } };
+function accountStudent(account: AccountPayload): Student | null {
+  if (!account.user) return null;
+  const sub = account.subscription;
+  const entitled = ["active", "trialing"].includes(sub?.status || "") && Date.parse(sub?.current_period_end || "") > Date.now();
+  return { name: account.user.name || "Student", email: account.user.email || "",
+    plan: entitled && (sub?.plan === "pro" || sub?.plan === "max") ? sub.plan : "free",
+    credits: entitled ? Math.max(0, Number(sub?.credits_remaining) || 0) : 0,
+    status: sub?.status || "inactive" };
+}
+
 export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StudentState>(initialState);
   const [storageError, setStorageError] = useState("");
   const [ready, setReady] = useState(false);
   const [isFounder, setIsFounder] = useState(false);
+  const refreshAccount = useCallback(async () => {
+    const response = await fetch("/api/auth", { cache: "no-store" });
+    if (!response.ok) throw new Error("Unable to refresh account status. Please reload.");
+    const account = await response.json();
+    setState(current => ({ ...current, student: accountStudent(account) }));
+  }, []);
+
+  useEffect(() => {
+    const refresh = () => { void refreshAccount().catch(() => {}); };
+    window.addEventListener("focus", refresh);
+    const interval = window.setInterval(refresh, 20 * 60 * 1000);
+    return () => { window.removeEventListener("focus", refresh); window.clearInterval(interval); };
+  }, [refreshAccount]);
 
   useEffect(() => {
     let active = true;
@@ -54,7 +78,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         if (stored) {
           const parsed = JSON.parse(stored) as StudentState;
           if (active) setState({
-            student: parsed.student && typeof parsed.student.name === "string" ? parsed.student : null,
+            student: null, // Membership is always obtained from the server.
             savedUniversityIds: Array.isArray(parsed.savedUniversityIds) ? parsed.savedUniversityIds.filter(id => typeof id === "string") : [],
             attempts: Array.isArray(parsed.attempts) ? parsed.attempts.filter(item => item && typeof item.id === "string" && typeof item.draft === "string" && typeof item.applicationId === "string").slice(0, 200) : [],
           });
@@ -67,12 +91,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         const accountResponse = await fetch("/api/auth", { cache: "no-store" });
         if (accountResponse.ok) {
           const account = await accountResponse.json();
-          if (active && account?.user) setState(current => ({ ...current, student: {
-            name: account.user.name || "Student",
-            email: account.user.email || "",
-            plan: account.subscription?.plan || "free",
-            credits: Number(account.subscription?.credits_remaining) || 0,
-          } }));
+          if (active) setState(current => ({ ...current, student: accountStudent(account) }));
         }
       } catch {
         // The local workspace remains available if account refresh fails.
@@ -99,7 +118,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     if (ready) {
       // This effect synchronizes storage; the status reports the external write result.
       try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, student: null }));
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setStorageError("");
       } catch {
@@ -114,16 +133,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     storageError,
     isFounder,
     isPremium: isFounder || state.student?.plan === "pro" || state.student?.plan === "max",
-    refreshAccount: async () => {
-      const response = await fetch("/api/auth", { cache: "no-store" });
-      const account = await response.json();
-      setState(current => ({ ...current, student: account?.user ? {
-        name: account.user.name || "Student",
-        email: account.user.email || "",
-        plan: account.subscription?.plan || "free",
-        credits: Number(account.subscription?.credits_remaining) || 0,
-      } : null }));
-    },
+    refreshAccount,
     signInFounder: async (accessKey) => {
       const response = await fetch("/api/founder-access", {
         method: "POST",
@@ -152,7 +162,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
       }));
       return saved;
     },
-  }), [isFounder, ready, state, storageError]);
+  }), [isFounder, ready, state, storageError, refreshAccount]);
 
   return <StudentContext.Provider value={value}>{children}</StudentContext.Provider>;
 }
