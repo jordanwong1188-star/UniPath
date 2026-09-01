@@ -600,14 +600,14 @@ export default function VideoInterviewSimulator({ profile }: { profile: Profile 
               </label>
               <p className="mt-2 text-xs leading-5 text-white/60">Correct any caption errors before reviewing. Video and transcript are not uploaded or synced. Copy your transcript and download the recording before leaving.</p>
               <button type="button" disabled={!liveTranscript.trim() || phase === "recording"} onClick={async () => { try { await navigator.clipboard.writeText(liveTranscript); } catch { setPermissionError("Select and copy the transcript manually; clipboard access was blocked."); } }} className="mt-3 rounded-lg border border-white/20 px-3 py-2 text-sm disabled:opacity-40">Copy transcript</button>
-              <p className="mt-4 text-sm leading-6 text-white/70">{AI_PAUSED_MESSAGE}</p>
+              <p className="mt-4 text-sm leading-6 text-white/70">{AI_AVAILABLE ? "Your transcript is sent to OpenAI for processing when you request feedback. Avoid highly sensitive personal information." : AI_PAUSED_MESSAGE}</p>
               <div className="mt-5 border-t border-white/15 pt-4"><h3 className="font-semibold">{rubric.title}</h3><p className="mt-2 text-xs leading-5 text-white/60">{rubric.note}</p><ul className="mt-3 space-y-3">{rubric.criteria.map(item => <li key={item.name}><p className="text-sm font-semibold">{item.name}</p><p className="text-xs leading-5 text-white/65">{item.description}</p></li>)}</ul><p className="mt-3 text-xs text-white/60">{getRubricScale(profile).map(level => level.score + " " + level.label).join(" · ")}</p><a className="mt-3 inline-block text-sm underline" href={rubric.source} target="_blank" rel="noreferrer">Read the official source</a></div>
             </div>
 
             {recordingUrl ? <div className="mt-6"><p className="text-sm font-semibold">Replay your response</p><a href={recordingUrl} download="unipath-practice.webm" className="mt-2 inline-block text-sm underline">Download recording</a><video src={recordingUrl} controls playsInline className="mt-3 w-full rounded-xl border border-white/10 bg-black" /></div> : null}
 
             {phase === "review" ? <div className="mt-5">
-              <button type="button" disabled={!AI_AVAILABLE || !transcript.trim() || grading} onClick={gradeAttempt} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#9fb2bd] px-5 py-3 text-sm font-semibold text-[#0b121b] disabled:cursor-not-allowed disabled:opacity-40">{grading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{grading ? "Grading interview…" : "AI feedback paused"}</button>
+              <button type="button" disabled={!AI_AVAILABLE || !transcript.trim() || grading} onClick={gradeAttempt} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#9fb2bd] px-5 py-3 text-sm font-semibold text-[#0b121b] disabled:cursor-not-allowed disabled:opacity-40">{grading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{grading ? "Grading interview…" : AI_AVAILABLE ? "Request transcript feedback" : "AI feedback paused"}</button>
               {feedbackError ? <p className="mt-3 text-sm text-red-300">{feedbackError}</p> : null}
             </div> : null}
 
