@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import SiteHeader from "../components/SiteHeader";
 import SubscribeButton from "../components/SubscribeButton";
+import ManageBillingButton from "../components/ManageBillingButton";
 
 const plans = [
   { id: "free", name: "Free", descriptor: "Build a clear application plan", regular: null, price: "0", allowance: "No AI usage included", accent: false, features: ["Browse all university and program records", "Search deadlines and scholarship directories", "Build a focused university shortlist", "Use transfer course and credit references", "Organize application and supplemental checklists"], excluded: ["AI feedback and interview grading are not included", "No saved feedback history", "Limited workspace storage"], cta: "Create free account" },
@@ -46,6 +47,6 @@ export default function PricingPage() {
       <div className="border-b border-white/12 px-6 py-10 lg:border-b-0 lg:border-r lg:px-10"><p className="text-[10px] uppercase tracking-[.18em] text-[#e0a17f]">How credits work</p><h2 className="mt-4 text-3xl">Usage you can predict.</h2><p className="mt-4 text-sm leading-7 text-white/42">Free research, filtering, writing, saving, and checklists never consume credits. Credits are reserved for paid feedback and assessment actions that call a language model.</p></div>
       <div className="grid gap-px bg-white/12 sm:grid-cols-2">{creditUses.map(([cost,use]) => <div key={use} className="bg-[#132c29] p-6"><p className="font-serif text-2xl text-[#e0a17f]">{cost}</p><p className="mt-2 text-xs text-white/45">{use}</p></div>)}</div>
     </div></section>
-    <section className="mx-auto max-w-4xl px-6 py-14 text-center"><h2 className="text-3xl">Clear limits, no surprise usage.</h2><p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/45">Pro and Max use secure Stripe Checkout. Credit limits keep subscription costs predictable while preserving free access to UniPath’s core Canadian university research and planning tools.</p></section>
+    <section className="mx-auto max-w-4xl px-6 py-14 text-center"><h2 className="text-3xl">Clear limits, no surprise usage.</h2><p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/45">Pro and Max use secure Stripe Checkout. Credit limits keep subscription costs predictable while preserving free access to UniPath’s core Canadian university research and planning tools.</p><div className="mt-6 flex justify-center"><ManageBillingButton /></div></section>
   </main>;
 }
