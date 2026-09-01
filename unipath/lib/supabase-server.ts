@@ -123,4 +123,26 @@ export async function subscriptionFor(accessToken: string, userId: string) {
   return rows[0] ?? null;
 }
 
+async function serviceRpc(name: string, body: Record<string, unknown>) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+  const secret = process.env.SUPABASE_SECRET_KEY;
+  if (!url || !secret) throw new Error("Server database configuration is missing.");
+  const response = await fetch(`${url}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers: { apikey: secret, Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body), cache: "no-store",
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(data?.message || `Database operation failed (${response.status}).`);
+  return data;
+}
+
+export async function reserveCredits(userId: string, amount: number, action: string) {
+  return serviceRpc("reserve_credits", { p_user_id: userId, p_amount: amount, p_action: action });
+}
+
+export async function restoreCredits(userId: string, amount: number, action: string) {
+  return serviceRpc("restore_credits", { p_user_id: userId, p_amount: amount, p_action: action });
+}
+
 export type { SupabaseUser, TokenSession };

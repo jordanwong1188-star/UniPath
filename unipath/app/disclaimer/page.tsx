@@ -27,6 +27,10 @@ const sections = [
     title: "Your responsibility",
     body: "You are responsible for the accuracy, originality, completeness, and timely submission of your application. Review every response and document before submission, protect your applicant credentials, follow academic-integrity and acceptable-use rules, and keep your own copies and submission confirmations.",
   },
+  {
+    title: "AI processing and privacy",
+    body: "When you request AI feedback, the question, written response, interview transcript, and relevant evaluation context you submit are sent to OpenAI's API for processing with storage disabled for the request. UniPath does not include your password, payment-card details, or banking information in that request. Do not include highly sensitive personal information in practice responses.",
+  },
 ] as const;
 
 export default function DisclaimerPage() {
@@ -34,7 +38,7 @@ export default function DisclaimerPage() {
     <SiteHeader />
     <section className="border-b border-[#17352f]/12">
       <div className="mx-auto grid max-w-5xl gap-8 px-6 py-14 lg:grid-cols-[220px_1fr] lg:px-10 lg:py-20">
-        <div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#a94b36]">Legal notice</p><p className="mt-4 text-xs leading-6 text-[#66716c]">Last updated August 28, 2026</p></div>
+        <div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#a94b36]">Legal notice</p><p className="mt-4 text-xs leading-6 text-[#66716c]">Last updated September 1, 2026</p></div>
         <div><h1 className="max-w-3xl text-5xl leading-[.98] sm:text-6xl">Admissions information disclaimer</h1><p className="mt-6 max-w-2xl text-base leading-8 text-[#465651]">Please read this notice before relying on UniPath to plan an application.</p></div>
       </div>
     </section>

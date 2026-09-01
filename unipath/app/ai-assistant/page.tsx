@@ -307,8 +307,7 @@ export default function AIAssistantPage() {
                   </div>
 
                   <p className="mt-2 text-center text-[11px] text-gray-400">
-                    UniPath provides guidance, but always verify admissions
-                    details with the university.
+                    Your question is sent to OpenAI for processing. Avoid highly sensitive information. Always verify admissions details with the university.
                   </p>
                 </form>
               </div>
