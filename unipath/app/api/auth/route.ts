@@ -47,7 +47,19 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") && request.headers.get("origin") !== new URL(request.url).origin) {
+  // Behind Netlify's proxy, request.url can have an internal origin.
+  // Trust deployment configuration, never Host/X-Forwarded-Host supplied by a request.
+  let expectedOrigin: string;
+  try {
+    const configured = process.env.NEXT_PUBLIC_APP_URL;
+    if (!configured && process.env.NODE_ENV === "production") throw new Error("Missing app URL");
+    const appUrl = new URL(configured || request.url);
+    if (!["http:", "https:"].includes(appUrl.protocol) || appUrl.username || appUrl.password) throw new Error("Invalid app URL");
+    expectedOrigin = appUrl.origin;
+  } catch {
+    return NextResponse.json({ error: "Account service URL is not configured." }, { status: 503 });
+  }
+  if (request.headers.get("origin") && request.headers.get("origin") !== expectedOrigin) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   }
   try {

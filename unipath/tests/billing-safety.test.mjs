@@ -95,6 +95,19 @@ test("sandbox checkout rejects live keys and reuses database-owned request ident
   assert.equal(sends[0].body, sends[1].body);
 });
 
+test("auth uses configured public origin behind proxies and rejects foreign origins", async () => {
+  const env = { NODE_ENV: 'production', NEXT_PUBLIC_APP_URL: 'https://unipath-billing-test.netlify.app/' };
+  const imports = { '@/lib/supabase-server': { supabasePublicConfiguration: () => ({ url: 'https://database.invalid', publishableKey: 'public' }) } };
+  const route = loadRoute('app/api/auth/route.ts', { env, imports });
+  const send = (origin, url='http://localhost:3000/api/auth', extra={}) => route.POST(new Request(url, { method: 'POST', headers: { origin, ...extra }, body: '{}' }));
+  assert.equal((await send('https://unipath-billing-test.netlify.app')).status, 400, 'passes origin check and reaches body validation');
+  for (const origin of ['https://attacker.invalid','null','http://unipath-billing-test.netlify.app','https://unipath-preview.netlify.app']) {
+    assert.equal((await send(origin, 'https://attacker.invalid/api/auth', { 'x-forwarded-host': 'attacker.invalid' })).status, 403);
+  }
+  const missing = loadRoute('app/api/auth/route.ts', { env: { NODE_ENV: 'production' }, imports });
+  assert.equal((await missing.POST(new Request('https://unipath.invalid/api/auth', { method: 'POST' }))).status, 503);
+});
+
 test("resend uses signup email endpoint, no password, and trusted redirect", async () => {
   let sent;
   const route = loadRoute("app/api/auth/route.ts", { env: { NEXT_PUBLIC_APP_URL: "https://unipath.invalid" },
