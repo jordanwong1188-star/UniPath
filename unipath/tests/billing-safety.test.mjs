@@ -69,6 +69,81 @@ test("checkout is paused server-side before any network or authentication call",
   assert.equal((await route.POST(new Request("https://unipath.invalid", { method: "POST" }))).status, 503);
 });
 
+test("sandbox checkout rejects live keys and reuses database-owned request identity", async () => {
+  const env = { STRIPE_SECRET_KEY: 'sk_test_fixture', STRIPE_MAX_PRICE_ID: 'price_max',
+    NEXT_PUBLIC_APP_URL: 'https://unipath-billing-test.netlify.app',
+    NEXT_PUBLIC_SUPABASE_URL: 'https://zarawaytmqjvkrrushey.supabase.co', SUPABASE_SECRET_KEY: 'test-db' };
+  const imports = {
+    '@/data/billingAvailability': { CHECKOUT_AVAILABLE: true },
+    '@/lib/supabase-server': { currentUser: async () => ({ user: { id: 'user1', email: 'a@example.com', email_confirmed_at: 'confirmed' }, accessToken: 'token' }), subscriptionFor: async () => ({ status: 'inactive' }) },
+  };
+  let network = 0;
+  const sends = [];
+  const fetch = async (url, options) => {
+    network++;
+    if (url.includes('/rpc/reserve_checkout')) return Response.json({ id: 'attempt1', plan: 'max', created_at: new Date().toISOString(), parameters: 'stable=parameters' });
+    if (url.includes('/rpc/attach_checkout_session')) return Response.json(true);
+    sends.push(options); return Response.json({ id: 'cs_fixture', status: 'open', url: 'https://checkout.stripe.com/test-session' });
+  };
+  const request = () => new Request(env.NEXT_PUBLIC_APP_URL + '/api/stripe/checkout', { method: 'POST', body: JSON.stringify({ plan: 'max' }) });
+  const bad = loadRoute('app/api/stripe/checkout/route.ts', { env: { ...env, STRIPE_SECRET_KEY: 'sk_live_fixture' }, imports, fetch });
+  assert.equal((await bad.POST(request())).status, 503);
+  assert.equal(network, 0);
+  const good = loadRoute('app/api/stripe/checkout/route.ts', { env, imports, fetch });
+  const results = await Promise.all([good.POST(request()), good.POST(request())]);
+  assert.ok(results.every(r => r.status === 200));
+  assert.equal(sends[0].headers['Idempotency-Key'], sends[1].headers['Idempotency-Key']);
+  assert.equal(sends[0].body, sends[1].body);
+});
+
+test("live checkout recovers expired sessions but blocks pending payments and uncertain old requests", async () => {
+  const env = { STRIPE_SECRET_KEY: 'sk_live_fixture', STRIPE_PRO_PRICE_ID: 'price_pro',
+    NEXT_PUBLIC_APP_URL: 'https://unipath-preview.netlify.app',
+    NEXT_PUBLIC_SUPABASE_URL: 'https://iyjckopkgaeclxloiwtm.supabase.co', SUPABASE_SECRET_KEY: 'db-fixture' };
+  const imports = { '@/data/billingAvailability': { CHECKOUT_AVAILABLE: true },
+    '@/lib/supabase-server': { currentUser: async () => ({ user: { id: 'user1', email: 'a@example.com', email_confirmed_at: 'yes' }, accessToken: 'token' }), subscriptionFor: async () => ({ status: 'inactive' }) } };
+  let status = 'expired', subscriptionStatus = 'active', creates = 0, rotations = 0;
+  let uncertain = false;
+  const route = loadRoute('app/api/stripe/checkout/route.ts', { env, imports, fetch: async (url, options) => {
+    if (url.endsWith('/reserve_checkout_v2')) {
+      const replacing = Boolean(JSON.parse(options.body).p_replace_attempt);
+      if (replacing) rotations++;
+      return Response.json({ id: replacing ? 'new' : 'old', plan: 'pro', parameters: 'stable=true',
+        session_id: replacing || uncertain ? null : 'cs_old',
+        created_at: new Date(Date.now() - (uncertain ? 86400000 : 0)).toISOString() });
+    }
+    if (url.endsWith('/attach_checkout_session')) return Response.json(true);
+    if (url.endsWith('/checkout/sessions/cs_old')) return Response.json({ status, client_reference_id: 'user1', subscription: 'sub_old', url: 'https://checkout.stripe.com/old' });
+    if (url.endsWith('/subscriptions/sub_old')) return Response.json({ status: subscriptionStatus });
+    assert.equal(url, 'https://api.stripe.com/v1/checkout/sessions'); creates++;
+    return Response.json({ id: 'cs_new', status: 'open', url: 'https://checkout.stripe.com/new' });
+  } });
+  const request = origin => new Request(env.NEXT_PUBLIC_APP_URL + '/api/stripe/checkout', { method: 'POST', headers: { origin: origin ?? env.NEXT_PUBLIC_APP_URL }, body: JSON.stringify({ plan: 'pro' }) });
+  assert.equal((await route.POST(request())).status, 200); assert.equal(rotations, 1); assert.equal(creates, 1);
+  status = 'complete';
+  assert.equal((await route.POST(request())).status, 409); assert.equal(creates, 1);
+  subscriptionStatus = 'canceled';
+  assert.equal((await route.POST(request())).status, 200); assert.equal(creates, 2);
+  status = 'open';
+  assert.equal((await route.POST(request())).status, 200); assert.equal(creates, 2);
+  uncertain = true;
+  assert.equal((await route.POST(request())).status, 409); assert.equal(creates, 2);
+  assert.equal((await route.POST(request('https://attacker.invalid'))).status, 403);
+});
+
+test("auth uses configured public origin behind proxies and rejects foreign origins", async () => {
+  const env = { NODE_ENV: 'production', NEXT_PUBLIC_APP_URL: 'https://unipath-billing-test.netlify.app/' };
+  const imports = { '@/lib/supabase-server': { supabasePublicConfiguration: () => ({ url: 'https://database.invalid', publishableKey: 'public' }) } };
+  const route = loadRoute('app/api/auth/route.ts', { env, imports });
+  const send = (origin, url='http://localhost:3000/api/auth', extra={}) => route.POST(new Request(url, { method: 'POST', headers: { origin, ...extra }, body: '{}' }));
+  assert.equal((await send('https://unipath-billing-test.netlify.app')).status, 400, 'passes origin check and reaches body validation');
+  for (const origin of ['https://attacker.invalid','null','http://unipath-billing-test.netlify.app','https://unipath-preview.netlify.app']) {
+    assert.equal((await send(origin, 'https://attacker.invalid/api/auth', { 'x-forwarded-host': 'attacker.invalid' })).status, 403);
+  }
+  const missing = loadRoute('app/api/auth/route.ts', { env: { NODE_ENV: 'production' }, imports });
+  assert.equal((await missing.POST(new Request('https://unipath.invalid/api/auth', { method: 'POST' }))).status, 503);
+});
+
 test("resend uses signup email endpoint, no password, and trusted redirect", async () => {
   let sent;
   const route = loadRoute("app/api/auth/route.ts", { env: { NEXT_PUBLIC_APP_URL: "https://unipath.invalid" },
@@ -95,8 +170,32 @@ test("Postgres migration prevents duplicate grants, overspending, stale state an
     await db.exec(migration("20260901_credit_reservations"));
     await db.exec(migration("20260902_billing_safety"));
     await db.exec(migration("20260902_billing_safety")); // safe re-run
+    await db.exec(migration("20260903_checkout_reservations"));
     const user = "00000000-0000-0000-0000-000000000001";
     await db.query("insert into auth.users(id,email) values($1,'student@example.com')", [user]);
+    const reserve = (plan='max', parameters='fixed=original') => db.query("select public.reserve_checkout($1,$2,$3) as attempt", [user,plan,parameters]);
+    const first = (await reserve()).rows[0].attempt;
+    const concurrent = await Promise.all([reserve(), reserve('max','fixed=changed')]);
+    for (const result of concurrent) assert.deepEqual(result.rows[0].attempt, first);
+    await assert.rejects(reserve('pro'), /Another plan/);
+    await db.query("update public.checkout_attempts set created_at=now()-interval '24 hours' where user_id=$1", [user]);
+    await assert.rejects(reserve(), /reconciliation/);
+    await db.exec("set role authenticated");
+    await assert.rejects(reserve(), /permission denied/);
+    await db.exec("reset role");
+    await db.exec(migration("20260904_live_checkout"));
+    await db.exec(migration("20260904_live_checkout"));
+    const reserveV2 = replacement => db.query("select public.reserve_checkout_v2($1,'max','new=parameters',$2) as attempt", [user,replacement ?? null]);
+    const oldAttempt = (await reserveV2()).rows[0].attempt;
+    assert.equal((await reserveV2(oldAttempt.id)).rows[0].attempt.id, oldAttempt.id, 'Unattached uncertain attempts cannot rotate');
+    await db.query("select public.attach_checkout_session($1,$2,'cs_fixture')", [user,oldAttempt.id]);
+    const rotated = await Promise.all([reserveV2(oldAttempt.id), reserveV2(oldAttempt.id)]);
+    assert.equal(rotated[0].rows[0].attempt.id, rotated[1].rows[0].attempt.id);
+    assert.notEqual(rotated[0].rows[0].attempt.id, oldAttempt.id);
+    assert.equal((await db.query("select public.attach_checkout_session($1,$2,'cs_old') as attached", [user,oldAttempt.id])).rows[0].attached, false);
+    await db.exec("set role authenticated");
+    await assert.rejects(reserveV2(), /permission denied/);
+    await db.exec("reset role");
     const end = new Date(Date.now() + 86400000).toISOString();
     const later = new Date(Date.now() + 86400000 * 31).toISOString();
     const apply = (event, created, credits = null, invoice = null, status = "active", period = end, sub = "sub_1", subCreated = 10) =>
