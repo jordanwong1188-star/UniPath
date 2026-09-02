@@ -20,6 +20,12 @@ export async function POST(request: NextRequest) {
   try {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) return NextResponse.json({ error: "Subscriptions are temporarily unavailable." }, { status: 503 });
+    // This rollout enables only the isolated sandbox, never a live Stripe key.
+    if (!secretKey.startsWith("sk_test_") ||
+      process.env.NEXT_PUBLIC_APP_URL !== "https://unipath-billing-test.netlify.app" ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL !== "https://zarawaytmqjvkrrushey.supabase.co") {
+      return NextResponse.json({ error: "Sandbox configuration is required." }, { status: 503 });
+    }
 
     const body: unknown = await request.json();
     const requestedPlan =
@@ -57,14 +63,28 @@ export async function POST(request: NextRequest) {
       client_reference_id: account.user.id,
     });
 
+    const databaseSecret = process.env.SUPABASE_SECRET_KEY;
+    if (!databaseSecret) return NextResponse.json({ error: "Test database configuration is missing." }, { status: 503 });
+    const reservation = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/reserve_checkout`, {
+      method: "POST",
+      headers: { apikey: databaseSecret, Authorization: `Bearer ${databaseSecret}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_user_id: account.user.id, p_plan: requestedPlan, p_parameters: parameters.toString() }),
+      cache: "no-store", signal: AbortSignal.timeout(15000),
+    });
+    if (!reservation.ok) return NextResponse.json({ error: "Checkout could not be reserved. An existing attempt may need review, or the test database setup is incomplete." }, { status: 409 });
+    const attempt = await reservation.json();
+    if (typeof attempt.id !== "string" || typeof attempt.parameters !== "string") throw new Error("Invalid checkout reservation");
+    // Stable database-owned key and parameters survive concurrent clicks and timeouts.
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
       headers: {
         Authorization: `Basic ${Buffer.from(`${secretKey}:`).toString("base64")}`,
         "Content-Type": "application/x-www-form-urlencoded",
+        "Idempotency-Key": `unipath-checkout-${attempt.id}`,
       },
-      body: parameters,
+      body: attempt.parameters,
       cache: "no-store",
+      signal: AbortSignal.timeout(15000),
     });
     const session = await stripeResponse.json();
 

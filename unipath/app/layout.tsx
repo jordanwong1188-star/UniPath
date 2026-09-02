@@ -21,10 +21,11 @@ const editorialFont = Newsreader({
 });
 
 export const metadata: Metadata = {
+  robots: process.env.NEXT_PUBLIC_BILLING_SANDBOX === "true" ? { index: false, follow: false } : undefined,
   title: "UniPath — Canadian university admissions",
   description: "Research Canadian programs, transfer pathways, deadlines, scholarships, and supplemental applications.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={`${uiFont.variable} ${editorialFont.variable}`}><StudentProvider><MotionEffects /><AdmissionsDisclaimer />{children}</StudentProvider></body></html>;
+  return <html lang="en"><body className={`${uiFont.variable} ${editorialFont.variable}`}><StudentProvider>{process.env.NEXT_PUBLIC_BILLING_SANDBOX === "true" && <div role="status" className="bg-amber-100 px-4 py-3 text-center text-sm font-semibold text-black">UniPath billing sandbox — test accounts and Stripe test cards only. No real purchases.</div>}<MotionEffects /><AdmissionsDisclaimer />{children}</StudentProvider></body></html>;
 }

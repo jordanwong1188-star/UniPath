@@ -69,6 +69,32 @@ test("checkout is paused server-side before any network or authentication call",
   assert.equal((await route.POST(new Request("https://unipath.invalid", { method: "POST" }))).status, 503);
 });
 
+test("sandbox checkout rejects live keys and reuses database-owned request identity", async () => {
+  const env = { STRIPE_SECRET_KEY: 'sk_test_fixture', STRIPE_MAX_PRICE_ID: 'price_max',
+    NEXT_PUBLIC_APP_URL: 'https://unipath-billing-test.netlify.app',
+    NEXT_PUBLIC_SUPABASE_URL: 'https://zarawaytmqjvkrrushey.supabase.co', SUPABASE_SECRET_KEY: 'test-db' };
+  const imports = {
+    '@/data/billingAvailability': { CHECKOUT_AVAILABLE: true },
+    '@/lib/supabase-server': { currentUser: async () => ({ user: { id: 'user1', email: 'a@example.com', email_confirmed_at: 'confirmed' }, accessToken: 'token' }), subscriptionFor: async () => ({ status: 'inactive' }) },
+  };
+  let network = 0;
+  const sends = [];
+  const fetch = async (url, options) => {
+    network++;
+    if (url.includes('/rpc/reserve_checkout')) return Response.json({ id: 'attempt1', parameters: 'stable=parameters' });
+    sends.push(options); return Response.json({ url: 'https://checkout.stripe.com/test-session' });
+  };
+  const request = () => new Request(env.NEXT_PUBLIC_APP_URL + '/api/stripe/checkout', { method: 'POST', body: JSON.stringify({ plan: 'max' }) });
+  const bad = loadRoute('app/api/stripe/checkout/route.ts', { env: { ...env, STRIPE_SECRET_KEY: 'sk_live_fixture' }, imports, fetch });
+  assert.equal((await bad.POST(request())).status, 503);
+  assert.equal(network, 0);
+  const good = loadRoute('app/api/stripe/checkout/route.ts', { env, imports, fetch });
+  const results = await Promise.all([good.POST(request()), good.POST(request())]);
+  assert.ok(results.every(r => r.status === 200));
+  assert.equal(sends[0].headers['Idempotency-Key'], sends[1].headers['Idempotency-Key']);
+  assert.equal(sends[0].body, sends[1].body);
+});
+
 test("resend uses signup email endpoint, no password, and trusted redirect", async () => {
   let sent;
   const route = loadRoute("app/api/auth/route.ts", { env: { NEXT_PUBLIC_APP_URL: "https://unipath.invalid" },
@@ -95,8 +121,19 @@ test("Postgres migration prevents duplicate grants, overspending, stale state an
     await db.exec(migration("20260901_credit_reservations"));
     await db.exec(migration("20260902_billing_safety"));
     await db.exec(migration("20260902_billing_safety")); // safe re-run
+    await db.exec(migration("20260903_checkout_reservations"));
     const user = "00000000-0000-0000-0000-000000000001";
     await db.query("insert into auth.users(id,email) values($1,'student@example.com')", [user]);
+    const reserve = (plan='max', parameters='fixed=original') => db.query("select public.reserve_checkout($1,$2,$3) as attempt", [user,plan,parameters]);
+    const first = (await reserve()).rows[0].attempt;
+    const concurrent = await Promise.all([reserve(), reserve('max','fixed=changed')]);
+    for (const result of concurrent) assert.deepEqual(result.rows[0].attempt, first);
+    await assert.rejects(reserve('pro'), /Another plan/);
+    await db.query("update public.checkout_attempts set created_at=now()-interval '24 hours' where user_id=$1", [user]);
+    await assert.rejects(reserve(), /reconciliation/);
+    await db.exec("set role authenticated");
+    await assert.rejects(reserve(), /permission denied/);
+    await db.exec("reset role");
     const end = new Date(Date.now() + 86400000).toISOString();
     const later = new Date(Date.now() + 86400000 * 31).toISOString();
     const apply = (event, created, credits = null, invoice = null, status = "active", period = end, sub = "sub_1", subCreated = 10) =>
