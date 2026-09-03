@@ -1,572 +1,132 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowRight, X } from "lucide-react";
 import { useState } from "react";
-import {
-  ArrowRight,
-  Search,
-  ChevronDown,
-  MapPin,
-  GraduationCap,
-  CalendarDays,
-  Sparkles,
-} from "lucide-react";
+import SiteHeader from "./components/SiteHeader";
 
 const questions = [
-  {
-    question: "Which university is right for me?",
-    answer:
-      "Explore Canadian universities by province, location, school type, and programs. Compare schools and find the options that fit what you are looking for.",
-    link: "/universities",
-    linkText: "Explore universities",
-  },
-  {
-    question: "What can I study?",
-    answer:
-      "Explore programs across Canadian universities in business, engineering, computer science, arts, health sciences, and many other fields.",
-    link: "/programs",
-    linkText: "Explore programs",
-  },
-  {
-    question: "What do I need to get accepted?",
-    answer:
-      "Admission requirements vary by university and program. UniPath brings important requirements together so you can understand what each school expects.",
-    link: "/universities",
-    linkText: "View admission information",
-  },
-  {
-    question: "When do I need to apply?",
-    answer:
-      "Keep track of important application deadlines and organize your university applications so you know what needs to be done and when.",
-    link: "/deadlines",
-    linkText: "View deadlines",
-  },
-  {
-    question: "How much does university cost?",
-    answer:
-      "Compare tuition and other financial information when researching your university options.",
-    link: "/universities",
-    linkText: "Compare universities",
-  },
-  {
-    question: "Can I compare universities?",
-    answer:
-      "Research multiple schools and compare the factors that matter most when making your university decision.",
-    link: "/universities",
-    linkText: "Start comparing",
-  },
+  { question: "Which universities fit my goals?", answer: "Start with the kind of program you want, where you could realistically live, your preferred learning environment, and the opportunities you care about—such as co-op, research, campus size, or professional pathways. A strong list usually includes ambitious, realistic, and safer choices rather than one ranking.", next: "Compare schools by location, institution type, and program pathway.", href: "/universities", label: "Explore schools" },
+  { question: "What does this program require?", answer: "Separate the requirements into four parts: prerequisite courses, academic range, application deadline, and any supplemental component. Also check whether you apply directly to the program or choose the specialization after first year.", next: "Open the program catalogue to keep those details together.", href: "/programs", label: "Check programs" },
+  { question: "When is everything due?", answer: "The main application deadline is only one date. Scholarships, transcripts, supplemental forms, portfolios, references, and document uploads can all have separate deadlines. Build the timeline backward so nothing depends on a last-minute submission.", next: "Review official dates in one deadline view.", href: "/deadlines", label: "View deadlines" },
+  { question: "How do I improve my supplemental?", answer: "Answer the exact prompt, use one specific experience, explain what you personally decided or did, show the result, and reflect on what changed afterward. Strong responses sound like the applicant—not a collection of impressive phrases.", next: "Practice with the format and feedback criteria used for your program.", href: "/applications", label: "Open practice" },
+  { question: "Where did I save my last draft?", answer: "A draft is most useful when it stays connected to its exact prompt, program, previous feedback, and revision history. That makes it easier to see what improved instead of searching through differently named documents.", next: "Your saved application work is organized in your personal file.", href: "/dashboard", label: "Open my file" },
+] as const;
+
+const desk = [
+  { index: "01", title: "Research", text: "Schools, programs and pathways across Canada.", href: "/programs", action: "Open the catalogue" },
+  { index: "02", title: "Plan", text: "Deadlines, scholarships and transfer requirements.", href: "/deadlines", action: "Build the timeline" },
+  { index: "03", title: "Practice", text: "Written supplementals and recorded interviews.", href: "/applications", action: "Enter the studio" },
 ];
 
-const features = [
-  {
-    icon: GraduationCap,
-    title: "Universities",
-    text: "Explore Canadian universities and colleges in one place.",
-    href: "/universities",
-  },
-  {
-    icon: CalendarDays,
-    title: "Deadlines",
-    text: "Keep track of important application dates.",
-    href: "/deadlines",
-  },
-  {
-    icon: Sparkles,
-    title: "Guidance",
-    text: "Get help making sense of your university options.",
-    href: "/ai-assistant",
-  },
+const proof = [
+  ["55", "Canadian institutions indexed"],
+  ["39", "Funding starting points"],
+  ["2", "Practice formats: written + video"],
 ];
 
 export default function Home() {
-  const [openQuestion, setOpenQuestion] = useState<number | null>(null);
-  const [search, setSearch] = useState("");
-
-  return (
-    <main className="min-h-screen bg-[#f5f7f8] text-[#172126]">
-
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 border-b border-black/5 bg-[#f5f7f8]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
-
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#172126] text-white">
-              <span className="text-lg font-bold">U</span>
-            </div>
-
-            <div>
-              <div className="text-xl font-bold tracking-tight">
-                UniPath
-              </div>
-
-              <div className="hidden text-[10px] uppercase tracking-[0.18em] text-gray-500 sm:block">
-                Your university journey
-              </div>
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-8 md:flex">
-
-            <Link
-              href="/universities"
-              className="text-sm font-medium text-gray-700 transition hover:text-black"
-            >
-              Universities
-            </Link>
-
-            <Link
-              href="/programs"
-              className="text-sm font-medium text-gray-700 transition hover:text-black"
-            >
-              Programs
-            </Link>
-
-            <Link
-              href="/deadlines"
-              className="text-sm font-medium text-gray-700 transition hover:text-black"
-            >
-              Deadlines
-            </Link>
-
-            <Link
-              href="/ai-assistant"
-              className="text-sm font-medium text-gray-700 transition hover:text-black"
-            >
-              Assistant
-            </Link>
-
-          </nav>
-
-          <Link
-            href="/universities"
-            className="hidden rounded-full bg-[#172126] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#29383e] sm:block"
-          >
-            Explore schools
-          </Link>
-
-        </div>
-      </header>
-
-
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#dfe8e8] blur-3xl" />
-
-        <div className="pointer-events-none absolute -left-40 bottom-0 h-[350px] w-[350px] rounded-full bg-[#e9e3d8] blur-3xl" />
-
-        <div className="relative mx-auto grid max-w-7xl gap-16 px-6 pb-24 pt-20 lg:grid-cols-[1.1fr_.9fr] lg:px-10 lg:pb-32 lg:pt-28">
-
-          <div className="max-w-3xl">
-
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-gray-600 backdrop-blur">
-
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-
-              Canadian university guide
-
-            </div>
-
-            <h1 className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-
-              Find the university
-
-              <span className="block text-[#65777c]">
-                that fits your path.
-              </span>
-
-            </h1>
-
-            <p className="mt-7 max-w-xl text-lg leading-8 text-gray-600">
-              Research universities, discover programs, understand
-              requirements, and keep your application journey organized —
-              all in one place.
-            </p>
-
-
-            {/* SEARCH */}
-
-            <div className="mt-9 max-w-2xl">
-
-              <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-2 shadow-[0_15px_45px_rgba(23,33,38,0.08)]">
-
-                <Search className="ml-3 h-5 w-5 text-gray-400" />
-
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search universities, programs, or questions..."
-                  className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm outline-none placeholder:text-gray-400"
-                />
-
-                <Link
-                  href={
-                    search
-                      ? `/universities?search=${encodeURIComponent(search)}`
-                      : "/universities"
-                  }
-                  className="rounded-xl bg-[#172126] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#29383e]"
-                >
-                  Search
-                </Link>
-
-              </div>
-
-            </div>
-
-
-            <div className="mt-6 flex flex-wrap gap-3 text-xs text-gray-500">
-
-              <span className="rounded-full bg-white px-3 py-2">
-                55+ schools
-              </span>
-
-              <span className="rounded-full bg-white px-3 py-2">
-                Canada-wide
-              </span>
-
-              <span className="rounded-full bg-white px-3 py-2">
-                Programs & admissions
-              </span>
-
-            </div>
-
-          </div>
-
-
-          {/* RIGHT SIDE */}
-
-          <div className="relative flex items-end">
-
-            <div className="w-full rounded-[2rem] border border-black/10 bg-[#172126] p-7 text-white shadow-[0_25px_70px_rgba(23,33,38,0.18)] lg:p-9">
-
-              <div className="flex items-center justify-between">
-
-                <div>
-
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/50">
-                    Start here
-                  </p>
-
-                  <h2 className="mt-2 text-2xl font-semibold">
-                    What are you looking for?
-                  </h2>
-
-                </div>
-
-                <div className="rounded-full bg-white/10 p-3">
-                  <Search className="h-5 w-5" />
-                </div>
-
-              </div>
-
-
-              <div className="mt-7 space-y-3">
-
-                {[
-                  "Find universities",
-                  "Explore programs",
-                  "Check requirements",
-                  "Track deadlines",
-                ].map((item, index) => (
-
-                  <Link
-                    key={item}
-                    href={
-                      index === 0
-                        ? "/universities"
-                        : index === 1
-                        ? "/programs"
-                        : index === 2
-                        ? "/universities"
-                        : "/deadlines"
-                    }
-                    className="group flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-5 py-4 transition hover:bg-white/[0.12]"
-                  >
-
-                    <span className="text-sm font-medium">
-                      {item}
-                    </span>
-
-                    <ArrowRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-1 group-hover:text-white" />
-
-                  </Link>
-
-                ))}
-
-              </div>
-
-
-              <div className="mt-8 border-t border-white/10 pt-6">
-
-                <div className="flex items-center gap-3 text-sm text-white/60">
-
-                  <MapPin className="h-4 w-4" />
-
-                  Built for students across Canada
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
+  const [activeQuestion, setActiveQuestion] = useState<(typeof questions)[number] | null>(null);
+
+  return <main className="min-h-screen bg-[#132c29] text-[#f2ede2]">
+    <SiteHeader dark />
+
+    <section className="border-b border-white/12">
+      <div className="mx-auto grid max-w-7xl lg:grid-cols-[72px_minmax(0,1fr)_390px]">
+        <div className="hidden border-r border-white/12 px-4 py-16 lg:block">
+          <p className="[writing-mode:vertical-rl] rotate-180 text-[10px] font-semibold uppercase tracking-[.24em] text-white/35">Canadian undergraduate admissions · 2026–27</p>
         </div>
 
+        <div className="px-6 py-16 sm:py-20 lg:px-12 lg:py-24">
+          <p className="border-l-2 border-[#d4865f] pl-3 text-[10px] font-semibold uppercase tracking-[.22em] text-[#e0a17f]">Independent student reference</p>
+          <h1 className="mt-9 max-w-4xl text-[3.65rem] leading-[.92] tracking-[-.055em] sm:text-[5rem] lg:text-[6.3rem]">
+            Make the application<br />make sense.
+          </h1>
+          <p className="mt-8 max-w-2xl text-base leading-8 text-[#b9c3bb] sm:text-lg">A working guide for researching Canadian programs, protecting deadlines, planning transfers, and preparing the parts of an application that grades cannot explain.</p>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <Link href="/programs" className="inline-flex items-center gap-3 bg-[#d4865f] px-5 py-3.5 text-sm font-semibold text-[#132c29]">Start with a program <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/universities" className="border-b border-white/40 py-2 text-sm font-medium text-white/75 hover:border-white hover:text-white">Browse all schools</Link>
+          </div>
+        </div>
+
+        <aside className="border-t border-white/12 bg-[#1d3d38] p-6 lg:border-l lg:border-t-0 lg:p-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#e0a17f]">Reference desk</p>
+          <h2 className="mt-4 text-3xl leading-tight">Three places to begin.</h2>
+          <div className="mt-8 border-t border-white/12">
+            {desk.map(item => <Link key={item.index} href={item.href} className="group grid grid-cols-[38px_1fr] gap-3 border-b border-white/12 py-5">
+              <span className="font-mono text-[10px] text-[#e0a17f]">{item.index}</span>
+              <span><strong className="block font-serif text-xl font-medium text-white">{item.title}</strong><span className="mt-1 block text-xs leading-5 text-white/45">{item.text}</span><span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-white/70 group-hover:text-white">{item.action}<ArrowRight className="h-3 w-3" /></span></span>
+            </Link>)}
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section className="border-b border-white/12 bg-[#102724]">
+      <div className="mx-auto grid max-w-7xl gap-px bg-white/12 md:grid-cols-5">
+        {questions.map((item, index) => <button type="button" onClick={() => setActiveQuestion(item)} key={item.question} className="group min-h-32 bg-[#132c29] p-5 text-left hover:bg-[#1d3d38]">
+          <span className="font-mono text-[9px] text-[#e0a17f]">Q{String(index + 1).padStart(2, "0")}</span>
+          <span className="mt-3 block text-sm font-medium leading-5 text-white/72 group-hover:text-white">{item.question}</span>
+        </button>)}
+      </div>
+    </section>
+
+    <section className="mx-auto max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
+      <div className="grid gap-10 lg:grid-cols-[300px_1fr]">
+        <header>
+          <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#e0a17f]">The working index</p>
+          <h2 className="mt-4 text-4xl leading-[1.04] sm:text-5xl">One application.<br />Fewer loose ends.</h2>
+          <p className="mt-5 text-sm leading-7 text-white/48">UniPath is organized around decisions students actually make, not around a collection of disconnected features.</p>
+        </header>
+
+        <div className="border-t border-white/15">
+          {desk.map(item => <Link key={item.index} href={item.href} className="group grid gap-3 border-b border-white/15 py-7 sm:grid-cols-[72px_190px_1fr_auto] sm:items-center">
+            <span className="font-mono text-xs text-[#e0a17f]">{item.index}</span>
+            <strong className="font-serif text-2xl font-medium">{item.title}</strong>
+            <span className="text-sm text-white/45">{item.text}</span>
+            <ArrowRight className="hidden h-4 w-4 text-white/35 transition-transform group-hover:translate-x-1 group-hover:text-white sm:block" />
+          </Link>)}
+        </div>
+      </div>
+    </section>
+
+    <section className="border-y border-white/12 bg-[#f2ede2] text-[#132c29]">
+      <div className="mx-auto grid max-w-7xl lg:grid-cols-[1fr_420px]">
+        <div className="px-6 py-16 lg:px-10 lg:py-20">
+          <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#9b5637]">Application practice file</p>
+          <h2 className="mt-5 max-w-2xl text-4xl leading-[1.03] sm:text-5xl">Write it. Say it. Understand why it works.</h2>
+          <p className="mt-6 max-w-2xl text-base leading-8 text-[#465651]">Practice the written and interview portions required by your program. Feedback is tied to the prompt, your actual evidence, reflection, structure, and the published priorities that can be verified.</p>
+          <Link href="/applications" className="mt-8 inline-flex items-center gap-2 border-b-2 border-[#132c29] pb-1 text-sm font-semibold">Find your application format <ArrowRight className="h-4 w-4" /></Link>
+        </div>
+        <div className="border-t border-[#132c29]/15 bg-[#e4dccd] p-6 lg:border-l lg:border-t-0 lg:p-8">
+          <p className="font-mono text-[10px] uppercase tracking-[.15em] text-[#9b5637]">Revision note / 03</p>
+          <blockquote className="mt-8 font-serif text-3xl leading-[1.18]">“You explain how the experience changed your approach—not only what happened.”</blockquote>
+          <div className="mt-10 grid grid-cols-3 gap-px bg-[#132c29]/15">
+            {[["01","Draft"],["02","Feedback"],["03","Revision"]].map(([n,label]) => <div key={n} className="bg-[#f2ede2] p-3"><span className="font-mono text-[9px] text-[#9b5637]">{n}</span><p className="mt-2 text-xs font-semibold">{label}</p></div>)}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
+      <div className="grid gap-px border border-white/12 bg-white/12 sm:grid-cols-3">
+        {proof.map(([value, label]) => <div key={label} className="bg-[#132c29] p-6"><p className="font-serif text-4xl text-[#e0a17f]">{value}</p><p className="mt-2 text-xs leading-5 text-white/45">{label}</p></div>)}
+      </div>
+    </section>
+
+    {activeQuestion ? <div className="fixed inset-0 z-[100] grid place-items-center bg-[#0a1917]/80 p-4" role="presentation" onMouseDown={() => setActiveQuestion(null)}>
+      <section role="dialog" aria-modal="true" aria-labelledby="question-title" onMouseDown={event => event.stopPropagation()} className="relative w-full max-w-2xl border border-[#d4865f]/35 bg-[#f2ede2] p-6 text-[#132c29] sm:p-9">
+        <button type="button" aria-label="Close answer" onClick={() => setActiveQuestion(null)} className="absolute right-4 top-4 grid h-9 w-9 place-items-center border border-[#132c29]/15 hover:bg-[#132c29]/5"><X className="h-4 w-4" /></button>
+        <p className="font-mono text-[9px] font-semibold uppercase tracking-[.2em] text-[#9b5637]">Reference note</p>
+        <h2 id="question-title" className="mt-5 max-w-xl pr-10 text-3xl leading-tight sm:text-4xl">{activeQuestion.question}</h2>
+        <p className="mt-6 text-base leading-8 text-[#394b47]">{activeQuestion.answer}</p>
+        <div className="mt-7 border-l-2 border-[#d4865f] bg-[#e4dccd]/55 px-4 py-3"><p className="text-sm leading-6 text-[#394b47]">{activeQuestion.next}</p></div>
+        <Link href={activeQuestion.href} onClick={() => setActiveQuestion(null)} className="mt-6 inline-flex items-center gap-2 bg-[#132c29] px-5 py-3 text-sm font-semibold text-[#f2ede2]">{activeQuestion.label}<ArrowRight className="h-4 w-4" /></Link>
       </section>
-
-
-      {/* FEATURES */}
-
-      <section className="border-y border-black/5 bg-white">
-
-        <div className="mx-auto grid max-w-7xl md:grid-cols-3">
-
-          {features.map((feature, index) => {
-
-            const Icon = feature.icon;
-
-            return (
-
-              <Link
-                key={feature.title}
-                href={feature.href}
-                className={`group p-8 transition hover:bg-[#f5f7f8] lg:p-10 ${
-                  index !== 2
-                    ? "border-b md:border-b-0 md:border-r"
-                    : ""
-                } border-black/5`}
-              >
-
-                <div className="flex items-start justify-between">
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#edf1f1]">
-
-                    <Icon className="h-5 w-5 text-[#42545a]" />
-
-                  </div>
-
-                  <ArrowRight className="h-5 w-5 text-gray-300 transition group-hover:translate-x-1 group-hover:text-gray-700" />
-
-                </div>
-
-                <h3 className="mt-7 text-lg font-semibold">
-                  {feature.title}
-                </h3>
-
-                <p className="mt-2 max-w-xs text-sm leading-6 text-gray-500">
-                  {feature.text}
-                </p>
-
-              </Link>
-
-            );
-
-          })}
-
-        </div>
-
-      </section>
-
-
-      {/* QUESTIONS */}
-
-      <section className="mx-auto max-w-5xl px-6 py-24 lg:py-32">
-
-        <div className="max-w-2xl">
-
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-            Questions students ask
-          </p>
-
-          <h2 className="mt-4 text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
-            Not sure where to start?
-          </h2>
-
-          <p className="mt-5 text-base leading-7 text-gray-500">
-            Start with a question. UniPath will help you find the
-            information you need to make your next decision.
-          </p>
-
-        </div>
-
-
-        <div className="mt-12 border-t border-black/10">
-
-          {questions.map((item, index) => {
-
-            const isOpen = openQuestion === index;
-
-            return (
-
-              <div
-                key={item.question}
-                className="border-b border-black/10"
-              >
-
-                <button
-                  onClick={() =>
-                    setOpenQuestion(isOpen ? null : index)
-                  }
-                  className="flex w-full items-center justify-between gap-6 py-7 text-left"
-                >
-
-                  <span className="text-lg font-medium tracking-tight sm:text-xl">
-                    {item.question}
-                  </span>
-
-                  <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 transition ${
-                      isOpen
-                        ? "rotate-180 bg-[#172126] text-white"
-                        : ""
-                    }`}
-                  >
-
-                    <ChevronDown className="h-4 w-4" />
-
-                  </span>
-
-                </button>
-
-
-                {isOpen && (
-
-                  <div className="pb-8 pr-12 sm:pr-20">
-
-                    <p className="max-w-2xl text-sm leading-7 text-gray-600">
-                      {item.answer}
-                    </p>
-
-                    <Link
-                      href={item.link}
-                      className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#172126] hover:underline"
-                    >
-
-                      {item.linkText}
-
-                      <ArrowRight className="h-4 w-4" />
-
-                    </Link>
-
-                  </div>
-
-                )}
-
-              </div>
-
-            );
-
-          })}
-
-        </div>
-
-      </section>
-
-
-      {/* CTA */}
-
-      <section className="mx-auto max-w-7xl px-6 pb-24 lg:px-10">
-
-        <div className="relative overflow-hidden rounded-[2rem] bg-[#172126] px-8 py-14 text-white sm:px-12 lg:px-16 lg:py-16">
-
-          <div className="relative z-10 max-w-2xl">
-
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
-              Your next step
-            </p>
-
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Start exploring Canadian universities.
-            </h2>
-
-            <p className="mt-4 max-w-xl leading-7 text-white/60">
-              Research your options, find programs that interest you,
-              and start building your university plan.
-            </p>
-
-
-            <div className="mt-8 flex flex-wrap gap-3">
-
-              <Link
-                href="/universities"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#172126] transition hover:bg-gray-100"
-              >
-
-                Explore universities
-
-                <ArrowRight className="h-4 w-4" />
-
-              </Link>
-
-
-              <Link
-                href="/deadlines"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-
-                View deadlines
-
-              </Link>
-
-            </div>
-
-          </div>
-
-          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full border border-white/10" />
-
-          <div className="absolute -bottom-48 -right-10 h-96 w-96 rounded-full border border-white/5" />
-
-        </div>
-
-      </section>
-
-
-      {/* FOOTER */}
-
-      <footer className="border-t border-black/5 bg-white">
-
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 px-6 py-10 sm:flex-row sm:items-center lg:px-10">
-
-          <div>
-
-            <div className="font-semibold">
-              UniPath
-            </div>
-
-            <p className="mt-1 text-xs text-gray-500">
-              Your university journey, organized.
-            </p>
-
-          </div>
-
-
-          <div className="flex flex-wrap gap-6 text-sm text-gray-500">
-
-            <Link href="/universities" className="hover:text-black">
-              Universities
-            </Link>
-
-            <Link href="/programs" className="hover:text-black">
-              Programs
-            </Link>
-
-            <Link href="/deadlines" className="hover:text-black">
-              Deadlines
-            </Link>
-
-            <Link href="/contact" className="hover:text-black">
-              Contact
-            </Link>
-
-          </div>
-
-        </div>
-
-      </footer>
-
-    </main>
-  );
+    </div> : null}
+
+    <footer className="border-t border-white/12 px-6 py-8">
+      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-xs text-white/38 sm:flex-row"><p>© 2026 UniPath · Independent Canadian admissions reference</p><div className="flex flex-wrap gap-5"><Link href="/transfers" className="hover:text-white">Transfer</Link><Link href="/scholarships" className="hover:text-white">Funding</Link><Link href="/dashboard" className="hover:text-white">My file</Link><Link href="/disclaimer" className="hover:text-white">Disclaimer</Link><Link href="/contact" className="hover:text-white">Contact &amp; Help</Link></div></div>
+    </footer>
+  </main>;
 }
