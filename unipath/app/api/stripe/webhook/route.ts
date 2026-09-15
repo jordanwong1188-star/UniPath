@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
+import { supabaseServiceConfiguration } from "@/lib/supabase-server";
 
 export const runtime = "nodejs";
 
@@ -30,12 +31,11 @@ async function stripeSubscription(id: string, secretKey: string) {
 }
 
 async function applyEvent(input: Record<string, unknown>) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
-  const secret = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !secret) throw new Error("Supabase server configuration is missing.");
-  const response = await fetch(`${url}/rest/v1/rpc/apply_subscription_event_v2`, {
+  const service = supabaseServiceConfiguration();
+  if (!service) throw new Error("Supabase server service credential is missing or invalid.");
+  const response = await fetch(`${service.url}/rest/v1/rpc/apply_subscription_event_v2`, {
     method: "POST",
-    headers: { apikey: secret, Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+    headers: { apikey: service.secret, Authorization: `Bearer ${service.secret}`, "Content-Type": "application/json" },
     body: JSON.stringify(input),
     cache: "no-store",
     signal: AbortSignal.timeout(15000),
