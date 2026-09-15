@@ -113,16 +113,18 @@ export async function POST(request: Request) {
   const password = typeof body?.password === "string" ? body.password : "";
   const fullName = typeof body?.fullName === "string" ? body.fullName.trim() : "";
   const accessToken = typeof body?.accessToken === "string" ? body.accessToken : "";
-  if (!["signup", "login", "resend", "recover", "update-password"].includes(action)) {
+  const refreshToken = typeof body?.refreshToken === "string" ? body.refreshToken : "";
+  if (!["signup", "login", "resend", "recover", "update-password", "adopt-session"].includes(action)) {
     return NextResponse.json({ error: "Unknown account action." }, { status: 400 });
   }
 
-  const needsEmail = action !== "update-password";
+  const needsEmail = !["update-password", "adopt-session"].includes(action);
   const needsPassword = ["signup", "login", "update-password"].includes(action);
   if (
     (needsEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) ||
     (needsPassword && (password.length < 8 || password.length > 1024)) ||
-    (action === "update-password" && !accessToken)
+    (["update-password", "adopt-session"].includes(action) && !accessToken) ||
+    (action === "adopt-session" && !refreshToken)
   ) {
     return NextResponse.json({ error: "Enter valid account details and a password with at least 8 characters." }, { status: 400 });
   }
@@ -147,6 +149,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: safeMessage(updateData, "Unable to update your password.") }, { status: updateResponse.status });
     }
     return NextResponse.json({ passwordUpdated: true });
+  }
+
+  if (action === "adopt-session") {
+    const userResponse = await fetchAuthService(`${config.url}/auth/v1/user`, {
+      method: "GET",
+      headers: {
+        apikey: config.publishableKey,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const user = await userResponse.json().catch(() => null);
+    if (!userResponse.ok || !user?.id) {
+      return NextResponse.json({ error: "This confirmation session is invalid or expired." }, { status: 401 });
+    }
+    const response = NextResponse.json({ authenticated: true });
+    setAuthCookies(response, {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: 3600,
+      user,
+    } as TokenSession);
+    return response;
   }
 
   const isSignup = action === "signup";
