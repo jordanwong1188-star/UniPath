@@ -1,44 +1,510 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f7f8;
-  --foreground: #172126;
+  --background: #0f1722;
+  --foreground: #e8edf3;
+  --brand-ink: #0b121b;
+  --brand-navy: #111c29;
+  --brand-slate: #172536;
+  --brand-slate-2: #1d2d3f;
+  --brand-steel: #7891a3;
+  --brand-teal: #557b80;
+  --brand-accent: #8fa7b6;
+  --brand-text: #e8edf3;
+  --brand-muted: #9ba9b8;
+  --brand-line: rgba(183, 199, 215, 0.12);
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--background); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 85% -10%, rgba(85,123,128,.11), transparent 34rem), linear-gradient(180deg,#0f1722 0%,#111b27 100%);
+  color: var(--foreground);
+  font-family: var(--font-ui), "Helvetica Neue", Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-html {
-  scroll-behavior: smooth;
+a { text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button, a, input, select, textarea {
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform, filter;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(.2,.8,.2,1);
+}
+button:not(:disabled), a { cursor: pointer; }
+button:not(:disabled):active, a:active { transform: scale(.985); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid rgba(143,167,182,.9); outline-offset: 3px; }
+::selection { background: #7891a3; color: #0b121b; }
+
+/* Safe reveal treatment: content is always visible. MotionEffects may add these
+   classes, but they no longer hide sections while waiting for an observer. */
+.unipath-reveal,
+.unipath-reveal.unipath-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+.unipath-reveal.unipath-visible {
+  animation: unipath-enter .48s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes unipath-enter {
+  from { opacity: .72; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+main article, main [class*="rounded-"][class*="shadow"] { transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, border-color 220ms ease, background-color 220ms ease; }
+main article:hover { transform: translateY(-3px); }
+
+/* Compatibility palette for older utilities. */
+.bg-\[\#10191d\], .bg-\[\#172126\] { background-color: #0f1823 !important; }
+.text-\[\#172126\] { color: #182431; }
+.bg-\[\#d7ff72\], .bg-\[\#c8f169\] { background-color: #8fa7b6 !important; }
+.text-\[\#d7ff72\], .text-\[\#c8f169\] { color: #a8bac5 !important; }
+.border-\[\#d7ff72\], .border-\[\#c8f169\] { border-color: #7891a3 !important; }
+.bg-\[\#6e5268\] { background-color: #405f69 !important; }
+.text-\[\#6e5268\] { color: #557b80 !important; }
+.border-\[\#6e5268\] { border-color: #557b80 !important; }
+.hover\:bg-\[\#85637e\]:hover { background-color: #4d7079 !important; }
+.bg-\[\#ffd8e6\], .bg-\[\#cce8ff\] { background-color: #c8d3da !important; }
+.text-\[\#ffd8e6\] { color: #c8d3da !important; }
+.bg-\[\#6cc5b4\] { background-color: #557b80 !important; }
+.text-\[\#6cc5b4\] { color: #6f969a !important; }
+.bg-\[\#f1f4ed\] { background-color: #d8dde0 !important; }
+.bg-\[\#f2efe8\] { background-color: #d5dadd !important; }
+.bg-\[\#f5f6f4\] { background-color: #d8dde0 !important; }
+.bg-\[\#dfe9e5\] { background-color: #c7d0d3 !important; }
+.bg-\[\#d7e4e6\] { background-color: #cbd5d9 !important; }
+
+/* Programs — dense research console. Keeps the powerful filtering layout,
+   but turns the old cream/lime implementation into a serious dark catalog. */
+body[data-page="programs"] main { background: #101923 !important; color: #e8edf3 !important; }
+body[data-page="programs"] main .bg-white,
+body[data-page="programs"] main .bg-white\/70,
+body[data-page="programs"] main .bg-white\/60 { background-color: #172536 !important; }
+body[data-page="programs"] main .bg-\[\#f2efe8\] { background-color: #101923 !important; }
+body[data-page="programs"] main .bg-\[\#dfe9e5\] { background-color: #142130 !important; }
+body[data-page="programs"] main .text-\[\#172126\] { color: #e8edf3 !important; }
+body[data-page="programs"] main .text-gray-600,
+body[data-page="programs"] main .text-gray-500 { color: #9ba9b8 !important; }
+body[data-page="programs"] main .text-gray-400 { color: #718394 !important; }
+body[data-page="programs"] main .border-\[\#172126\]\/10,
+body[data-page="programs"] main .border-black\/5,
+body[data-page="programs"] main .border-black\/10 { border-color: rgba(183,199,215,.11) !important; }
+body[data-page="programs"] main select,
+body[data-page="programs"] main input { color: #e8edf3; }
+body[data-page="programs"] main option { color: #e8edf3; background: #111c29; }
+body[data-page="programs"] main article { box-shadow: 0 12px 35px rgba(0,0,0,.12); }
+body[data-page="programs"] main article:hover { border-color: rgba(143,167,182,.28) !important; box-shadow: 0 22px 55px rgba(0,0,0,.2); }
+
+/* Deadlines — timeline dashboard. */
+body[data-page="deadlines"] main { background: #101923 !important; color: #e8edf3 !important; }
+body[data-page="deadlines"] main .bg-white,
+body[data-page="deadlines"] main .bg-white\/90 { background-color: #172536 !important; }
+body[data-page="deadlines"] main .bg-\[\#f5f7f8\] { background-color: #101923 !important; }
+body[data-page="deadlines"] main .bg-\[\#f7f8f8\],
+body[data-page="deadlines"] main .bg-\[\#edf1f1\] { background-color: #0f1823 !important; }
+body[data-page="deadlines"] main .bg-\[\#f3eee4\] { background-color: #17212b !important; }
+body[data-page="deadlines"] main .text-\[\#172126\],
+body[data-page="deadlines"] main .text-\[\#5a5142\],
+body[data-page="deadlines"] main .text-\[\#3c372f\] { color: #e8edf3 !important; }
+body[data-page="deadlines"] main .text-gray-600,
+body[data-page="deadlines"] main .text-gray-500 { color: #9ba9b8 !important; }
+body[data-page="deadlines"] main .text-gray-400 { color: #718394 !important; }
+body[data-page="deadlines"] main .border-black\/5,
+body[data-page="deadlines"] main .border-black\/10,
+body[data-page="deadlines"] main .border-amber-900\/10 { border-color: rgba(183,199,215,.1) !important; }
+body[data-page="deadlines"] main select,
+body[data-page="deadlines"] main input { color: #e8edf3; }
+body[data-page="deadlines"] main option { color: #e8edf3; background: #111c29; }
+body[data-page="deadlines"] main article { box-shadow: 0 12px 34px rgba(0,0,0,.11); }
+body[data-page="deadlines"] main article:hover { border-color: rgba(143,167,182,.28) !important; box-shadow: 0 22px 55px rgba(0,0,0,.2); }
+
+/* Assistant — focused advisor workspace rather than a floating white chat app. */
+body[data-page="ai-assistant"] main { background: #101923 !important; color: #e8edf3 !important; }
+body[data-page="ai-assistant"] main .bg-\[\#f5f7f8\],
+body[data-page="ai-assistant"] main .bg-\[\#f5f7f8\]\/90 { background-color: #101923 !important; }
+body[data-page="ai-assistant"] main .bg-white { background-color: #172536 !important; }
+body[data-page="ai-assistant"] main .bg-\[\#fafbfb\],
+body[data-page="ai-assistant"] main .bg-\[\#f1f4f4\],
+body[data-page="ai-assistant"] main .bg-\[\#edf1f1\],
+body[data-page="ai-assistant"] main .bg-\[\#e3e7e8\] { background-color: #111c29 !important; }
+body[data-page="ai-assistant"] main .text-\[\#172126\],
+body[data-page="ai-assistant"] main .text-\[\#344247\],
+body[data-page="ai-assistant"] main .text-\[\#536267\] { color: #e8edf3 !important; }
+body[data-page="ai-assistant"] main .text-gray-900,
+body[data-page="ai-assistant"] main .text-gray-700,
+body[data-page="ai-assistant"] main .text-gray-600,
+body[data-page="ai-assistant"] main .text-gray-500 { color: #9ba9b8 !important; }
+body[data-page="ai-assistant"] main .text-gray-400 { color: #718394 !important; }
+body[data-page="ai-assistant"] main .border-black\/5,
+body[data-page="ai-assistant"] main .border-black\/10,
+body[data-page="ai-assistant"] main .border-black\/20 { border-color: rgba(183,199,215,.1) !important; }
+body[data-page="ai-assistant"] main textarea { color: #e8edf3; }
+
+/* Application workspaces — one cohesive dark studio across every application tab.
+   The response editors intentionally remain light for comfortable long-form writing. */
+body[data-page="applications"] main,
+body[data-page="application-hub"] main {
+  background: #101923 !important;
+  color: #e8edf3 !important;
+}
+body[data-page="applications"] main .bg-white,
+body[data-page="application-hub"] main .bg-white {
+  background-color: #172536 !important;
+}
+body[data-page="applications"] main .bg-\[\#f4f1ea\],
+body[data-page="application-hub"] main .bg-\[\#f4f1ea\],
+body[data-page="applications"] main .bg-\[\#f7f4ee\],
+body[data-page="application-hub"] main .bg-\[\#f7f4ee\],
+body[data-page="applications"] main .bg-\[\#f7f3ec\],
+body[data-page="application-hub"] main .bg-\[\#f7f3ec\],
+body[data-page="applications"] main .bg-\[\#faf9f6\],
+body[data-page="application-hub"] main .bg-\[\#faf9f6\],
+body[data-page="applications"] main .bg-\[\#fafafa\],
+body[data-page="application-hub"] main .bg-\[\#fafafa\],
+body[data-page="applications"] main .bg-\[\#fffaf5\],
+body[data-page="application-hub"] main .bg-\[\#fffaf5\],
+body[data-page="applications"] main .bg-\[\#eef2f1\],
+body[data-page="application-hub"] main .bg-\[\#eef2f1\],
+body[data-page="applications"] main .bg-\[\#f7edf1\],
+body[data-page="application-hub"] main .bg-\[\#f7edf1\] {
+  background-color: #111c29 !important;
+}
+body[data-page="applications"] main .text-\[\#172126\],
+body[data-page="application-hub"] main .text-\[\#172126\],
+body[data-page="applications"] main .text-gray-700,
+body[data-page="application-hub"] main .text-gray-700 {
+  color: #e8edf3 !important;
+}
+body[data-page="applications"] main .text-gray-600,
+body[data-page="application-hub"] main .text-gray-600,
+body[data-page="applications"] main .text-gray-500,
+body[data-page="application-hub"] main .text-gray-500 {
+  color: #9ba9b8 !important;
+}
+body[data-page="applications"] main .text-gray-400,
+body[data-page="application-hub"] main .text-gray-400 {
+  color: #718394 !important;
+}
+body[data-page="applications"] main .border-black\/5,
+body[data-page="application-hub"] main .border-black\/5,
+body[data-page="applications"] main .border-black\/10,
+body[data-page="application-hub"] main .border-black\/10,
+body[data-page="applications"] main .border-\[\#692f46\]\/10,
+body[data-page="application-hub"] main .border-\[\#692f46\]\/10,
+body[data-page="applications"] main .border-\[\#692f46\]\/25,
+body[data-page="application-hub"] main .border-\[\#692f46\]\/25 {
+  border-color: rgba(183,199,215,.12) !important;
+}
+body[data-page="applications"] main .bg-\[\#692f46\],
+body[data-page="application-hub"] main .bg-\[\#692f46\] {
+  background-color: #557b80 !important;
+}
+body[data-page="applications"] main .text-\[\#692f46\],
+body[data-page="application-hub"] main .text-\[\#692f46\],
+body[data-page="applications"] main .text-\[\#8c4964\],
+body[data-page="application-hub"] main .text-\[\#8c4964\] {
+  color: #9fb2bd !important;
+}
+body[data-page="applications"] main select,
+body[data-page="application-hub"] main select,
+body[data-page="applications"] main input,
+body[data-page="application-hub"] main input {
+  color: #e8edf3;
+}
+body[data-page="applications"] main option,
+body[data-page="application-hub"] main option {
+  color: #e8edf3;
+  background: #111c29;
+}
+
+/* Writing surfaces are intentionally paper-like: white, black text, strong caret,
+   and readable placeholders even inside the otherwise dark application studio. */
+body[data-page="applications"] main textarea,
+body[data-page="application-hub"] main textarea {
+  background: #ffffff !important;
+  color: #111827 !important;
+  caret-color: #111827 !important;
+  border-color: rgba(15,24,35,.18) !important;
+  box-shadow: inset 0 1px 2px rgba(15,24,35,.04);
+}
+body[data-page="applications"] main textarea::placeholder,
+body[data-page="application-hub"] main textarea::placeholder {
+  color: #7b8794 !important;
+  opacity: 1;
+}
+body[data-page="applications"] main textarea:focus,
+body[data-page="application-hub"] main textarea:focus {
+  border-color: #7891a3 !important;
+  box-shadow: 0 0 0 3px rgba(120,145,163,.16), inset 0 1px 2px rgba(15,24,35,.04);
+}
+
+/* Remove playful legacy accent families anywhere they still appear. */
+.bg-\[\#eadde2\], .bg-\[\#f1e6d2\], .bg-\[\#e6f0ec\], .bg-\[\#edf1ee\] { background-color: #1a2a38 !important; }
+.text-\[\#692f46\], .text-\[\#8c4964\], .text-\[\#765928\], .text-\[\#2f6d62\], .text-\[\#315c54\] { color: #8fa7b6 !important; }
+.bg-\[\#ffd48a\] { background-color: #9fb2bd !important; }
+.text-\[\#ffd48a\] { color: #a8bac5 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .unipath-reveal { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; }
+}
+
+
+/* UniPath Field Guide
+   A restrained editorial system: library green, paper, rust and ruled detail.
+   This intentionally avoids the glass-card / neon-gradient vocabulary common
+   to template-generated product sites. */
+:root {
+  --background: #132c29;
+  --foreground: #f2ede2;
+  --brand-ink: #102724;
+  --brand-navy: #16332f;
+  --brand-slate: #1d3d38;
+  --brand-slate-2: #264942;
+  --brand-steel: #b7a98d;
+  --brand-teal: #597a6e;
+  --brand-accent: #d4865f;
+  --brand-text: #f2ede2;
+  --brand-muted: #b9c3bb;
+  --brand-line: rgba(242, 237, 226, .14);
+  --paper: #f2ede2;
+  --paper-deep: #e4dccd;
+  --rust: #d4865f;
 }
 
 body {
-  margin: 0;
-  background: var(--background);
+  background:
+    linear-gradient(rgba(242,237,226,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242,237,226,.018) 1px, transparent 1px),
+    #132c29;
+  background-size: 32px 32px;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
-a {
-  text-decoration: none;
+h1, h2, h3 {
+  font-family: var(--font-editorial), "Iowan Old Style", Georgia, serif;
+  font-weight: 500 !important;
+  text-wrap: balance;
 }
 
-button,
-input {
-  font: inherit;
+main .blur-3xl { display: none !important; }
+main .lucide-sparkles, main .lucide-wand-sparkles, main .lucide-bot { display: none !important; }
+main [class*="shadow-2xl"], main [class*="shadow-xl"], main [class*="shadow-lg"] {
+  box-shadow: 0 1px 0 rgba(242,237,226,.08) !important;
+}
+main [class*="backdrop-blur"] { backdrop-filter: none !important; }
+
+/* Smaller, deliberate geometry. Circles stay circular; large template cards do not. */
+main .rounded-\[2\.25rem\],
+main .rounded-\[2rem\],
+main .rounded-\[1\.75rem\],
+main .rounded-\[1\.5rem\],
+main .rounded-3xl { border-radius: .8rem !important; }
+main .rounded-2xl { border-radius: .65rem !important; }
+main .rounded-xl { border-radius: .45rem !important; }
+
+/* Harmonize legacy dark utilities into the Field Guide palette. */
+.bg-\[\#0f1722\], .bg-\[\#0d1620\], .bg-\[\#0f1823\], .bg-\[\#101923\],
+.bg-\[\#111a25\], .bg-\[\#111b27\], .bg-\[\#10191d\], .bg-\[\#172126\] {
+  background-color: #132c29 !important;
+}
+.bg-\[\#111c29\], .bg-\[\#172536\], .bg-\[\#152331\], .bg-\[\#142130\] {
+  background-color: #1d3d38 !important;
+}
+.bg-\[\#1a2a3b\], .bg-\[\#1a2a38\], .bg-\[\#1d2d3f\], .bg-\[\#24384b\],
+.bg-\[\#274047\], .bg-\[\#303b49\] {
+  background-color: #264942 !important;
+}
+.bg-\[\#7891a3\], .bg-\[\#8fa7b6\], .bg-\[\#9fb2bd\], .bg-\[\#405f69\],
+.bg-\[\#557b80\] { background-color: #d4865f !important; }
+.text-\[\#7891a3\], .text-\[\#8fa7b6\], .text-\[\#9fb2bd\],
+.text-\[\#9fb6c2\], .text-\[\#a8bac5\], .text-\[\#92aebb\],
+.text-\[\#9cb2bf\], .text-\[\#9eb3c0\] { color: #e0a17f !important; }
+.text-\[\#9ba9b8\] { color: #b9c3bb !important; }
+
+main article:hover { transform: translateY(-1px); }
+main [class*="bg-gradient"] { background-image: none !important; }
+
+/* A subtle editorial rule used by page sections and cards. */
+main section[class*="border"] { border-color: rgba(242,237,226,.13); }
+
+@media (max-width: 767px) {
+  h1 { letter-spacing: -.035em !important; }
 }
 
-::selection {
-  background: #172126;
-  color: white;
+
+/* Typography and layout grammar */
+.font-serif { font-family: var(--font-editorial), "Iowan Old Style", Georgia, serif !important; }
+.font-sans { font-family: var(--font-ui), "Helvetica Neue", Arial, sans-serif !important; }
+h1 { font-variation-settings: "opsz" 60; }
+h2, h3 { font-variation-settings: "opsz" 36; }
+p, li, input, select, textarea, button, a { font-family: var(--font-ui), "Helvetica Neue", Arial, sans-serif; }
+
+/* The site reads as a reference publication, not a stack of floating widgets. */
+main article,
+main aside,
+main section { background-image: none !important; }
+main article:hover { transform: none !important; }
+main article,
+main [class*="rounded-"][class*="shadow"] { transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease; }
+main [class*="rounded-full"]:not(.rounded-full) { border-radius: .45rem !important; }
+
+/* UniPath editorial foundation — the final token layer.
+   It consolidates older page-specific palettes without adding another visual
+   motif: forest for navigation, paper for reading, and saffron only for action. */
+:root {
+  --background: #17352f;
+  --foreground: #f5f1e8;
+  --brand: #17352f;
+  --brand-dark: #0f2823;
+  --accent: #e3a63a;
+  --accent-hover: #ca8c25;
+  --brick: #a94b36;
+  --ink: #18201e;
+  --muted: #66716c;
+  --paper: #f5f1e8;
+  --parchment: #e8e0d2;
+  --sage: #dde7e2;
+  --surface: #fffcf7;
+  --rule: #cbc5ba;
+  --text-display: clamp(3.75rem, 7vw, 7.5rem);
+  --text-h1: clamp(3rem, 5vw, 5.5rem);
+  --text-h2: clamp(2.25rem, 3.5vw, 3.75rem);
+  --text-h3: clamp(1.5rem, 2vw, 2.25rem);
+  --text-body-lg: 1.125rem;
+  --text-body: 1rem;
+  --text-small: .875rem;
+  --text-label: .75rem;
 }
 
-/* Smooth page feel */
-@media (prefers-reduced-motion: no-preference) {
-  a,
-  button {
-    transition-duration: 180ms;
-    transition-timing-function: ease;
-  }
+html, body { background: var(--brand); }
+body {
+  background-image: none;
+  font-family: var(--font-ui), "Avenir Next", Arial, sans-serif;
+  line-height: 1.65;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-editorial), "Iowan Old Style", Georgia, serif;
+  letter-spacing: -.035em;
+}
+h1 { font-weight: 500 !important; }
+h2, h3 { font-weight: 600 !important; }
+.font-serif { font-family: var(--font-editorial), "Iowan Old Style", Georgia, serif !important; }
+.font-sans { font-family: var(--font-ui), "Avenir Next", Arial, sans-serif !important; }
+
+.site-nav {
+  min-height: 76px;
+  background: var(--brand);
+  color: var(--paper);
+  border-bottom-color: rgb(245 241 232 / 14%);
+}
+
+.lucide {
+  stroke-width: 1.5;
+}
+
+.page-shell {
+  width: min(calc(100% - 48px), 1360px);
+  margin-inline: auto;
+}
+
+.editorial-card {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 32px;
+}
+
+.interactive-card {
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: var(--surface);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.interactive-card:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.feature-panel {
+  border-left: 5px solid var(--brand);
+  background: var(--sage);
+  padding: 40px;
+}
+
+.button-primary,
+.button-subscription {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--brand);
+  border-radius: 4px;
+  padding-inline: 22px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 3px 3px 0 var(--brand-dark);
+}
+.button-primary:hover,
+.button-subscription:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--brand-dark);
+}
+.button-subscription {
+  border-color: var(--ink);
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* Translate remaining legacy colours into the final restrained palette. */
+.bg-\[\#132c29\], .bg-\[\#0f1722\], .bg-\[\#0f1823\],
+.bg-\[\#101923\], .bg-\[\#111a25\], .bg-\[\#111b27\],
+.bg-\[\#10191d\], .bg-\[\#172126\] { background-color: #17352f !important; }
+.bg-\[\#102724\] { background-color: #0f2823 !important; }
+.bg-\[\#1d3d38\], .bg-\[\#172536\], .bg-\[\#111c29\],
+.bg-\[\#142130\], .bg-\[\#152331\] { background-color: #24463f !important; }
+.bg-\[\#264942\], .bg-\[\#1a2a3b\], .bg-\[\#1a2a38\],
+.bg-\[\#1d2d3f\], .bg-\[\#24384b\] { background-color: #31554c !important; }
+
+.bg-\[\#d4865f\], .bg-\[\#7891a3\], .bg-\[\#8fa7b6\],
+.bg-\[\#9fb2bd\], .bg-\[\#d7ff72\], .bg-\[\#c8f169\] {
+  background-color: #e3a63a !important;
+}
+.hover\:bg-\[\#e0a17f\]:hover,
+.hover\:bg-\[\#d4865f\]:hover { background-color: #ca8c25 !important; }
+.text-\[\#e0a17f\], .text-\[\#d4865f\], .text-\[\#7891a3\],
+.text-\[\#8fa7b6\], .text-\[\#9fb2bd\], .text-\[\#a8bac5\],
+.text-\[\#d7ff72\], .text-\[\#c8f169\] { color: #e3a63a !important; }
+.border-\[\#d4865f\], .border-\[\#7891a3\],
+.border-\[\#d7ff72\], .border-\[\#c8f169\] { border-color: #e3a63a !important; }
+
+.bg-\[\#f2ede2\], .bg-\[\#f2efe8\], .bg-\[\#f1f4ed\],
+.bg-\[\#f5f6f4\], .bg-\[\#f5f7f8\] { background-color: #f5f1e8 !important; }
+.bg-\[\#e4dccd\], .bg-\[\#f3eee4\] { background-color: #e8e0d2 !important; }
+.bg-\[\#dfe9e5\], .bg-\[\#d7e4e6\], .bg-\[\#edf1ee\],
+.bg-\[\#e6f0ec\] { background-color: #dde7e2 !important; }
+.bg-white { background-color: #fffcf7; }
+.text-\[\#172126\], .text-\[\#132c29\] { color: #18201e; }
+.text-gray-500, .text-gray-600 { color: #66716c; }
+
+::selection { background: #e3a63a; color: #18201e; }
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline-color: #e3a63a;
+}
+
+main [class*="bg-gradient"],
+main [class*="from-"],
+main [class*="via-"],
+main [class*="to-"] { background-image: none !important; }
+
+@media (min-width: 1024px) {
+  .max-w-7xl { max-width: 85rem; }
 }

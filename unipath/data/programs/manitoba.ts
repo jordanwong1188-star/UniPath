@@ -1,0 +1,195 @@
+import { makeProgramGroups, type ProgramGroup } from "./schema";
+
+const groups: ProgramGroup[] = [
+  {
+    universityId: "umanitoba",
+    school: "Faculty of Arts",
+    degree: "BA",
+    entryType: "Varies",
+    officialUrl: "https://umanitoba.ca/explore/programs-of-study",
+    programs: [
+      "Anthropology - Manitoba", "Asian Studies - Manitoba", "Classics - Manitoba", "Criminology - Manitoba",
+      "Economics - Manitoba", "English - Manitoba", "Film Studies - Manitoba", "French - Manitoba",
+      "German - Manitoba", "Global Political Economy", "History - Manitoba", "Indigenous Studies - Manitoba",
+      "Labour Studies - Manitoba", "Linguistics - Manitoba", "Mathematics - Arts Manitoba", "Philosophy - Manitoba",
+      "Political Studies - Manitoba", "Psychology - Arts Manitoba", "Religion - Manitoba", "Sociology - Manitoba",
+      "Women's and Gender Studies - Manitoba"
+    ],
+  },
+  {
+    universityId: "umanitoba",
+    school: "Faculty of Science",
+    degree: "BSc",
+    entryType: "Varies",
+    officialUrl: "https://umanitoba.ca/science/programs-of-study",
+    programs: ["Biochemistry - Manitoba", "Biological Sciences - Manitoba", "Chemistry - Manitoba", "Computer Science - Manitoba", "Data Science - Manitoba", "Genetics - Manitoba", "Mathematics - Manitoba", "Microbiology - Manitoba", "Physics and Astronomy - Manitoba", "Psychology - Science Manitoba", "Statistics - Manitoba"],
+  },
+  {
+    universityId: "umanitoba",
+    school: "Asper School of Business",
+    degree: "BComm (Hons)",
+    entryType: "Varies",
+    officialUrl: "https://umanitoba.ca/asper/programs-of-study",
+    programs: [
+      { id: "umanitoba-business", name: "Commerce" },
+      "Accounting - Asper", "Actuarial Mathematics - Asper", "Entrepreneurship / Small Business - Asper",
+      "Finance - Asper", "Generalist - Asper", "Human Resource Management / Industrial Relations - Asper",
+      "International Business - Asper", "Leadership and Organizations - Asper", "Marketing - Asper",
+      "Supply Chain Management and Logistics - Asper"
+    ],
+  },
+  {
+    universityId: "umanitoba",
+    school: "Price Faculty of Engineering",
+    degree: "BScEng",
+    entryType: "Varies",
+    officialUrl: "https://umanitoba.ca/engineering/programs-of-study",
+    programs: ["Biosystems Engineering", "Civil Engineering - Manitoba", "Computer Engineering - Manitoba", "Electrical Engineering - Manitoba", "Mechanical Engineering - Manitoba"],
+  },
+  {
+    universityId: "umanitoba",
+    school: "Faculty of Agricultural and Food Sciences",
+    degree: "BSc / Diploma",
+    entryType: "Direct entry",
+    officialUrl: "https://umanitoba.ca/agricultural-food-sciences/programs-of-study",
+    programs: ["Agribusiness - Manitoba", "Agriculture - Manitoba", "Agroecology", "Animal Systems", "Food Science - Manitoba", "Human Nutritional Sciences", "Plant Biotechnology", "Diploma in Agriculture"],
+  },
+  {
+    universityId: "umanitoba",
+    school: "Clayton H. Riddell Faculty of Environment, Earth, and Resources",
+    degree: "BEnvSc / BSc",
+    entryType: "Direct entry",
+    officialUrl: "https://umanitoba.ca/environment-earth-resources/programs-of-study",
+    programs: ["Environmental Science - Manitoba", "Environmental Studies - Manitoba", "Geography - Manitoba", "Geological Sciences - Manitoba", "Geophysics - Manitoba"],
+  },
+  {
+    universityId: "umanitoba",
+    school: "Faculty of Kinesiology and Recreation Management",
+    degree: "BKin / BPED / BRMCD",
+    entryType: "Direct entry",
+    officialUrl: "https://umanitoba.ca/kinesiology-recreation-management/programs-of-study",
+    programs: ["Kinesiology - Manitoba", "Physical Education - Manitoba", "Recreation Management and Community Development"],
+  },
+  {
+    universityId: "umanitoba",
+    school: "School of Art / Desautels Faculty of Music / Faculty of Architecture",
+    degree: "BFA / BMus / BEnvD",
+    entryType: "Varies",
+    officialUrl: "https://umanitoba.ca/explore/programs-of-study",
+    programs: ["Fine Arts - Manitoba", "Art History - Manitoba", "Music - Manitoba", "Jazz Studies - Manitoba", "Music Education - Manitoba", "Environmental Design"],
+  },
+  {
+    universityId: "umanitoba",
+    school: "Rady Faculty of Health Sciences and professional faculties",
+    degree: "Professional undergraduate degree",
+    entryType: "Second entry",
+    officialUrl: "https://umanitoba.ca/explore/programs-of-study",
+    programs: ["Nursing - Manitoba", "Dental Hygiene - Manitoba", "Dentistry - Manitoba", "Medicine - Manitoba", "Pharmacy - Manitoba", "Respiratory Therapy - Manitoba", "Social Work - Manitoba", "Education - Manitoba", "Juris Doctor - Manitoba"],
+  },
+  {
+    universityId: "umanitoba",
+    school: "University 1",
+    degree: "First-year pathway",
+    entryType: "Direct entry",
+    officialUrl: "https://umanitoba.ca/explore/programs-of-study/university-1",
+    programs: ["University 1"],
+  },
+
+  {
+    universityId: "uwinnipeg",
+    school: "University of Winnipeg",
+    degree: "BA / BSc / BBA / BEd / BKin",
+    entryType: "Direct entry",
+    officialUrl: "https://www.uwinnipeg.ca/academics/programs/undergraduate-degree.html",
+    programs: [
+      "Anthropology - UWinnipeg", "Applied Computer Science", "Bioanthropology", "Biochemistry - UWinnipeg",
+      "Biology - UWinnipeg", "Business and Administration - UWinnipeg", "Chemistry - UWinnipeg", "Classics - UWinnipeg",
+      "Conflict Resolution Studies", "Criminal Justice - UWinnipeg", "Dance Program - UWinnipeg", "Developmental Studies",
+      "Disability Studies", "East Asian Languages and Cultures", "Economics - UWinnipeg", "Economics and Finance - UWinnipeg",
+      "Education - UWinnipeg", "English - UWinnipeg", "Environmental Studies and Sciences", "French Studies - UWinnipeg",
+      "Geography - UWinnipeg", "German-Canadian Studies", "German Studies - UWinnipeg", "History - UWinnipeg",
+      "History of Art - UWinnipeg", "Human Rights", "Indigenous Languages", "Indigenous Studies - UWinnipeg",
+      "Interdisciplinary Linguistics", "International Development Studies - UWinnipeg", "Italian Studies - UWinnipeg",
+      "Kinesiology and Applied Health", "Mathematics and Statistics - UWinnipeg", "Neuroscience - UWinnipeg",
+      "Mennonite Studies", "Modern Languages and Literatures", "Philosophy - UWinnipeg", "Physics - UWinnipeg",
+      "Political Science - UWinnipeg", "Psychology - UWinnipeg", "Religion and Culture", "Rhetoric and Communications",
+      "Sociology - UWinnipeg", "Spanish Studies - UWinnipeg", "Theatre and Film", "Urban and Inner-City Studies",
+      "Women's and Gender Studies - UWinnipeg"
+    ],
+  },
+  {
+    universityId: "uwinnipeg",
+    school: "Collaborative program with Brandon University",
+    degree: "BScPN",
+    entryType: "Varies",
+    officialUrl: "https://www.uwinnipeg.ca/academics/programs/undergraduate-degree.html",
+    programs: ["Psychiatric Nursing - UWinnipeg Site"],
+  },
+
+  {
+    universityId: "brandon",
+    school: "Faculty of Arts",
+    degree: "BA / BBA / BFA",
+    entryType: "Direct entry",
+    officialUrl: "https://www.brandonu.ca/future-students/programs/degrees/",
+    programs: [
+      "Bachelor of Arts - Brandon", "Anthropology - Brandon", "Applied Disaster and Emergency Studies",
+      { id: "brandon-business", name: "Business Administration - Brandon", degree: "BBA" },
+      "Canadian Studies - Brandon", "Creative Arts - Brandon", "Economics - Brandon", "English - Brandon",
+      "French - Brandon", "History - Brandon", "Native Studies - Brandon", "Philosophy - Brandon",
+      "Political Science - Brandon", "Religion - Brandon", "Rural and Community Studies", "Sociology - Brandon",
+      "Bachelor of Fine Arts - Brandon", "Indigenous Art - Brandon", "Digital Media and Design - Brandon",
+      "Drawing - Brandon", "Painting - Brandon"
+    ],
+  },
+  {
+    universityId: "brandon",
+    school: "Faculty of Science",
+    degree: "BSc / BScES",
+    entryType: "Direct entry",
+    officialUrl: "https://www.brandonu.ca/future-students/programs/degrees/science/",
+    programs: ["Bachelor of Science - Brandon", "Biology - Brandon", "Chemistry - Brandon", "Computer Science - Brandon", "Geography and Environment - Brandon", "Geology - Brandon", "Mathematics - Brandon", "Physics and Astronomy - Brandon", "Psychology - Science Brandon", "Environmental Science - Brandon"],
+  },
+  {
+    universityId: "brandon",
+    school: "School of Music",
+    degree: "BMus / Combined BMus-BEd",
+    entryType: "Varies",
+    officialUrl: "https://www.brandonu.ca/future-students/programs/degrees/music/",
+    programs: ["Music - Honours Brandon", "Music - Performance Brandon", "Music - Jazz Studies Brandon", "Music - Specialist in School Music", "Music / Education Concurrent"],
+  },
+  {
+    universityId: "brandon",
+    school: "Faculty of Health Studies",
+    degree: "BN / BScPN",
+    entryType: "Varies",
+    officialUrl: "https://www.brandonu.ca/future-students/programs/degrees/",
+    programs: [
+      { name: "Pre-Nursing / Bachelor of Nursing", degree: "BN", entryType: "Direct entry" },
+      { name: "Pre-Psychiatric Nursing / Bachelor of Science in Psychiatric Nursing", degree: "BScPN", entryType: "Direct entry" }
+    ],
+  },
+  {
+    universityId: "brandon",
+    school: "Faculty of Education",
+    degree: "BEd / BPES",
+    entryType: "Varies",
+    officialUrl: "https://www.brandonu.ca/future-students/programs/degrees/",
+    programs: [
+      { name: "Arts / Education Integrated", degree: "BA/BEd", entryType: "Direct entry" },
+      { name: "Physical Education Studies", degree: "BPES", entryType: "Direct entry" },
+      { name: "Bachelor of Education - After Degree", degree: "BEd", entryType: "Second entry" },
+      { name: "Education - Technical/Vocational Route", degree: "BEd", entryType: "Second entry" }
+    ],
+  },
+  {
+    universityId: "brandon",
+    school: "Brandon University",
+    degree: "Certificate",
+    entryType: "Direct entry",
+    officialUrl: "https://www.brandonu.ca/future-students/programs/",
+    programs: ["Business Administration - Certificate Brandon", "Justice System Certificate", "French Language Proficiency - Certificate Brandon"],
+  },
+];
+
+export const manitobaPrograms = makeProgramGroups(groups);
