@@ -20,6 +20,37 @@ function safeMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
+async function fetchAuthService(url: string, init: RequestInit) {
+  const maxAttempts = 2;
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        ...init,
+        cache: "no-store",
+        signal: AbortSignal.timeout(12000),
+      });
+
+      // Supabase has occasionally returned transient gateway errors. Retry once
+      // so a short provider/network interruption does not make signup fail.
+      if (![502, 503, 504].includes(response.status) || attempt === maxAttempts) {
+        return response;
+      }
+
+      await response.body?.cancel();
+      lastError = new Error(`Auth provider returned ${response.status}`);
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts) throw error;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Auth provider unavailable");
+}
+
 export async function GET() {
   let session = await currentUser();
   let refreshed: TokenSession | null = null;
@@ -86,12 +117,10 @@ export async function POST(request: Request) {
   const payload = action === "resend" ? { type: "signup", email } : isSignup
     ? { email, password, data: { full_name: fullName.slice(0, 150) || "Student" } }
     : { email, password };
-  const authResponse = await fetch(`${config.url}${endpoint}`, {
+  const authResponse = await fetchAuthService(`${config.url}${endpoint}`, {
     method: "POST",
     headers: { apikey: config.publishableKey, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    cache: "no-store",
-    signal: AbortSignal.timeout(15000),
   });
   const data = await authResponse.json().catch(() => ({}));
   if (!authResponse.ok) {
@@ -106,7 +135,11 @@ export async function POST(request: Request) {
   const response = NextResponse.json({ authenticated: true });
   setAuthCookies(response, data as TokenSession);
   return response;
-  } catch {
+  } catch (error) {
+    console.error(
+      "UniPath auth provider request failed",
+      error instanceof Error ? { name: error.name, message: error.message } : { errorType: typeof error },
+    );
     return NextResponse.json({ error: "Account service is temporarily unavailable. Please try again shortly." }, { status: 503 });
   }
 }
