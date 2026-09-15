@@ -13,11 +13,20 @@ function safeMessage(payload: unknown, fallback: string) {
   if (payload && typeof payload === "object" && "code" in payload) {
     if (payload.code === "email_not_confirmed") return "Please confirm your email first. You can resend the confirmation below.";
     if (payload.code === "over_email_send_rate_limit") return "Too many email requests. Please wait before resending.";
-    if (payload.code === "email_address_not_authorized" || payload.code === "unexpected_failure") return "Confirmation email could not be delivered. Please contact unipath.guidance@gmail.com.";
+    if (payload.code === "email_address_not_authorized" || payload.code === "unexpected_failure") {
+      return "Confirmation email could not be delivered right now. Please try again shortly or contact unipath.guidance@gmail.com.";
+    }
   }
-  if (payload && typeof payload === "object" && "msg" in payload && typeof payload.msg === "string") return payload.msg;
-  if (payload && typeof payload === "object" && "message" in payload && typeof payload.message === "string") return payload.message;
-  return fallback;
+  const rawMessage =
+    payload && typeof payload === "object" && "msg" in payload && typeof payload.msg === "string"
+      ? payload.msg
+      : payload && typeof payload === "object" && "message" in payload && typeof payload.message === "string"
+      ? payload.message
+      : "";
+  if (/unexpected failure|confirmation email|sending.*email|smtp/i.test(rawMessage)) {
+    return "Confirmation email could not be delivered right now. Please try again shortly or contact unipath.guidance@gmail.com.";
+  }
+  return rawMessage || fallback;
 }
 
 async function fetchAuthService(url: string, init: RequestInit) {
