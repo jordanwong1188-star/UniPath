@@ -1,5 +1,5 @@
 import { CHECKOUT_AVAILABLE, CHECKOUT_PAUSED_MESSAGE } from "@/data/billingAvailability";
-import { currentUser, subscriptionFor } from "@/lib/supabase-server";
+import { currentUser, subscriptionFor, supabaseServiceConfiguration } from "@/lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -67,11 +67,13 @@ export async function POST(request: NextRequest) {
       client_reference_id: account.user.id,
     });
 
-    const databaseSecret = process.env.SUPABASE_SECRET_KEY;
-    if (!databaseSecret) return NextResponse.json({ error: "Database configuration is missing." }, { status: 503 });
+    const databaseService = supabaseServiceConfiguration();
+    if (!databaseService || databaseService.url !== expectedDatabase) {
+      return NextResponse.json({ error: "Database configuration needs attention. Please contact support." }, { status: 503 });
+    }
     const rpc = async (name: string, body: object) => {
       const response = await fetch(`${expectedDatabase}/rest/v1/rpc/${name}`, {
-        method: "POST", headers: { apikey: databaseSecret, Authorization: `Bearer ${databaseSecret}`, "Content-Type": "application/json" },
+        method: "POST", headers: { apikey: databaseService.secret, Authorization: `Bearer ${databaseService.secret}`, "Content-Type": "application/json" },
         body: JSON.stringify(body), cache: "no-store", signal: AbortSignal.timeout(15000),
       });
       if (!response.ok) throw new Error("Checkout database operation failed");
