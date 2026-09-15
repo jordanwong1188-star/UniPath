@@ -12,6 +12,7 @@ import {
 function safeMessage(payload: unknown, fallback: string) {
   if (payload && typeof payload === "object" && "code" in payload) {
     if (payload.code === "email_not_confirmed") return "Please confirm your email first. You can resend the confirmation below.";
+    if (payload.code === "invalid_credentials") return "That email and password do not match. Try resetting your password below.";
     if (payload.code === "over_email_send_rate_limit") return "Too many email requests. Please wait before resending.";
     if (payload.code === "email_address_not_authorized" || payload.code === "unexpected_failure") {
       return "Confirmation email could not be delivered right now. Please try again shortly or contact unipath.guidance@gmail.com.";
@@ -111,21 +112,63 @@ export async function POST(request: Request) {
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body?.password === "string" ? body.password : "";
   const fullName = typeof body?.fullName === "string" ? body.fullName.trim() : "";
-  if (!["signup", "login", "resend"].includes(action)) {
+  const accessToken = typeof body?.accessToken === "string" ? body.accessToken : "";
+  if (!["signup", "login", "resend", "recover", "update-password"].includes(action)) {
     return NextResponse.json({ error: "Unknown account action." }, { status: 400 });
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || (action !== "resend" && (password.length < 8 || password.length > 1024))) {
-    return NextResponse.json({ error: "Enter a valid email and a password with at least 8 characters." }, { status: 400 });
+
+  const needsEmail = action !== "update-password";
+  const needsPassword = ["signup", "login", "update-password"].includes(action);
+  if (
+    (needsEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)) ||
+    (needsPassword && (password.length < 8 || password.length > 1024)) ||
+    (action === "update-password" && !accessToken)
+  ) {
+    return NextResponse.json({ error: "Enter valid account details and a password with at least 8 characters." }, { status: 400 });
+  }
+
+  const origin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (["signup", "resend", "recover"].includes(action) && !origin) {
+    return NextResponse.json({ error: "Account email service is temporarily unavailable. Please contact support." }, { status: 503 });
+  }
+
+  if (action === "update-password") {
+    const updateResponse = await fetchAuthService(`${config.url}/auth/v1/user`, {
+      method: "PUT",
+      headers: {
+        apikey: config.publishableKey,
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ password }),
+    });
+    const updateData = await updateResponse.json().catch(() => ({}));
+    if (!updateResponse.ok) {
+      return NextResponse.json({ error: safeMessage(updateData, "Unable to update your password.") }, { status: updateResponse.status });
+    }
+    return NextResponse.json({ passwordUpdated: true });
   }
 
   const isSignup = action === "signup";
-  const origin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-  if ((isSignup || action === "resend") && !origin) return NextResponse.json({ error: "Email confirmation is temporarily unavailable. Please contact support." }, { status: 503 });
-  const redirect = encodeURIComponent(`${origin}/login?confirmed=1`);
-  const endpoint = action === "resend" ? `/auth/v1/resend?redirect_to=${redirect}` : isSignup ? `/auth/v1/signup?redirect_to=${redirect}` : "/auth/v1/token?grant_type=password";
-  const payload = action === "resend" ? { type: "signup", email } : isSignup
-    ? { email, password, data: { full_name: fullName.slice(0, 150) || "Student" } }
-    : { email, password };
+  const confirmationRedirect = encodeURIComponent(`${origin}/login?confirmed=1`);
+  const recoveryRedirect = encodeURIComponent(`${origin}/login?recovery=1`);
+  const endpoint =
+    action === "resend"
+      ? `/auth/v1/resend?redirect_to=${confirmationRedirect}`
+      : action === "recover"
+      ? `/auth/v1/recover?redirect_to=${recoveryRedirect}`
+      : isSignup
+      ? `/auth/v1/signup?redirect_to=${confirmationRedirect}`
+      : "/auth/v1/token?grant_type=password";
+  const payload =
+    action === "resend"
+      ? { type: "signup", email }
+      : action === "recover"
+      ? { email }
+      : isSignup
+      ? { email, password, data: { full_name: fullName.slice(0, 150) || "Student" } }
+      : { email, password };
+
   const authResponse = await fetchAuthService(`${config.url}${endpoint}`, {
     method: "POST",
     headers: { apikey: config.publishableKey, "Content-Type": "application/json" },
@@ -136,7 +179,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: safeMessage(data, "Unable to access this account.") }, { status: authResponse.status });
   }
 
-  if (action === "resend") return NextResponse.json({ message: "If this account needs confirmation, a new email has been requested. Check spam too, and use the newest link." });
+  if (action === "resend") {
+    return NextResponse.json({ message: "If this account needs confirmation, a new email has been requested. Check spam too, and use the newest link." });
+  }
+  if (action === "recover") {
+    return NextResponse.json({ message: "If an account exists for that email, a password-reset link has been sent. Check spam too." });
+  }
 
   if (!data.access_token || !data.refresh_token) {
     return NextResponse.json({ requiresConfirmation: true });
