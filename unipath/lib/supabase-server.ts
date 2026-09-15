@@ -29,6 +29,17 @@ export function supabasePublicConfiguration() {
   return configuration();
 }
 
+export function supabaseServiceConfiguration() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+  const secret = process.env.SUPABASE_SECRET_KEY;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !secret) return null;
+  // Never allow a browser-safe publishable key to impersonate the server-only
+  // Supabase service credential. The privileged RPCs below are service_role-only.
+  if (secret === publishableKey || secret.startsWith("sb_publishable_")) return null;
+  return { url, secret };
+}
+
 export function setAuthCookies(response: NextResponse, session: TokenSession) {
   const secure = process.env.NODE_ENV === "production";
   response.cookies.set(ACCESS_COOKIE, session.access_token, {
@@ -125,12 +136,11 @@ export async function subscriptionFor(accessToken: string, userId: string) {
 }
 
 async function serviceRpc(name: string, body: Record<string, unknown>) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
-  const secret = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !secret) throw new Error("Server database configuration is missing.");
-  const response = await fetch(`${url}/rest/v1/rpc/${name}`, {
+  const service = supabaseServiceConfiguration();
+  if (!service) throw new Error("Server database service credential is missing or invalid.");
+  const response = await fetch(`${service.url}/rest/v1/rpc/${name}`, {
     method: "POST",
-    headers: { apikey: secret, Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+    headers: { apikey: service.secret, Authorization: `Bearer ${service.secret}`, "Content-Type": "application/json" },
     body: JSON.stringify(body), cache: "no-store",
   });
   const data = await response.json().catch(() => null);
