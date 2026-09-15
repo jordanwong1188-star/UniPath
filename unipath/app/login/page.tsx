@@ -14,6 +14,9 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetMode, setResetMode] = useState(false);
+  const [recoveryToken, setRecoveryToken] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,9 +26,16 @@ export default function LoginPage() {
   useEffect(() => {
     const url = new URL(window.location.href);
     const fragment = new URLSearchParams(url.hash.slice(1));
-    if (fragment.has("error")) {
+    const token = fragment.get("access_token");
+    const type = fragment.get("type");
+    if (type === "recovery" && token) {
       setMode("login");
-      setError("This confirmation link is invalid or expired. Request a new link below.");
+      setResetMode(true);
+      setRecoveryToken(token);
+      setNotice("Choose a new password for your UniPath account.");
+    } else if (fragment.has("error")) {
+      setMode("login");
+      setError("This account link is invalid or expired. Request a new link below.");
     } else if (url.searchParams.get("confirmed") === "1") {
       setMode("login");
       setNotice("After confirming your email, sign in below to continue. If the link expired, request another.");
@@ -47,10 +57,47 @@ export default function LoginPage() {
     finally { setLoading(false); }
   }
 
+  async function requestPasswordReset() {
+    if (!email.trim()) { setError("Enter your email address first."); return; }
+    setLoading(true); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "recover", email }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "Unable to request a password reset.");
+      setNotice(data.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to request a password reset.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setLoading(true); setError(""); setNotice("");
     try {
+      if (resetMode) {
+        if (password !== confirmPassword) throw new Error("Your new passwords do not match.");
+        const response = await fetch("/api/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "update-password", accessToken: recoveryToken, password }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.error || "Unable to update your password.");
+        setResetMode(false);
+        setRecoveryToken("");
+        setPassword("");
+        setConfirmPassword("");
+        setMode("login");
+        setNotice("Password updated. Sign in with your new password.");
+        return;
+      }
+
       const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: mode, fullName: name, email, password }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error || "Unable to access your account.");
@@ -75,16 +122,18 @@ export default function LoginPage() {
 
       <form onSubmit={submit} className="border border-white/12 bg-[#1d3d38] p-7 sm:p-9">
         <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#e0a17f]">Your account</p>
-        <h2 className="mt-3 text-3xl">{mode === "signup" ? "Create your account" : "Welcome back"}</h2>
-        <p className="mt-3 text-sm leading-6 text-white/45">{mode === "signup" ? "Start with UniPath’s free research and planning workspace. You can choose a feedback plan whenever you need application practice." : "Sign in to open your saved account and membership."}</p>
-        {mode === "signup" ? <label className="mt-8 block text-sm font-semibold">Your name<input required value={name} onChange={e => setName(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="Your full name" /></label> : null}
-        <label className="mt-5 block text-sm font-semibold">Email address<input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="you@email.com" /></label>
-        <label className="mt-5 block text-sm font-semibold">Password<input required minLength={8} type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={e => setPassword(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="At least 8 characters" /></label>
+        <h2 className="mt-3 text-3xl">{resetMode ? "Set a new password" : mode === "signup" ? "Create your account" : "Welcome back"}</h2>
+        <p className="mt-3 text-sm leading-6 text-white/45">{resetMode ? "Choose a new password for this UniPath account." : mode === "signup" ? "Start with UniPath’s free research and planning workspace. You can choose a feedback plan whenever you need application practice." : "Sign in to open your saved account and membership."}</p>
+        {mode === "signup" && !resetMode ? <label className="mt-8 block text-sm font-semibold">Your name<input required value={name} onChange={e => setName(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="Your full name" /></label> : null}
+        {!resetMode ? <label className="mt-5 block text-sm font-semibold">Email address<input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="you@email.com" /></label> : null}
+        <label className="mt-5 block text-sm font-semibold">{resetMode ? "New password" : "Password"}<input required minLength={8} type="password" autoComplete={resetMode || mode === "signup" ? "new-password" : "current-password"} value={password} onChange={e => setPassword(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="At least 8 characters" /></label>
+        {resetMode ? <label className="mt-5 block text-sm font-semibold">Confirm new password<input required minLength={8} type="password" autoComplete="new-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="mt-2 w-full border border-white/12 bg-[#102724] px-4 py-3.5 text-white outline-none placeholder:text-white/25 focus:border-[#d4865f]" placeholder="Re-enter your new password" /></label> : null}
         {error ? <p role="alert" className="mt-4 text-sm text-[#f0aa88]">{error}</p> : null}
         {notice ? <p role="status" className="mt-4 border border-[#e0a17f]/30 bg-[#e0a17f]/10 p-3 text-sm leading-6 text-[#f2d3bf]">{notice}</p> : null}
-        <button disabled={loading} className="mt-7 flex w-full items-center justify-center gap-2 bg-[#d4865f] px-5 py-4 font-semibold text-[#132c29] transition hover:bg-[#e0a17f] disabled:opacity-60">{loading ? "Please wait…" : mode === "signup" ? "Create free account" : "Sign in"} <ArrowRight className="h-4 w-4" /></button>
-        <button type="button" onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setError(""); setNotice(""); }} className="mt-5 w-full text-center text-sm font-semibold text-[#e0a17f] hover:text-white">{mode === "signup" ? "Already have an account? Sign in" : "New to UniPath? Create an account"}</button>
-        <button type="button" disabled={loading || !email.trim()} onClick={resendConfirmation} className="mt-5 w-full text-center text-sm text-[#e0a17f] disabled:opacity-50">Resend confirmation email</button>
+        <button disabled={loading} className="mt-7 flex w-full items-center justify-center gap-2 bg-[#d4865f] px-5 py-4 font-semibold text-[#132c29] transition hover:bg-[#e0a17f] disabled:opacity-60">{loading ? "Please wait…" : resetMode ? "Update password" : mode === "signup" ? "Create free account" : "Sign in"} <ArrowRight className="h-4 w-4" /></button>
+        {!resetMode ? <button type="button" onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setError(""); setNotice(""); }} className="mt-5 w-full text-center text-sm font-semibold text-[#e0a17f] hover:text-white">{mode === "signup" ? "Already have an account? Sign in" : "New to UniPath? Create an account"}</button> : null}
+        {!resetMode && mode === "login" ? <button type="button" disabled={loading || !email.trim()} onClick={requestPasswordReset} className="mt-4 w-full text-center text-sm font-semibold text-[#e0a17f] disabled:opacity-50">Forgot password?</button> : null}
+        {!resetMode ? <button type="button" disabled={loading || !email.trim()} onClick={resendConfirmation} className="mt-5 w-full text-center text-sm text-[#e0a17f] disabled:opacity-50">Resend confirmation email</button> : null}
         <p className="mt-3 text-center text-xs leading-5 text-white/50">Enter your email above to resend. Check spam and use the newest link. Still stuck? <a className="underline" href="mailto:unipath.guidance@gmail.com">Contact support</a>.</p>
         <p className="mt-5 text-center text-xs leading-5 text-white/30">Your membership is secured through your verified UniPath account.</p>
         <Link href="/pricing" className="mt-5 block text-center text-sm font-semibold text-[#e0a17f] hover:text-white">Compare membership plans</Link>
