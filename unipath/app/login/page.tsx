@@ -27,22 +27,50 @@ export default function LoginPage() {
     const url = new URL(window.location.href);
     const fragment = new URLSearchParams(url.hash.slice(1));
     const token = fragment.get("access_token");
+    const refreshToken = fragment.get("refresh_token");
     const type = fragment.get("type");
+
     if (type === "recovery" && token) {
       setMode("login");
       setResetMode(true);
       setRecoveryToken(token);
       setNotice("Choose a new password for your UniPath account.");
-    } else if (fragment.has("error")) {
+      if (url.hash) window.history.replaceState(null, "", `${url.pathname}${url.search}`);
+      return;
+    }
+
+    if (token && refreshToken && !fragment.has("error")) {
+      setLoading(true);
+      fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "adopt-session", accessToken: token, refreshToken }),
+      })
+        .then(async response => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data?.error || "Unable to finish signing in.");
+          await refreshAccount();
+          router.push("/dashboard");
+          router.refresh();
+        })
+        .catch(error => {
+          setMode("login");
+          setError(error instanceof Error ? error.message : "Unable to finish signing in.");
+        })
+        .finally(() => setLoading(false));
+      window.history.replaceState(null, "", `${url.pathname}${url.search}`);
+      return;
+    }
+
+    if (fragment.has("error")) {
       setMode("login");
       setError("This account link is invalid or expired. Request a new link below.");
     } else if (url.searchParams.get("confirmed") === "1") {
       setMode("login");
-      setNotice("After confirming your email, sign in below to continue. If the link expired, request another.");
+      setNotice("Your email is confirmed. If your password does not work, use Forgot password below.");
     }
-    // Never retain Supabase tokens in browser history or local storage.
     if (url.hash) window.history.replaceState(null, "", `${url.pathname}${url.search}`);
-  }, []);
+  }, [refreshAccount, router]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   async function resendConfirmation() {
